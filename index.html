@@ -233,40 +233,40 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-slate-400 block mb-1" data-i18n="lblCustSuburb">Suburb / 区域选择</label>
-                        <!-- Tauranga 核心 Suburbs 独立列出，其他大区保留单项 -->
+                        <!-- 严格按照 A-Z 字母排序的 Suburbs 清单 -->
                         <select id="custSuburb" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
-                            <optgroup label="Tauranga 地区">
-                                <option value="Pyes Pa">Pyes Pa</option>
-                                <option value="Papamoa">Papamoa</option>
-                                <option value="Mount Maunganui">Mount Maunganui</option>
-                                <option value="Bethlehem">Bethlehem</option>
-                                <option value="Tauranga Central">Tauranga Central</option>
-                                <option value="Welcome Bay">Welcome Bay</option>
-                                <option value="Greerton">Greerton</option>
-                                <option value="Otumoetai">Otumoetai</option>
+                            <optgroup label="Tauranga 地区 (A-Z)">
                                 <option value="Bellevue">Bellevue</option>
+                                <option value="Bethlehem">Bethlehem</option>
                                 <option value="Brookfield">Brookfield</option>
+                                <option value="Greerton">Greerton</option>
                                 <option value="Judea">Judea</option>
                                 <option value="Matua">Matua</option>
                                 <option value="Maungatapu">Maungatapu</option>
-                                <option value="Tauriko">Tauriko</option>
+                                <option value="Mount Maunganui">Mount Maunganui</option>
                                 <option value="Omokoroa">Omokoroa</option>
+                                <option value="Otumoetai">Otumoetai</option>
+                                <option value="Papamoa">Papamoa</option>
+                                <option value="Pyes Pa">Pyes Pa</option>
+                                <option value="Tauranga Central">Tauranga Central</option>
+                                <option value="Tauriko">Tauriko</option>
+                                <option value="Welcome Bay">Welcome Bay</option>
                             </optgroup>
-                            <optgroup label="丰盛湾及周边其他地区">
-                                <option value="Te Puke">Te Puke</option>
-                                <option value="Rotorua">Rotorua</option>
-                                <option value="Whakatane">Whakatane</option>
+                            <optgroup label="丰盛湾及周边其他地区 (A-Z)">
                                 <option value="Katikati">Katikati</option>
+                                <option value="Rotorua">Rotorua</option>
+                                <option value="Te Puke">Te Puke</option>
+                                <option value="Whakatane">Whakatane</option>
                                 <option value="Others">Others (其他地区)</option>
                             </optgroup>
                         </select>
                     </div>
                     <div><label class="text-slate-400 block mb-1" data-i18n="lblCustAddress">Address / 详细地址</label><input type="text" id="custAddress" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white" placeholder="17 Veda Place"></div>
                 </div>
-                <!-- 预约双轨道时间绑定 -->
+                <!-- 预约双轨道时间绑定：带具体的日期与时间 (datetime-local) -->
                 <div class="grid grid-cols-2 gap-3 bg-slate-900/60 p-3 rounded-xl border border-indigo-500/20">
-                    <div><label class="text-slate-300 block mb-1 font-semibold">🔍 测量预约 (Quote Date)</label><input type="date" id="custQuoteDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
-                    <div><label class="text-slate-300 block mb-1 font-semibold">🛠️ 施工预约 (Job Date)</label><input type="date" id="custJobDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                    <div><label class="text-slate-300 block mb-1 font-semibold">🔍 测量预约 (Quote Date & Time)</label><input type="datetime-local" id="custQuoteDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                    <div><label class="text-slate-300 block mb-1 font-semibold">🛠️ 施工预约 (Job Date & Time)</label><input type="datetime-local" id="custJobDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="text-slate-400 block mb-1" data-i18n="lblCustStatus">Project Status / 项目状态</label><select id="custStatus" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"><option value="Quote 报价中">Quote 报价中 (30 Days)</option><option value="Scheduled 待施工">Scheduled 待施工</option><option value="Completed 已完工">Completed 已完工 (90 Days)</option><option value="Warranty 售后/争议中">Warranty 售后/争议中 (Protected)</option></select></div>
@@ -408,6 +408,21 @@
                 btnSaveProfile: 'Save Profile'
             }
         };
+
+        // 新西兰日期时间格式转换 (ISO ➔ DD/MM/YYYY HH:mm)
+        function formatNZDateTime(isoStr) {
+            if (!isoStr) return '未定';
+            const parts = isoStr.split('T');
+            if (parts.length < 1) return '未定';
+            const dateParts = parts[0].split('-');
+            if (dateParts.length !== 3) return isoStr;
+            const nzDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+            if (parts[1]) {
+                const timeStr = parts[1].slice(0, 5);
+                return `${nzDate} ${timeStr}`;
+            }
+            return nzDate;
+        }
 
         function toggleLanguage() {
             currentLang = currentLang === 'ZH' ? 'EN' : 'ZH';
@@ -668,8 +683,8 @@
                 top.appendChild(left);
                 top.appendChild(createSafeElement('span', `text-xs px-2.5 py-1 rounded-full font-semibold ${statusBadgeClass}`, c.status));
 
-                const scheduleInfo = createSafeElement('div', 'text-[11px] text-slate-400 flex gap-3');
-                scheduleInfo.innerHTML = `<span>🔍 测量: ${c.quoteDate || '未定'}</span><span>🛠️ 施工: ${c.jobDate || '未定'}</span>`;
+                const scheduleInfo = createSafeElement('div', 'text-[11px] text-slate-400 flex flex-col gap-1 bg-slate-900/50 p-2 rounded-lg');
+                scheduleInfo.innerHTML = `<div>🔍 测量: <span class="text-slate-200 font-mono">${formatNZDateTime(c.quoteDate)}</span></div><div>🛠️ 施工: <span class="text-slate-200 font-mono">${formatNZDateTime(c.jobDate)}</span></div>`;
 
                 const mid = createSafeElement('div', 'flex justify-between text-xs pt-2 border-t border-slate-700/80 text-slate-300');
                 mid.appendChild(createSafeElement('span', '', `📞 ${c.phone || 'N/A'}`));
@@ -716,11 +731,13 @@
 
                 let dayEvents = [];
                 clients.forEach(c => {
-                    if (c.quoteDate === dateKey) {
-                        dayEvents.push({ type: 'quote', title: `[测量] ${c.name} (${c.suburb})`, id: c.id });
+                    if (c.quoteDate && c.quoteDate.startsWith(dateKey)) {
+                        const timePart = c.quoteDate.split('T')[1] ? c.quoteDate.split('T')[1].slice(0, 5) : '';
+                        dayEvents.push({ type: 'quote', title: `[测量 ${timePart}] ${c.name}`, id: c.id });
                     }
-                    if (c.jobDate === dateKey) {
-                        dayEvents.push({ type: 'scheduled', title: `[施工] ${c.name} (${c.suburb})`, id: c.id });
+                    if (c.jobDate && c.jobDate.startsWith(dateKey)) {
+                        const timePart = c.jobDate.split('T')[1] ? c.jobDate.split('T')[1].slice(0, 5) : '';
+                        dayEvents.push({ type: 'scheduled', title: `[施工 ${timePart}] ${c.name}`, id: c.id });
                     }
                 });
 
@@ -796,7 +813,10 @@
                 document.getElementById('custPhone').value = '';
                 document.getElementById('custSuburb').value = 'Pyes Pa';
                 document.getElementById('custAddress').value = '';
-                document.getElementById('custQuoteDate').value = new Date().toISOString().split('T')[0];
+                
+                // 默认初始化当前本地时间的 ISO 格式 (YYYY-MM-DDTHH:mm)
+                const nowIso = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                document.getElementById('custQuoteDate').value = nowIso;
                 document.getElementById('custJobDate').value = '';
                 document.getElementById('custStatus').value = 'Quote 报价中';
                 document.getElementById('custPrice').value = '';
