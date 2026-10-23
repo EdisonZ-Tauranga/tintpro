@@ -92,7 +92,7 @@
                 <div id="jobsListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </section>
 
-            <!-- TAB 1.5: 预约日历 (新加入) -->
+            <!-- TAB 1.5: 预约日历 -->
             <section id="tab-calendar" class="hidden space-y-4">
                 <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-6 space-y-4 shadow-xl">
                     <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
@@ -233,12 +233,32 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-slate-400 block mb-1" data-i18n="lblCustSuburb">Suburb / 区域选择</label>
+                        <!-- Tauranga 核心 Suburbs 独立列出，其他大区保留单项 -->
                         <select id="custSuburb" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
-                            <option value="Tauranga">Tauranga (含 Pyes Pa / Papamoa / Mount)</option>
-                            <option value="Te Puke">Te Puke</option>
-                            <option value="Rotorua">Rotorua</option>
-                            <option value="Whakatane">Whakatane</option>
-                            <option value="Others">Others (其他地区)</option>
+                            <optgroup label="Tauranga 地区">
+                                <option value="Pyes Pa">Pyes Pa</option>
+                                <option value="Papamoa">Papamoa</option>
+                                <option value="Mount Maunganui">Mount Maunganui</option>
+                                <option value="Bethlehem">Bethlehem</option>
+                                <option value="Tauranga Central">Tauranga Central</option>
+                                <option value="Welcome Bay">Welcome Bay</option>
+                                <option value="Greerton">Greerton</option>
+                                <option value="Otumoetai">Otumoetai</option>
+                                <option value="Bellevue">Bellevue</option>
+                                <option value="Brookfield">Brookfield</option>
+                                <option value="Judea">Judea</option>
+                                <option value="Matua">Matua</option>
+                                <option value="Maungatapu">Maungatapu</option>
+                                <option value="Tauriko">Tauriko</option>
+                                <option value="Omokoroa">Omokoroa</option>
+                            </optgroup>
+                            <optgroup label="丰盛湾及周边其他地区">
+                                <option value="Te Puke">Te Puke</option>
+                                <option value="Rotorua">Rotorua</option>
+                                <option value="Whakatane">Whakatane</option>
+                                <option value="Katikati">Katikati</option>
+                                <option value="Others">Others (其他地区)</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div><label class="text-slate-400 block mb-1" data-i18n="lblCustAddress">Address / 详细地址</label><input type="text" id="custAddress" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white" placeholder="17 Veda Place"></div>
@@ -642,7 +662,7 @@
 
                 const top = createSafeElement('div', 'flex justify-between items-start');
                 const left = createSafeElement('div');
-                left.appendChild(createSafeElement('span', 'text-[11px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-medium', c.suburb || 'Tauranga'));
+                left.appendChild(createSafeElement('span', 'text-[11px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-medium', c.suburb || 'Pyes Pa'));
                 left.appendChild(createSafeElement('h3', 'font-bold text-white text-base mt-1 group-hover:text-indigo-300', c.name));
                 left.appendChild(createSafeElement('p', 'text-xs text-slate-400', `📍 ${c.address || ''}`));
                 top.appendChild(left);
@@ -747,7 +767,7 @@
                     document.getElementById('modalTitle').textContent = `${currentLang==='ZH'?'编辑客户档案':'Edit Profile'}: ${client.name}`;
                     document.getElementById('custName').value = client.name || '';
                     document.getElementById('custPhone').value = client.phone || '';
-                    document.getElementById('custSuburb').value = client.suburb || 'Tauranga';
+                    document.getElementById('custSuburb').value = client.suburb || 'Pyes Pa';
                     document.getElementById('custAddress').value = client.address || '';
                     document.getElementById('custQuoteDate').value = client.quoteDate || '';
                     document.getElementById('custJobDate').value = client.jobDate || '';
@@ -774,7 +794,7 @@
                 document.getElementById('modalTitle').textContent = currentLang==='ZH'?'新建客户与项目档案':'New Client Profile';
                 document.getElementById('custName').value = '';
                 document.getElementById('custPhone').value = '';
-                document.getElementById('custSuburb').value = 'Tauranga';
+                document.getElementById('custSuburb').value = 'Pyes Pa';
                 document.getElementById('custAddress').value = '';
                 document.getElementById('custQuoteDate').value = new Date().toISOString().split('T')[0];
                 document.getElementById('custJobDate').value = '';
