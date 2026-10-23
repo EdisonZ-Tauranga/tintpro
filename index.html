@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TintPro Manager v12.5 - Bilingual & Multi-Quote Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- 顶部 Header -->
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-3 w-full sm:w-auto justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-indigo-600 p-2 rounded-xl text-white shadow"><i data-lucide="shield-check" class="w-6 h-6"></i></div>
+                    <div>
+                        <h1 class="text-lg font-bold text-white flex items-center gap-2">
+                            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">v12.5 Pro</span>
+                        </h1>
+                        <p class="text-xs text-slate-400" data-i18n="subtitle">NZ Residential & Commercial Tinting System</p>
+                    </div>
+                </div>
+                <!-- 语言切换按钮 -->
+                <button onclick="toggleLanguage()" class="sm:hidden px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-indigo-300 text-xs font-bold border border-slate-600 transition">
+                    <span id="langBtnMobile">English</span>
+                </button>
+            </div>
+            
+            <div class="flex items-center flex-wrap gap-2">
+                <button onclick="toggleLanguage()" class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 hover:bg-slate-600 text-indigo-300 border border-slate-600 transition">
+                    <i data-lucide="languages" class="w-4 h-4"></i> <span id="langBtnText">English</span>
+                </button>
+                <button id="googleAuthBtn" onclick="handleGoogleAuth()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition">
+                    <i data-lucide="log-in" class="w-4 h-4 text-sky-400"></i> <span id="authBtnText" data-i18n="btnBindGoogle">Bind Google / 绑定账号</span>
+                </button>
+                <button onclick="syncToCloud(true)" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white shadow transition">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span data-i18n="btnSync">Cloud Sync / 双向同步</span>
+                </button>
+                <button onclick="exportDataJSON()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition">
+                    <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> <span data-i18n="btnExport">Export / 导出备份</span>
+                </button>
+                <button onclick="document.getElementById('importFile').click()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition">
+                    <i data-lucide="upload" class="w-4 h-4 text-indigo-400"></i> <span data-i18n="btnImport">Import / 导入</span>
+                </button>
+                <input type="file" id="importFile" class="hidden" accept=".json" onchange="importDataJSON(event)">
+            </div>
+        </div>
+    </header>
+
+    <!-- 主体区域 -->
+    <div class="flex-1 max-w-7xl w-full mx-auto p-4 flex flex-col md:flex-row gap-6 mb-16">
+        <aside class="flex flex-col w-full md:w-64 shrink-0 gap-2">
+            <nav class="bg-slate-800 p-2 rounded-2xl border border-slate-700 space-y-1 shadow">
+                <button onclick="switchTab('jobs')" id="nav-jobs" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-indigo-600 text-white shadow-md transition">
+                    <i data-lucide="briefcase" class="w-5 h-5"></i><span data-i18n="navClients">Clients & Projects / 客户项目</span>
+                </button>
+                <button onclick="switchTab('optimizer')" id="nav-optimizer" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition">
+                    <i data-lucide="scissors" class="w-5 h-5"></i><span data-i18n="navOptimizer">Cutting Optimizer / 裁膜引擎</span>
+                </button>
+                <button onclick="switchTab('calculator')" id="nav-calculator" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition">
+                    <i data-lucide="calculator" class="w-5 h-5"></i><span data-i18n="navCalculator">Job Estimator / 报价计算</span>
+                </button>
+            </nav>
+        </aside>
+
+        <main class="flex-1 min-w-0">
+            <!-- TAB 1: 客户列表 -->
+            <section id="tab-jobs" class="space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+                    <input type="text" id="jobSearchInput" oninput="renderJobsList()" placeholder="Search Name, Phone, Address... / 搜索客户..." class="flex-1 bg-slate-800 border border-slate-700 px-4 py-2.5 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-indigo-500 shadow-inner">
+                    <button onclick="openClientModal()" class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm shadow-lg transition">
+                        <i data-lucide="plus" class="w-4 h-4"></i> <span data-i18n="btnNewClient">+ New Client / 新建客户档案</span>
+                    </button>
+                </div>
+                <div id="jobsListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </section>
+
+            <!-- TAB 2: 裁切优化 -->
+            <section id="tab-optimizer" class="hidden space-y-6">
+                <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-6 space-y-6 shadow-xl">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-slate-700 pb-4 gap-2">
+                        <div>
+                            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i data-lucide="scissors" class="w-5 h-5 text-indigo-400"></i> MaxRects 2D Optimizer (1524mm)
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-1" data-i18n="optDesc">Glass Area, Cut Area, Film Consumption & Reusable Offcuts Calculator.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="sendOptimizerToCalc()" class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1 shadow">
+                                <i data-lucide="calculator" class="w-4 h-4"></i> <span data-i18n="btnSendToCalc">Send to Estimator / 带入报价</span>
+                            </button>
+                            <button onclick="optimizeRollLayout()" class="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow" data-i18n="btnRecalculate">Recalculate / 重新计算</button>
+                        </div>
+                    </div>
+
+                    <div id="optWarningBox" class="hidden p-3 rounded-xl bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs flex items-start gap-2">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0 mt-0.5"></i>
+                        <div id="optWarningText"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                        <div><label class="text-slate-400 block mb-1" data-i18n="lblRollWidth">Roll Width / 膜卷宽度</label><select id="optRollWidth" onchange="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"><option value="1524">1524 mm (60") Standard</option><option value="1016">1016 mm (40")</option></select></div>
+                        <div><label class="text-slate-400 block mb-1" data-i18n="lblMargin">Margin (mm/side) / 裁边余量</label><input type="number" id="optMargin" value="0" min="0" onchange="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                        <div><label class="text-slate-400 block mb-1" data-i18n="lblCostPerMeter">Cost/Meter ($/m) / 每米材料成本</label><input type="number" id="optCostPerMeter" value="25" min="0" onchange="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-300" data-i18n="lblPanelsList">Glass Panels List / 玻璃面板清单</span><button onclick="addOptimizerPanelRow()" class="text-xs text-indigo-400 hover:underline" data-i18n="btnAddRow">+ Add Row / 添加一行</button></div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead><tr class="text-slate-400 border-b border-slate-700"><th class="p-2" data-i18n="thLabel">Label / 位置</th><th class="p-2" data-i18n="thW">Width W (mm)</th><th class="p-2" data-i18n="thH">Height H (mm)</th><th class="p-2" data-i18n="thQty">Qty / 数量</th><th class="p-2 text-center" data-i18n="thAction">Action / 操作</th></tr></thead>
+                                <tbody id="optimizerPanelsTbody" class="divide-y divide-slate-700/50"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block" data-i18n="lblFilmCons">Film Consumption / 材料消耗</span><span id="resTotalLength" class="text-base font-bold text-emerald-400 font-mono">0.00 m</span></div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block" data-i18n="lblWastePct">Waste Rate / 损耗率</span><span id="resWastePct" class="text-base font-bold text-amber-400 font-mono">0.0%</span></div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block" data-i18n="lblGlassArea">Net Glass Area / 玻璃净面积</span><span id="resUsedArea" class="text-base font-bold text-sky-400 font-mono">0.00 m²</span></div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block" data-i18n="lblEstCost">Est. Material Cost / 预估材料费</span><span id="resEstCost" class="text-base font-bold text-purple-400 font-mono">$0.00</span></div>
+                    </div>
+
+                    <div class="w-full bg-slate-950 p-4 rounded-xl border border-slate-700 flex flex-col items-center overflow-x-auto custom-scroll space-y-2">
+                        <div class="flex items-center gap-4 text-[11px] text-slate-400">
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-500/30 border border-blue-600 inline-block rounded"></span> <span data-i18n="legendCut">Cut Pieces / 裁切膜片 (W × H mm)</span></span>
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 bg-amber-500/20 border border-dashed border-amber-500 inline-block rounded"></span> <span data-i18n="legendOffcut">Reusable Offcut / 可复用余料区</span></span>
+                        </div>
+                        <canvas id="optimizerCanvas" class="max-w-full rounded shadow bg-slate-50"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: 快速报价器 -->
+            <section id="tab-calculator" class="hidden space-y-6">
+                <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-xl mx-auto space-y-5 text-xs shadow-xl">
+                    <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+                        <h2 class="text-base font-bold text-white flex items-center gap-2"><i data-lucide="calculator" class="w-5 h-5 text-indigo-400"></i> NZ Job Estimator (GST 15%)</h2>
+                        <span class="text-[11px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">Standard NZD</span>
+                    </div>
+
+                    <!-- 报价计价模式切换 (Pricing Mode Selection) -->
+                    <div class="bg-slate-900/80 p-3 rounded-xl border border-indigo-500/30 space-y-2">
+                        <label class="text-slate-300 font-bold block" data-i18n="lblPricingMode">Pricing Mode / 计价方式模式：</label>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <label class="flex items-center gap-2 bg-slate-800 p-2 rounded-lg cursor-pointer border border-slate-700 hover:border-indigo-500">
+                                <input type="radio" name="calcMode" value="glass" checked onchange="runQuickCalc()" class="text-indigo-600 focus:ring-0">
+                                <div>
+                                    <span class="block font-semibold text-white" data-i18n="modeGlassTitle">Glass Area Mode / 按玻璃面积</span>
+                                    <span class="block text-[10px] text-slate-400" data-i18n="modeGlassDesc">Standard Net Glass Area / 常规净面积</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-2 bg-slate-800 p-2 rounded-lg cursor-pointer border border-slate-700 hover:border-indigo-500">
+                                <input type="radio" name="calcMode" value="film" onchange="runQuickCalc()" class="text-indigo-600 focus:ring-0">
+                                <div>
+                                    <span class="block font-semibold text-white" data-i18n="modeFilmTitle">Film Roll Mode / 按材料用量</span>
+                                    <span class="block text-[10px] text-slate-400" data-i18n="modeFilmDesc">Actual Roll Length Consumed / 整卷消耗</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="text-slate-400 block mb-1" id="lblCalcArea">Area / 计价面积 (m²)</label><input type="number" id="calcArea" value="12" step="0.1" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                        <div><label class="text-slate-400 block mb-1" data-i18n="lblRate">Rate / 单价 ($/m²)</label><input type="number" id="calcRate" value="85" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                        <div><label class="text-slate-400 block mb-1" data-i18n="lblCallout">Callout Fee / 上门费 ($)</label><input type="number" id="calcCallout" value="150" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                        <div><label class="text-slate-400 block mb-1" data-i18n="lblExtra">Extra / 杂费折扣 ($)</label><input type="number" id="calcExtra" value="45" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                    </div>
+
+                    <div class="p-4 bg-slate-900 rounded-xl space-y-2 border border-slate-800">
+                        <div class="flex justify-between text-slate-300"><span data-i18n="lblSubtotal">Subtotal (Excl. GST) / 小计:</span><span id="quickSubtotal" class="font-mono">$0.00</span></div>
+                        <div class="flex justify-between text-slate-300"><span>15% NZ GST:</span><span id="quickGst" class="font-mono">$0.00</span></div>
+                        <div class="flex justify-between text-base font-bold text-emerald-400 pt-2 border-t border-slate-800"><span data-i18n="lblTotal">Total (Incl. GST) / 总计:</span><span id="quickTotal" class="font-mono">$0.00</span></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 客户档案 Modal -->
+    <div id="clientModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden overflow-y-auto">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden text-xs">
+            <div class="px-5 py-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/90">
+                <h3 id="modalTitle" class="text-base font-bold text-white" data-i18n="modalClientTitle">Client Profile & Photos / 客户档案与照片管理</h3>
+                <button type="button" onclick="closeClientModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-5 space-y-4 overflow-y-auto flex-1 custom-scroll">
+                <input type="hidden" id="editingClientId">
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-slate-400 block mb-1" data-i18n="lblCustName">Client Name / 姓名*</label><input type="text" id="custName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                    <div><label class="text-slate-400 block mb-1" data-i18n="lblCustPhone">Phone / 电话</label><input type="text" id="custPhone" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-slate-400 block mb-1" data-i18n="lblCustSuburb">Suburb / 区域</label><input type="text" id="custSuburb" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white" placeholder="Tauranga / Pyes Pa"></div>
+                    <div><label class="text-slate-400 block mb-1" data-i18n="lblCustAddress">Address / 详细地址</label><input type="text" id="custAddress" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-slate-400 block mb-1" data-i18n="lblCustStatus">Project Status / 项目状态</label><select id="custStatus" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"><option value="Quote 报价中">Quote 报价中 (30 Days)</option><option value="Scheduled 待施工">Scheduled 待施工</option><option value="Completed 已完工">Completed 已完工 (90 Days)</option><option value="Warranty 售后/争议中">Warranty 售后/争议中 (Protected)</option></select></div>
+                    <div><label class="text-slate-400 block mb-1" data-i18n="lblCustPrice">Total Price ($ incl. GST) / 总报价</label><input type="number" id="custPrice" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-emerald-400 font-bold font-mono"></div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-700 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-indigo-400 flex items-center gap-1"><i data-lucide="camera" class="w-4 h-4"></i> <span data-i18n="lblPhotosSection">Site Photos / 现场照片 (Lifecycle & Protection)</span></h4>
+                        <label class="cursor-pointer px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[11px] font-semibold transition">
+                            <span data-i18n="btnAddPhotos">+ Upload / 拍照上传</span>
+                            <input type="file" accept="image/*" multiple onchange="handlePhotoUpload(event)" class="hidden">
+                        </label>
+                    </div>
+                    <div id="photoPreviewContainer" class="flex flex-wrap gap-3 pt-1"></div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-700 space-y-2">
+                    <div class="flex justify-between items-center"><h4 class="font-bold text-indigo-400" data-i18n="lblMeasuresSection">Glass Measurements / 现场测量玻璃尺寸</h4><button type="button" onclick="addModalMeasureRow()" class="text-emerald-400 font-semibold hover:underline" data-i18n="btnAddGlass">+ Add Glass / 添加玻璃</button></div>
+                    <table class="w-full text-left">
+                        <thead><tr class="text-slate-400"><th class="p-1" data-i18n="thLabel">Label / 位置</th><th class="p-1" data-i18n="thW">W (mm)</th><th class="p-1" data-i18n="thH">H (mm)</th><th class="p-1" data-i18n="thQty">Qty / 数量</th><th class="p-1 text-center" data-i18n="thAction">Action</th></tr></thead>
+                        <tbody id="modalMeasureTbody" class="divide-y divide-slate-700/50"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="px-5 py-3 border-t border-slate-700 bg-slate-800 flex justify-between items-center">
+                <button type="button" onclick="sendClientToOptimizer()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-white font-medium shadow transition" data-i18n="btnToOpt">Import to Optimizer / 导入裁膜</button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeClientModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-slate-300 transition" data-i18n="btnCancel">Cancel / 取消</button>
+                    <button type="button" onclick="saveClientModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold text-white shadow transition" data-i18n="btnSaveProfile">Save Profile / 保存档案</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="imageLightbox" class="fixed inset-0 bg-black/95 z-50 flex flex-col items-center justify-center hidden p-4" onclick="closeLightbox()">
+        <button class="absolute top-4 right-4 text-white bg-slate-800/80 p-2 rounded-full hover:bg-slate-700"><i data-lucide="x" class="w-6 h-6"></i></button>
+        <img id="lightboxImg" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" onclick="event.stopPropagation()">
+    </div>
+
+    <script>
+        const CLIENT_ID = '181306587076-trmgl1gdtin3abln1mnufjegf94v2hff.apps.googleusercontent.com';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        let tokenClient = null;
+        let accessToken = null;
+
+        // 双语语言字典 (Bilingual Dictionary)
+        let currentLang = localStorage.getItem('nz_lang') || 'ZH'; // 'ZH' or 'EN'
+
+        const i18nText = {
+            ZH: {
+                subtitle: '新西兰住宅及商业窗户贴膜业务管理系统',
+                btnBindGoogle: '绑定 Google 账号',
+                btnSync: '双向云同步',
+                btnExport: '导出备份',
+                btnImport: '导入',
+                navClients: '客户项目 (Clients)',
+                navOptimizer: '裁膜引擎 (Optimizer)',
+                navCalculator: '报价计算 (Estimator)',
+                btnNewClient: '+ 新建客户与项目',
+                optDesc: '四大面积精准计算：Glass Area 玻璃面积、Cut Area 裁切尺寸、Film Consumption 消耗及余料管理。',
+                btnSendToCalc: '带入报价器',
+                btnRecalculate: '重新计算',
+                lblRollWidth: '膜卷宽度 (默认1524mm)',
+                lblMargin: '裁边预留 Margin (mm/边)',
+                lblCostPerMeter: '每米材料成本 ($/m)',
+                lblPanelsList: '窗户玻璃面板清单',
+                btnAddRow: '+ 添加一行',
+                thLabel: '位置 Label',
+                thW: '宽 W (mm)',
+                thH: '高 H (mm)',
+                thQty: '数量 Qty',
+                thAction: '操作 Action',
+                lblFilmCons: '材料消耗 (Consumption)',
+                lblWastePct: '卷膜损耗率 Waste Rate',
+                lblGlassArea: '玻璃净面积 Glass Area',
+                lblEstCost: '预估材料成本 Material Cost',
+                legendCut: '裁切膜片 (标注 W × H mm)',
+                legendOffcut: '可复用余料区 (Reusable Offcut)',
+                lblPricingMode: '报价计价模式 (Pricing Mode)：',
+                modeGlassTitle: '按玻璃面积 (Glass Area Mode)',
+                modeGlassDesc: '常规标准净面积计费',
+                modeFilmTitle: '按材料用量 (Film Cons. Mode)',
+                modeFilmDesc: '按整卷拉出消耗长度计费',
+                lblRate: '单价 Rate ($/m²)',
+                lblCallout: '上门费 Callout ($)',
+                lblExtra: '杂费折扣 Extra ($)',
+                lblSubtotal: '小计 (Excl. GST):',
+                lblTotal: '总计 (Incl. GST):',
+                btnToOpt: '导入裁膜优化',
+                btnCancel: '取消',
+                btnSaveProfile: '保存档案'
+            },
+            EN: {
+                subtitle: 'NZ Residential & Commercial Tinting System',
+                btnBindGoogle: 'Bind Google Account',
+                btnSync: 'Two-Way Sync',
+                btnExport: 'Export Backup',
+                btnImport: 'Import JSON',
+                navClients: 'Clients & Projects',
+                navOptimizer: 'Cutting Optimizer',
+                navCalculator: 'Job Estimator',
+                btnNewClient: '+ New Client & Project',
+                optDesc: 'Accurate calculations for Glass Area, Cut Area, Film Consumption & Reusable Offcuts.',
+                btnSendToCalc: 'Send to Estimator',
+                btnRecalculate: 'Recalculate',
+                lblRollWidth: 'Roll Width (Default 1524mm)',
+                lblMargin: 'Margin (mm/side)',
+                lblCostPerMeter: 'Material Cost ($/m)',
+                lblPanelsList: 'Glass Panels List',
+                btnAddRow: '+ Add Row',
+                thLabel: 'Location Label',
+                thW: 'Width W (mm)',
+                thH: 'Height H (mm)',
+                thQty: 'Qty',
+                thAction: 'Action',
+                lblFilmCons: 'Film Consumption',
+                lblWastePct: 'Waste Rate',
+                lblGlassArea: 'Net Glass Area',
+                lblEstCost: 'Est. Material Cost',
+                legendCut: 'Cut Pieces (W × H mm)',
+                legendOffcut: 'Reusable Offcut Area',
+                lblPricingMode: 'Pricing Calculation Mode:',
+                modeGlassTitle: 'Net Glass Area Mode',
+                modeGlassDesc: 'Bill by net window size',
+                modeFilmTitle: 'Film Consumption Mode',
+                modeFilmDesc: 'Bill by roll length pulled',
+                lblRate: 'Unit Rate ($/m²)',
+                lblCallout: 'Callout Fee ($)',
+                lblExtra: 'Extra / Discount ($)',
+                lblSubtotal: 'Subtotal (Excl. GST):',
+                lblTotal: 'Total (Incl. GST):',
+                btnToOpt: 'Import to Optimizer',
+                btnCancel: 'Cancel',
+                btnSaveProfile: 'Save Profile'
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ZH' ? 'EN' : 'ZH';
+            localStorage.setItem('nz_lang', currentLang);
+            applyLanguage();
+        }
+
+        function applyLanguage() {
+            document.getElementById('langBtnText').textContent = currentLang === 'ZH' ? 'English' : '中文';
+            document.getElementById('langBtnMobile').textContent = currentLang === 'ZH' ? 'English' : '中文';
+            
+            const langData = i18nText[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (langData[key]) el.textContent = langData[key];
+            });
+            runQuickCalc();
+            renderJobsList();
+        }
+
+        function initGoogleAuth() {
+            if (typeof google !== 'undefined' && google.accounts) {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: CLIENT_ID,
+                    scope: SCOPES,
+                    callback: (resp) => {
+                        if (resp.error !== undefined) { alert('Google Authorization Failed: ' + resp.error); return; }
+                        accessToken = resp.access_token;
+                        document.getElementById('authBtnText').textContent = currentLang === 'ZH' ? '已绑定 Google' : 'Google Bound';
+                        document.getElementById('googleAuthBtn').className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white border border-emerald-500";
+                        syncToCloud(true);
+                    },
+                });
+            }
+        }
+
+        function handleGoogleAuth() {
+            if (!tokenClient) initGoogleAuth();
+            if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' });
+            else alert('Google API loading, please try again.');
+        }
+
+        async function syncToCloud(showAlert = false) {
+            if (!accessToken) { handleGoogleAuth(); return; }
+            try {
+                const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='bayview-backup.json' and trashed=false`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                const searchJson = await searchRes.json();
+
+                let remoteClients = [];
+                let remoteDeletedIds = [];
+                let fileId = null;
+
+                if (searchJson.files && searchJson.files.length > 0) {
+                    fileId = searchJson.files[0].id;
+                    const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
+                    const remoteData = await fileRes.json();
+                    remoteClients = remoteData.clients || [];
+                    remoteDeletedIds = remoteData.deletedIds || [];
+                }
+
+                const localClients = await dbGetAllClients();
+                let localDeletedIds = JSON.parse(localStorage.getItem('nz_deleted_ids') || '[]');
+                const allDeletedIdsSet = new Set([...localDeletedIds, ...remoteDeletedIds]);
+
+                const clientMap = new Map();
+                remoteClients.forEach(c => { if (!allDeletedIdsSet.has(c.id)) clientMap.set(c.id, c); });
+                localClients.forEach(c => {
+                    if (!allDeletedIdsSet.has(c.id)) {
+                        if (!clientMap.has(c.id) || (c.updatedAt || 0) >= (clientMap.get(c.id).updatedAt || 0)) {
+                            clientMap.set(c.id, c);
+                        }
+                    }
+                });
+
+                const mergedClients = Array.from(clientMap.values());
+                const finalDeletedIds = Array.from(allDeletedIdsSet);
+
+                const existingLocalIds = new Set(localClients.map(c => c.id));
+                for (let c of mergedClients) {
+                    await dbSaveClient(c);
+                    existingLocalIds.delete(c.id);
+                }
+                for (let delId of existingLocalIds) {
+                    await dbDeleteClient(delId);
+                }
+
+                localStorage.setItem('nz_deleted_ids', JSON.stringify(finalDeletedIds));
+                renderJobsList();
+
+                const backupData = { 
+                    version: 'v12.5', 
+                    updatedAt: new Date().toISOString(), 
+                    clients: mergedClients,
+                    deletedIds: finalDeletedIds 
+                };
+                const fileContent = JSON.stringify(backupData, null, 2);
+
+                if (fileId) {
+                    await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+                        method: 'PATCH',
+                        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                        body: fileContent
+                    });
+                } else {
+                    const metadata = { name: 'bayview-backup.json', mimeType: 'application/json' };
+                    const form = new FormData();
+                    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                    form.append('file', new Blob([fileContent], { type: 'application/json' }));
+
+                    await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${accessToken}` },
+                        body: form
+                    });
+                }
+
+                if (showAlert) alert(currentLang === 'ZH' ? '双向云同步与删除同步完成！' : 'Two-way cloud sync completed!');
+            } catch (err) {
+                console.error(err);
+                if (showAlert) alert('Sync failed, please check connection.');
+            }
+        }
+
+        const DB_NAME = 'NZTintDB_v12';
+        const DB_VERSION = 1;
+        let db = null;
+        let currentPhotos = [];
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = (e) => {
+                    const database = e.target.result;
+                    if (!database.objectStoreNames.contains('clients')) database.createObjectStore('clients', { keyPath: 'id' });
+                    if (!database.objectStoreNames.contains('photos')) database.createObjectStore('photos', { keyPath: 'id' });
+                };
+                request.onsuccess = (e) => { db = e.target.result; resolve(db); };
+                request.onerror = (e) => reject(e);
+            });
+        }
+
+        function dbGetAllClients() {
+            return new Promise((resolve) => {
+                const tx = db.transaction('clients', 'readonly');
+                const req = tx.objectStore('clients').getAll();
+                req.onsuccess = () => resolve(req.result || []);
+            });
+        }
+
+        function dbSaveClient(client) {
+            return new Promise((resolve) => {
+                const tx = db.transaction('clients', 'readwrite');
+                tx.objectStore('clients').put(client);
+                tx.oncomplete = () => resolve();
+            });
+        }
+
+        function dbDeleteClient(id) {
+            return new Promise((resolve) => {
+                const tx = db.transaction('clients', 'readwrite');
+                tx.objectStore('clients').delete(id);
+                tx.oncomplete = () => resolve();
+            });
+        }
+
+        function dbSavePhoto(photoObj) {
+            return new Promise((resolve) => {
+                const tx = db.transaction('photos', 'readwrite');
+                tx.objectStore('photos').put(photoObj);
+                tx.oncomplete = () => resolve();
+            });
+        }
+
+        function dbGetPhoto(id) {
+            return new Promise((resolve) => {
+                const tx = db.transaction('photos', 'readonly');
+                const req = tx.objectStore('photos').get(id);
+                req.onsuccess = () => resolve(req.result);
+            });
+        }
+
+        function dbDeletePhoto(id) {
+            return new Promise((resolve) => {
+                const tx = db.transaction('photos', 'readwrite');
+                tx.objectStore('photos').delete(id);
+                tx.oncomplete = () => resolve();
+            });
+        }
+
+        let lastCalcResult = { totalLenM: 0, totalGlassArea: 0, filmArea: 0, cost: 0 };
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await initDB();
+            setTimeout(initGoogleAuth, 1000);
+            applyLanguage();
+            initOptimizerRows();
+            runQuickCalc();
+            lucide.createIcons();
+        });
+
+        function switchTab(tab) {
+            ['jobs', 'optimizer', 'calculator'].forEach(t => {
+                document.getElementById('tab-' + t).classList.add('hidden');
+                document.getElementById('nav-' + t).className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition";
+            });
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.getElementById('nav-' + tab).className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-indigo-600 text-white shadow-md transition";
+            if (tab === 'optimizer') optimizeRollLayout();
+        }
+
+        function createSafeElement(tag, className, textContent) {
+            const el = document.createElement(tag);
+            if (className) el.className = className;
+            if (textContent !== undefined) el.textContent = textContent;
+            return el;
+        }
+
+        async function renderJobsList() {
+            const container = document.getElementById('jobsListContainer');
+            container.innerHTML = '';
+            const search = (document.getElementById('jobSearchInput').value || '').toLowerCase();
+            const clients = await dbGetAllClients();
+
+            clients.filter(c => (c.name + c.suburb + c.address + c.phone).toLowerCase().includes(search)).forEach(c => {
+                const measureCount = (c.measures || []).reduce((acc, m) => acc + Number(m.qty || 1), 0);
+                const photoCount = (c.photosMeta || c.photoIds || []).length;
+
+                const card = createSafeElement('div', 'bg-slate-800 border border-slate-700 hover:border-indigo-500 rounded-2xl p-4 space-y-3 cursor-pointer transition shadow-lg group');
+                card.onclick = () => openClientModal(c.id);
+
+                const top = createSafeElement('div', 'flex justify-between items-start');
+                const left = createSafeElement('div');
+                left.appendChild(createSafeElement('span', 'text-[11px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-medium', c.suburb || 'Tauranga'));
+                left.appendChild(createSafeElement('h3', 'font-bold text-white text-base mt-1 group-hover:text-indigo-300', c.name));
+                left.appendChild(createSafeElement('p', 'text-xs text-slate-400', `📍 ${c.address || ''}`));
+                top.appendChild(left);
+                top.appendChild(createSafeElement('span', 'text-xs px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 font-medium', c.status));
+
+                const mid = createSafeElement('div', 'flex justify-between text-xs pt-2 border-t border-slate-700/80 text-slate-300');
+                mid.appendChild(createSafeElement('span', '', `📞 ${c.phone || 'N/A'}`));
+                mid.appendChild(createSafeElement('span', 'text-slate-400', `🪟 ${currentLang==='ZH'?'测量':'Panels'}: ${measureCount} | 📷 ${currentLang==='ZH'?'照片':'Photos'}: ${photoCount}`));
+                mid.appendChild(createSafeElement('strong', 'text-emerald-400 font-mono', `$${Number(c.price || 0).toFixed(2)}`));
+
+                const btm = createSafeElement('div', 'flex justify-between items-center pt-2 border-t border-slate-700/80 text-xs');
+                btm.appendChild(createSafeElement('span', 'text-indigo-400', currentLang==='ZH'?'点击进入档案 / 管理照片 ➔':'Edit Profile / Photos ➔'));
+                const delBtn = createSafeElement('button', 'px-2.5 py-1 bg-rose-500/20 text-rose-300 rounded-lg hover:bg-rose-500/40 transition', currentLang==='ZH'?'删除':'Delete');
+                delBtn.onclick = (e) => { e.stopPropagation(); deleteClient(c.id); };
+                btm.appendChild(delBtn);
+
+                card.appendChild(top); card.appendChild(mid); card.appendChild(btm);
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        async function openClientModal(id = null) {
+            document.getElementById('editingClientId').value = id || '';
+            const tbody = document.getElementById('modalMeasureTbody');
+            tbody.innerHTML = '';
+            currentPhotos = [];
+
+            if (id) {
+                const clients = await dbGetAllClients();
+                const client = clients.find(c => c.id === id);
+                if (client) {
+                    document.getElementById('modalTitle').textContent = `${currentLang==='ZH'?'编辑客户档案':'Edit Profile'}: ${client.name}`;
+                    document.getElementById('custName').value = client.name || '';
+                    document.getElementById('custPhone').value = client.phone || '';
+                    document.getElementById('custSuburb').value = client.suburb || 'Tauranga';
+                    document.getElementById('custAddress').value = client.address || '';
+                    document.getElementById('custStatus').value = client.status || 'Quote 报价中';
+                    document.getElementById('custPrice').value = client.price || 0;
+
+                    if (client.photosMeta) {
+                        for (let pMeta of client.photosMeta) {
+                            const pObj = await dbGetPhoto(pMeta.id);
+                            if (pObj && pObj.blob) {
+                                currentPhotos.push({ 
+                                    id: pObj.id, 
+                                    blob: pObj.blob, 
+                                    url: URL.createObjectURL(pObj.blob), 
+                                    createdAt: pMeta.createdAt || Date.now(),
+                                    isProtected: pMeta.isProtected || false 
+                                });
+                            }
+                        }
+                    }
+                    (client.measures || []).forEach(m => addModalMeasureRow(m.label, m.w, m.h, m.qty));
+                }
+            } else {
+                document.getElementById('modalTitle').textContent = currentLang==='ZH'?'新建客户与项目档案':'New Client Profile';
+                document.getElementById('custName').value = '';
+                document.getElementById('custPhone').value = '';
+                document.getElementById('custSuburb').value = 'Tauranga';
+                document.getElementById('custAddress').value = '';
+                document.getElementById('custStatus').value = 'Quote 报价中';
+                document.getElementById('custPrice').value = '';
+                addModalMeasureRow('Kitchen', 780, 520, 2);
+            }
+            renderPhotoPreviews();
+            document.getElementById('clientModal').classList.remove('hidden');
+        }
+
+        function closeClientModal() {
+            document.getElementById('clientModal').classList.add('hidden');
+            currentPhotos.forEach(p => { if (p.url) URL.revokeObjectURL(p.url); });
+            currentPhotos = [];
+        }
+
+        function handlePhotoUpload(e) {
+            const files = e.target.files;
+            if (!files) return;
+            for (let file of files) {
+                const img = new Image();
+                const tempUrl = URL.createObjectURL(file);
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX = 1200;
+                    let w = img.width, h = img.height;
+                    if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
+                    else { if (h > MAX) { w *= MAX / h; h = MAX; } }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    canvas.toBlob((blob) => {
+                        const photoId = 'photo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+                        currentPhotos.push({ 
+                            id: photoId, 
+                            blob, 
+                            url: URL.createObjectURL(blob), 
+                            createdAt: Date.now(), 
+                            isProtected: false, 
+                            isNew: true 
+                        });
+                        renderPhotoPreviews();
+                        URL.revokeObjectURL(tempUrl);
+                    }, 'image/jpeg', 0.82);
+                };
+                img.src = tempUrl;
+            }
+        }
+
+        function renderPhotoPreviews() {
+            const container = document.getElementById('photoPreviewContainer');
+            container.innerHTML = '';
+            if (currentPhotos.length === 0) {
+                container.appendChild(createSafeElement('span', 'text-slate-400 text-[11px]', currentLang==='ZH'?'暂无现场照片（手机原图保留在相册）':'No photos added.'));
+                return;
+            }
+            currentPhotos.forEach((pObj, idx) => {
+                const daysOld = Math.floor((Date.now() - pObj.createdAt) / (1000 * 60 * 60 * 24));
+                const wrap = createSafeElement('div', `relative w-20 h-20 rounded-lg overflow-hidden border ${pObj.isProtected ? 'border-emerald-500' : 'border-slate-600'} cursor-pointer shadow flex flex-col justify-end bg-slate-900`);
+                wrap.onclick = () => openLightbox(pObj.url);
+
+                const img = document.createElement('img');
+                img.src = pObj.url; img.className = 'absolute inset-0 w-full h-full object-cover';
+                wrap.appendChild(img);
+
+                const badge = createSafeElement('div', `relative z-10 text-[9px] px-1 text-center font-mono ${pObj.isProtected ? 'bg-emerald-600/90 text-white' : 'bg-black/60 text-slate-200'}`, pObj.isProtected ? (currentLang==='ZH'?'🔒 已保护':'🔒 Locked') : `${daysOld}d ago`);
+                wrap.appendChild(badge);
+
+                const delBtn = createSafeElement('button', 'absolute top-0.5 right-0.5 z-20 bg-rose-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-[10px]', '×');
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (!pObj.isNew) dbDeletePhoto(pObj.id);
+                    currentPhotos.splice(idx, 1);
+                    renderPhotoPreviews();
+                };
+                wrap.appendChild(delBtn);
+
+                const protBtn = createSafeElement('button', 'absolute top-0.5 left-0.5 z-20 bg-slate-800/80 text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px]', pObj.isProtected ? '✓' : '🔒');
+                protBtn.title = "Toggle Protection";
+                protBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    pObj.isProtected = !pObj.isProtected;
+                    renderPhotoPreviews();
+                };
+                wrap.appendChild(protBtn);
+
+                container.appendChild(wrap);
+            });
+        }
+
+        function openLightbox(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('imageLightbox').classList.remove('hidden');
+        }
+        function closeLightbox() { document.getElementById('imageLightbox').classList.add('hidden'); }
+
+        function addModalMeasureRow(label = '', w = '', h = '', qty = 1) {
+            const tbody = document.getElementById('modalMeasureTbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="p-1"><input type="text" value="${label.replace(/"/g, '&quot;')}" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white text-xs"></td>
+                <td class="p-1"><input type="number" min="1" value="${w}" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white text-xs"></td>
+                <td class="p-1"><input type="number" min="1" value="${h}" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white text-xs"></td>
+                <td class="p-1"><input type="number" min="1" value="${qty}" class="w-12 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white text-xs text-center"></td>
+                <td class="p-1 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-rose-400 font-bold">✕</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        async function saveClientModal() {
+            const name = document.getElementById('custName').value.trim();
+            if (!name) { alert(currentLang==='ZH'?'请输入客户姓名':'Please enter client name'); return; }
+            const editingId = Number(document.getElementById('editingClientId').value);
+
+            const photosMeta = [];
+            for (let pObj of currentPhotos) {
+                photosMeta.push({ id: pObj.id, createdAt: pObj.createdAt, isProtected: pObj.isProtected });
+                if (pObj.isNew) { await dbSavePhoto({ id: pObj.id, blob: pObj.blob }); delete pObj.isNew; }
+            }
+
+            const measures = [];
+            document.querySelectorAll('#modalMeasureTbody tr').forEach(tr => {
+                const inputs = tr.querySelectorAll('input');
+                if (inputs[1].value && inputs[2].value) {
+                    measures.push({ label: inputs[0].value.trim() || 'Window', w: Math.abs(Number(inputs[1].value)), h: Math.abs(Number(inputs[2].value)), qty: Math.max(1, Number(inputs[3].value) || 1) });
+                }
+            });
+
+            const clientData = {
+                id: editingId || Date.now(),
+                name,
+                phone: document.getElementById('custPhone').value.trim(),
+                suburb: document.getElementById('custSuburb').value.trim(),
+                address: document.getElementById('custAddress').value.trim(),
+                status: document.getElementById('custStatus').value,
+                price: parseFloat(document.getElementById('custPrice').value) || 0,
+                updatedAt: Date.now(),
+                photosMeta,
+                measures
+            };
+
+            await dbSaveClient(clientData);
+            closeClientModal();
+            renderJobsList();
+            if (accessToken) syncToCloud(false);
+        }
+
+        async function sendClientToOptimizer() {
+            await saveClientModal();
+            const clients = await dbGetAllClients();
+            const editingId = Number(document.getElementById('editingClientId').value) || (clients[0] && clients[0].id);
+            const client = clients.find(c => c.id === editingId);
+            if (client && client.measures) {
+                const tbody = document.getElementById('optimizerPanelsTbody');
+                tbody.innerHTML = '';
+                client.measures.forEach(m => addOptimizerPanelRow(m.label, m.w, m.h, m.qty));
+                switchTab('optimizer');
+            }
+        }
+
+        async function deleteClient(id) {
+            if (confirm(currentLang==='ZH'?'确定删除该客户档案吗？':'Delete this client?')) {
+                let deletedIds = JSON.parse(localStorage.getItem('nz_deleted_ids') || '[]');
+                if (!deletedIds.includes(id)) {
+                    deletedIds.push(id);
+                    localStorage.setItem('nz_deleted_ids', JSON.stringify(deletedIds));
+                }
+
+                const clients = await dbGetAllClients();
+                const client = clients.find(c => c.id === id);
+                if (client && client.photosMeta) for (let p of client.photosMeta) await dbDeletePhoto(p.id);
+                await dbDeleteClient(id);
+
+                renderJobsList();
+                if (accessToken) syncToCloud(false);
+            }
+        }
+
+        function initOptimizerRows() {
+            const tbody = document.getElementById('optimizerPanelsTbody');
+            tbody.innerHTML = '';
+            addOptimizerPanelRow('Kitchen', 930, 1170, 2);
+            addOptimizerPanelRow('Living 1', 2370, 1290, 1);
+            optimizeRollLayout();
+        }
+
+        function addOptimizerPanelRow(label = '', w = '', h = '', qty = 1) {
+            const tbody = document.getElementById('optimizerPanelsTbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="p-1"><input type="text" value="${label.replace(/"/g, '&quot;')}" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white text-xs"></td>
+                <td class="p-1"><input type="number" min="1" value="${w}" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white text-xs"></td>
+                <td class="p-1"><input type="number" min="1" value="${h}" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white text-xs"></td>
+                <td class="p-1"><input type="number" min="1" value="${qty}" class="w-12 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white text-xs text-center"></td>
+                <td class="p-1 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-rose-400 font-bold">✕</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function optimizeRollLayout() {
+            const rollW = parseFloat(document.getElementById('optRollWidth').value) || 1524;
+            const margin = Math.max(0, Number(document.getElementById('optMargin').value) || 0);
+            const costPerM = Math.max(0, Number(document.getElementById('optCostPerMeter').value) || 25);
+
+            const warningBox = document.getElementById('optWarningBox');
+            const warningText = document.getElementById('optWarningText');
+            warningBox.classList.add('hidden');
+            warningText.innerHTML = '';
+
+            let items = [], oversizedItems = [], totalGlassArea = 0;
+            document.querySelectorAll('#optimizerPanelsTbody tr').forEach((tr, idx) => {
+                const inputs = tr.querySelectorAll('input');
+                const label = inputs[0].value.trim() || `P${idx+1}`;
+                const origW = Math.abs(Number(inputs[1].value)) || 0;
+                const origH = Math.abs(Number(inputs[2].value)) || 0;
+                const qty = Math.max(1, Number(inputs[3].value) || 1);
+                
+                totalGlassArea += (origW * origH * qty) / 1000000;
+
+                const w = origW + margin * 2, h = origH + margin * 2;
+                for (let i = 0; i < qty; i++) {
+                    if (w > rollW && h > rollW) oversizedItems.push({ label, origW, origH });
+                    else items.push({ label, w, h, origW, origH });
+                }
+            });
+
+            if (oversizedItems.length > 0) {
+                warningBox.classList.remove('hidden');
+                warningText.innerHTML = `Oversized panels cannot fit roll: ${oversizedItems.map(o => `<b>${o.label}</b>`).join(', ')}`;
+            }
+
+            items.sort((a, b) => (b.w * b.h) - (a.w * a.h));
+            let freeSpaces = [{ x: 0, y: 0, w: rollW, h: 999999 }];
+            let placed = [];
+
+            items.forEach((r, seq) => {
+                let bestIdx = -1, bestRotated = false, minY = 999999;
+                for (let i = 0; i < freeSpaces.length; i++) {
+                    let sp = freeSpaces[i];
+                    if (r.w <= sp.w && r.h <= sp.h && sp.y < minY) { minY = sp.y; bestIdx = i; bestRotated = false; }
+                    if (r.h <= sp.w && r.w <= sp.h && sp.y < minY) { minY = sp.y; bestIdx = i; bestRotated = true; }
+                }
+                if (bestIdx !== -1) {
+                    let sp = freeSpaces[bestIdx];
+                    let pw = bestRotated ? r.h : r.w, ph = bestRotated ? r.w : r.h;
+                    placed.push({ 
+                        seq: seq + 1, x: sp.x, y: sp.y, w: pw, h: ph, 
+                        label: r.label, origW: r.origW, origH: r.origH, 
+                        rotated: bestRotated,
+                        dispW: bestRotated ? r.origH : r.origW,
+                        dispH: bestRotated ? r.origW : r.origH
+                    });
+                    freeSpaces.splice(bestIdx, 1);
+                    if (sp.w - pw > 0) freeSpaces.push({ x: sp.x + pw, y: sp.y, w: sp.w - pw, h: ph });
+                    if (sp.h - ph > 0) freeSpaces.push({ x: sp.x, y: sp.y + ph, w: sp.w, h: sp.h - ph });
+                    freeSpaces.sort((a, b) => a.y - b.y);
+                }
+            });
+
+            let maxY = 0;
+            placed.forEach(p => { if (p.y + p.h > maxY) maxY = p.y + p.h; });
+            let canvasH = Math.max(maxY, 300);
+            let totalLenM = canvasH / 1000;
+            let filmArea = totalLenM * (rollW / 1000); // 实际整卷消耗面积
+            let wastePct = filmArea > 0 ? ((filmArea - totalGlassArea) / filmArea) * 100 : 0;
+            let totalCost = totalLenM * costPerM;
+
+            lastCalcResult = { totalLenM, totalGlassArea, filmArea, cost: totalCost };
+
+            document.getElementById('resTotalLength').textContent = `${totalLenM.toFixed(2)} m`;
+            document.getElementById('resWastePct').textContent = `${Math.max(0, wastePct).toFixed(1)}%`;
+            document.getElementById('resUsedArea').textContent = `${totalGlassArea.toFixed(2)} m²`;
+            document.getElementById('resEstCost').textContent = `$${totalCost.toFixed(2)}`;
+
+            // 画布渲染（修复右侧余料文字截断）
+            const canvas = document.getElementById('optimizerCanvas');
+            const ctx = canvas.getContext('2d');
+            const rightPadding = 120; // 预留右侧余料标注显示空间
+            const scale = Math.min(580 / (rollW + rightPadding), 0.42);
+            
+            canvas.width = (rollW + rightPadding) * scale; 
+            canvas.height = canvasH * scale;
+            
+            ctx.fillStyle = "#f8fafc"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1; ctx.strokeRect(0, 0, rollW * scale, canvas.height);
+
+            // 渲染余料区 (Reusable Offcuts)
+            freeSpaces.forEach(sp => {
+                if (sp.y < canvasH && sp.w > 40 && sp.h > 40) {
+                    let rx = sp.x * scale, ry = sp.y * scale, rw = sp.w * scale, rh = sp.h * scale;
+                    ctx.fillStyle = "rgba(245, 158, 11, 0.08)";
+                    ctx.fillRect(rx, ry, rw, rh);
+                    ctx.strokeStyle = "rgba(245, 158, 11, 0.5)";
+                    ctx.setLineDash([3, 3]);
+                    ctx.strokeRect(rx, ry, rw, rh);
+                    ctx.setLineDash([]);
+                    
+                    if (rw > 30 && rh > 20) {
+                        ctx.fillStyle = "#d97706";
+                        ctx.font = "bold 9px sans-serif";
+                        const txt = `${Math.round(sp.w)}×${Math.round(sp.h)}`;
+                        ctx.fillText(txt, rx + 4, ry + 12);
+                    }
+                }
+            });
+
+            // 渲染裁切块
+            placed.forEach(p => {
+                let rx = p.x * scale, ry = p.y * scale, rw = p.w * scale, rh = p.h * scale;
+                ctx.fillStyle = "rgba(37, 99, 235, 0.18)"; ctx.fillRect(rx, ry, rw, rh);
+                ctx.strokeStyle = "#1d4ed8"; ctx.lineWidth = 1.5; ctx.strokeRect(rx, ry, rw, rh);
+                
+                ctx.fillStyle = "#0f172a"; 
+                ctx.font = "bold 11px sans-serif";
+                let textY = ry + 16;
+                ctx.fillText(`#${p.seq} ${p.label}${p.rotated ? ' (R)' : ''}`, rx + 6, textY);
+                
+                ctx.font = "10px monospace";
+                ctx.fillStyle = "#334155";
+                ctx.fillText(`W:${p.dispW}mm`, rx + 6, textY + 14);
+                ctx.fillText(`H:${p.dispH}mm`, rx + 6, textY + 28);
+            });
+        }
+
+        function sendOptimizerToCalc() {
+            const selectedMode = document.querySelector('input[name="calcMode"]:checked').value;
+            if (selectedMode === 'film') {
+                document.getElementById('calcArea').value = lastCalcResult.filmArea.toFixed(2);
+            } else {
+                document.getElementById('calcArea').value = lastCalcResult.totalGlassArea.toFixed(2);
+            }
+            runQuickCalc();
+            switchTab('calculator');
+        }
+
+        function runQuickCalc() {
+            const selectedMode = document.querySelector('input[name="calcMode"]:checked').value;
+            const lblCalcArea = document.getElementById('lblCalcArea');
+            if (selectedMode === 'film') {
+                lblCalcArea.textContent = currentLang === 'ZH' ? '计价用膜面积 Film Cons. (m²)' : 'Billable Film Area (m²)';
+            } else {
+                lblCalcArea.textContent = currentLang === 'ZH' ? '计价玻璃面积 Glass Area (m²)' : 'Billable Glass Area (m²)';
+            }
+
+            const area = Math.max(0, Number(document.getElementById('calcArea').value) || 0);
+            const rate = Math.max(0, Number(document.getElementById('calcRate').value) || 0);
+            const callout = Math.max(0, Number(document.getElementById('calcCallout').value) || 0);
+            const extra = Math.max(0, Number(document.getElementById('calcExtra').value) || 0);
+            const subtotal = (area * rate) + callout + extra;
+            const gst = subtotal * 0.15;
+            document.getElementById('quickSubtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('quickGst').textContent = `$${gst.toFixed(2)}`;
+            document.getElementById('quickTotal').textContent = `$${(subtotal + gst).toFixed(2)}`;
+        }
+
+        async function exportDataJSON() {
+            const clients = await dbGetAllClients();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: 'v12.5', clients }, null, 2));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `TintPro_Manager_Backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(dl); dl.click(); dl.remove();
+        }
+
+        async function importDataJSON(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                try {
+                    const imported = JSON.parse(evt.target.result);
+                    let clientList = Array.isArray(imported) ? imported : imported.clients;
+                    if (confirm(`Import ${clientList.length} records?`)) {
+                        for (let c of clientList) if (c.id && c.name) await dbSaveClient(c);
+                        renderJobsList();
+                        alert('Import successful!');
+                        if (accessToken) syncToCloud(false);
+                    }
+                } catch(err) { alert('Import failed.'); }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
