@@ -11,8 +11,12 @@
     <style>
         .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        /* 日历专属高亮样式 */
-        .cal-day-cell { background: #0b0f19; border: 1px solid #1f2937; border-radius: 10px; min-height: 100px; padding: 8px; font-size: 12px; }
+        
+        /* 响应式日历样式 */
+        .cal-day-cell { background: #0b0f19; border: 1px solid #1f2937; border-radius: 10px; min-height: 90px; padding: 6px; font-size: 12px; transition: all 0.2s; }
+        @media (max-width: 640px) {
+            .cal-day-cell { min-height: 58px; padding: 3px; }
+        }
         .cal-day-cell.today { border-color: #4f46e5; background: rgba(79, 70, 229, 0.08); }
         .cal-event { font-size: 11px; padding: 3px 6px; border-radius: 4px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
         .cal-event.quote { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border-left: 3px solid #f59e0b; }
@@ -98,20 +102,29 @@
                     <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
                         <div>
                             <h2 class="text-base font-bold text-white flex items-center gap-2">
-                                <i data-lucide="calendar" class="w-5 h-5 text-indigo-400"></i> <span id="cal-month-title">2026年 10月预约日历</span>
+                                <i data-lucide="calendar" class="w-5 h-5 text-indigo-400"></i> <span id="cal-month-title">Schedule Calendar</span>
                             </h2>
                             <p class="text-xs text-slate-400 mt-1" data-i18n="calDesc">Manage measurement quotes and installation jobs scheduling.</p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="changeMonth(-1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold">◀ 上月</button>
-                            <button onclick="goToday()" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold">今天</button>
-                            <button onclick="changeMonth(1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold">下月 ▶</button>
+                            <button onclick="changeMonth(-1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold" id="btnCalPrev">◀ Prev</button>
+                            <button onclick="goToday()" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold" id="btnCalToday">Today</button>
+                            <button onclick="changeMonth(1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold" id="btnCalNext">Next ▶</button>
                         </div>
                     </div>
-                    <div class="grid grid-cols-7 gap-2 text-center text-xs font-bold text-slate-400 py-2 border-b border-slate-700">
-                        <div>周日</div><div>周一</div><div>周二</div><div>周三</div><div>周四</div><div>周五</div><div>周六</div>
+                    
+                    <!-- 动态星期表头 -->
+                    <div id="cal-week-header" class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-bold text-slate-400 py-2 border-b border-slate-700"></div>
+                    <div id="cal-grid" class="grid grid-cols-7 gap-1 sm:gap-2"></div>
+                </div>
+
+                <!-- 📱 手机端专属日期详情面板 (点击某天时弹出) -->
+                <div id="mobileDayDetailBox" class="hidden bg-slate-800 border border-indigo-500/50 rounded-2xl p-4 space-y-3 shadow-2xl">
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                        <h3 id="mobileDayTitle" class="text-sm font-bold text-indigo-300">Selected Day Schedule</h3>
+                        <button onclick="closeMobileDayDetail()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
                     </div>
-                    <div id="cal-grid" class="grid grid-cols-7 gap-2"></div>
+                    <div id="mobileDayEventsList" class="space-y-2 text-xs"></div>
                 </div>
             </section>
 
@@ -233,7 +246,6 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-slate-400 block mb-1" data-i18n="lblCustSuburb">Suburb / 区域选择</label>
-                        <!-- 严格按照 A-Z 字母排序的 Suburbs 清单 -->
                         <select id="custSuburb" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
                             <optgroup label="Tauranga 地区 (A-Z)">
                                 <option value="Bellevue">Bellevue</option>
@@ -252,7 +264,7 @@
                                 <option value="Tauriko">Tauriko</option>
                                 <option value="Welcome Bay">Welcome Bay</option>
                             </optgroup>
-                            <optgroup label="丰盛湾及周边其他地区 (A-Z)">
+                            <optgroup label="其他地区 (A-Z)">
                                 <option value="Katikati">Katikati</option>
                                 <option value="Rotorua">Rotorua</option>
                                 <option value="Te Puke">Te Puke</option>
@@ -263,10 +275,9 @@
                     </div>
                     <div><label class="text-slate-400 block mb-1" data-i18n="lblCustAddress">Address / 详细地址</label><input type="text" id="custAddress" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white" placeholder="17 Veda Place"></div>
                 </div>
-                <!-- 预约双轨道时间绑定：带具体的日期与时间 (datetime-local) -->
                 <div class="grid grid-cols-2 gap-3 bg-slate-900/60 p-3 rounded-xl border border-indigo-500/20">
-                    <div><label class="text-slate-300 block mb-1 font-semibold">🔍 测量预约 (Quote Date & Time)</label><input type="datetime-local" id="custQuoteDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
-                    <div><label class="text-slate-300 block mb-1 font-semibold">🛠️ 施工预约 (Job Date & Time)</label><input type="datetime-local" id="custJobDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                    <div><label class="text-slate-300 block mb-1 font-semibold" data-i18n="lblQuoteDate">🔍 测量预约 (Quote Date)</label><input type="datetime-local" id="custQuoteDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                    <div><label class="text-slate-300 block mb-1 font-semibold" data-i18n="lblJobDate">🛠️ 施工预约 (Job Date)</label><input type="datetime-local" id="custJobDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="text-slate-400 block mb-1" data-i18n="lblCustStatus">Project Status / 项目状态</label><select id="custStatus" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"><option value="Quote 报价中">Quote 报价中 (30 Days)</option><option value="Scheduled 待施工">Scheduled 待施工</option><option value="Completed 已完工">Completed 已完工 (90 Days)</option><option value="Warranty 售后/争议中">Warranty 售后/争议中 (Protected)</option></select></div>
@@ -318,6 +329,7 @@
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth(); // 0-11
 
+        // 完整包含多语言的中英文字典
         const i18nText = {
             ZH: {
                 subtitle: '新西兰住宅及商业窗户贴膜业务管理系统',
@@ -330,6 +342,15 @@
                 navOptimizer: '裁膜引擎 (Optimizer)',
                 navCalculator: '报价计算 (Estimator)',
                 btnNewClient: '+ 新建客户与项目',
+                calDesc: '统筹管理测量报价与现场施工排期任务。',
+                btnCalPrev: '◀ 上月',
+                btnCalToday: '今天',
+                btnCalNext: '下月 ▶',
+                weeks: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+                lblQuoteDate: '🔍 测量预约 (Quote Date)',
+                lblJobDate: '🛠️ 施工预约 (Job Date)',
+                tagMeasure: '测量',
+                tagJob: '施工',
                 optDesc: '高对比度 2D 裁切引擎：精准计算玻璃面积、材料消耗与余料管理。',
                 btnSendToCalc: '带入报价器',
                 btnRecalculate: '重新计算',
@@ -374,6 +395,15 @@
                 navOptimizer: 'Cutting Optimizer',
                 navCalculator: 'Job Estimator',
                 btnNewClient: '+ New Client & Project',
+                calDesc: 'Manage measurement quotes and installation jobs scheduling.',
+                btnCalPrev: '◀ Prev',
+                btnCalToday: 'Today',
+                btnCalNext: 'Next ▶',
+                weeks: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                lblQuoteDate: '🔍 Quote Measurement Appt',
+                lblJobDate: '🛠️ Installation Job Appt',
+                tagMeasure: 'Measure',
+                tagJob: 'Job',
                 optDesc: 'High-contrast 2D layout calculation for glass tinting.',
                 btnSendToCalc: 'Send to Estimator',
                 btnRecalculate: 'Recalculate',
@@ -409,11 +439,11 @@
             }
         };
 
-        // 新西兰日期时间格式转换 (ISO ➔ DD/MM/YYYY HH:mm)
+        // 新西兰日期时间格式化 (ISO ➔ DD/MM/YYYY HH:mm)
         function formatNZDateTime(isoStr) {
-            if (!isoStr) return '未定';
+            if (!isoStr) return currentLang === 'ZH' ? '未定' : 'TBD';
             const parts = isoStr.split('T');
-            if (parts.length < 1) return '未定';
+            if (parts.length < 1) return currentLang === 'ZH' ? '未定' : 'TBD';
             const dateParts = parts[0].split('-');
             if (dateParts.length !== 3) return isoStr;
             const nzDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
@@ -439,6 +469,11 @@
                 const key = el.getAttribute('data-i18n');
                 if (langData[key]) el.textContent = langData[key];
             });
+
+            document.getElementById('btnCalPrev').textContent = langData.btnCalPrev;
+            document.getElementById('btnCalToday').textContent = langData.btnCalToday;
+            document.getElementById('btnCalNext').textContent = langData.btnCalNext;
+
             runQuickCalc();
             renderJobsList();
             renderCalendar();
@@ -684,7 +719,9 @@
                 top.appendChild(createSafeElement('span', `text-xs px-2.5 py-1 rounded-full font-semibold ${statusBadgeClass}`, c.status));
 
                 const scheduleInfo = createSafeElement('div', 'text-[11px] text-slate-400 flex flex-col gap-1 bg-slate-900/50 p-2 rounded-lg');
-                scheduleInfo.innerHTML = `<div>🔍 测量: <span class="text-slate-200 font-mono">${formatNZDateTime(c.quoteDate)}</span></div><div>🛠️ 施工: <span class="text-slate-200 font-mono">${formatNZDateTime(c.jobDate)}</span></div>`;
+                const tagM = i18nText[currentLang].tagMeasure;
+                const tagJ = i18nText[currentLang].tagJob;
+                scheduleInfo.innerHTML = `<div>🔍 ${tagM}: <span class="text-slate-200 font-mono">${formatNZDateTime(c.quoteDate)}</span></div><div>🛠️ ${tagJ}: <span class="text-slate-200 font-mono">${formatNZDateTime(c.jobDate)}</span></div>`;
 
                 const mid = createSafeElement('div', 'flex justify-between text-xs pt-2 border-t border-slate-700/80 text-slate-300');
                 mid.appendChild(createSafeElement('span', '', `📞 ${c.phone || 'N/A'}`));
@@ -703,13 +740,29 @@
             lucide.createIcons();
         }
 
-        // --- 📅 预约日历逻辑 ---
+        // --- 📅 预约日历逻辑 (双端高度优化 + 完整中英文) ---
         async function renderCalendar() {
             const gridEl = document.getElementById('cal-grid');
             const titleEl = document.getElementById('cal-month-title');
-            if (!gridEl || !titleEl) return;
+            const weekHeaderEl = document.getElementById('cal-week-header');
+            if (!gridEl || !titleEl || !weekHeaderEl) return;
 
-            titleEl.textContent = `${currentYear}年 ${currentMonth + 1}月预约日历`;
+            const langData = i18nText[currentLang];
+            const monthNamesEN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            
+            // 动态标题多语言
+            if (currentLang === 'ZH') {
+                titleEl.textContent = `${currentYear}年 ${currentMonth + 1}月预约日历`;
+            } else {
+                titleEl.textContent = `${monthNamesEN[currentMonth]} ${currentYear} Schedule Calendar`;
+            }
+
+            // 动态星期表头
+            weekHeaderEl.innerHTML = '';
+            langData.weeks.forEach(w => {
+                weekHeaderEl.appendChild(createSafeElement('div', '', w));
+            });
+
             gridEl.innerHTML = '';
 
             const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
@@ -722,6 +775,9 @@
                 gridEl.appendChild(createSafeElement('div', 'cal-day-cell opacity-20 bg-transparent border-none'));
             }
 
+            // 判断是否是移动端屏幕
+            const isMobile = window.innerWidth < 640;
+
             // 填充当月日期格子
             for (let day = 1; day <= totalDays; day++) {
                 const monthStr = String(currentMonth + 1).padStart(2, '0');
@@ -733,34 +789,93 @@
                 clients.forEach(c => {
                     if (c.quoteDate && c.quoteDate.startsWith(dateKey)) {
                         const timePart = c.quoteDate.split('T')[1] ? c.quoteDate.split('T')[1].slice(0, 5) : '';
-                        dayEvents.push({ type: 'quote', title: `[测量 ${timePart}] ${c.name}`, id: c.id });
+                        dayEvents.push({ type: 'quote', time: timePart, name: c.name, suburb: c.suburb, address: c.address, phone: c.phone, id: c.id });
                     }
                     if (c.jobDate && c.jobDate.startsWith(dateKey)) {
                         const timePart = c.jobDate.split('T')[1] ? c.jobDate.split('T')[1].slice(0, 5) : '';
-                        dayEvents.push({ type: 'scheduled', title: `[施工 ${timePart}] ${c.name}`, id: c.id });
+                        dayEvents.push({ type: 'scheduled', time: timePart, name: c.name, suburb: c.suburb, address: c.address, phone: c.phone, id: c.id });
                     }
                 });
 
                 const cell = createSafeElement('div', `cal-day-cell ${isToday ? 'today' : ''}`);
                 
-                const numHeader = createSafeElement('div', 'font-bold text-slate-400 mb-1 flex justify-between items-center');
-                numHeader.innerHTML = `<span>${day}</span>${isToday ? '<span class="text-[9px] text-indigo-400 font-normal">今天</span>' : ''}`;
+                const numHeader = createSafeElement('div', 'font-bold text-slate-400 mb-1 flex justify-between items-center text-[10px] sm:text-xs');
+                numHeader.innerHTML = `<span>${day}</span>${isToday ? `<span class="text-[9px] text-indigo-400 font-normal">${currentLang==='ZH'?'今天':'Today'}</span>` : ''}`;
                 cell.appendChild(numHeader);
 
-                dayEvents.forEach(ev => {
-                    const evDiv = createSafeElement('div', `cal-event ${ev.type}`, ev.title);
-                    evDiv.onclick = () => openClientModal(ev.id);
-                    cell.appendChild(evDiv);
-                });
+                if (isMobile) {
+                    // 📱 手机端：小圆点/徽章极简展示，防止截断
+                    if (dayEvents.length > 0) {
+                        const dotsWrap = createSafeElement('div', 'flex flex-wrap gap-1 mt-1 justify-center');
+                        dayEvents.forEach(ev => {
+                            const dot = createSafeElement('span', `w-2 h-2 rounded-full ${ev.type === 'quote' ? 'bg-amber-400' : 'bg-sky-400'}`);
+                            dotsWrap.appendChild(dot);
+                        });
+                        cell.appendChild(dotsWrap);
+                    }
+                    // 点击手机端格子弹出当日卡片
+                    cell.onclick = () => showMobileDayDetail(dateKey, dayEvents, day);
+                } else {
+                    // 💻 桌面端：显示完整多语言标签
+                    dayEvents.forEach(ev => {
+                        const tagText = ev.type === 'quote' ? langData.tagMeasure : langData.tagJob;
+                        const labelText = `[${tagText} ${ev.time}] ${ev.name}`;
+                        const evDiv = createSafeElement('div', `cal-event ${ev.type}`, labelText);
+                        evDiv.onclick = (e) => { e.stopPropagation(); openClientModal(ev.id); };
+                        cell.appendChild(evDiv);
+                    });
+                }
 
                 gridEl.appendChild(cell);
             }
+        }
+
+        // 📱 手机端点击日期弹出卡片详情
+        function showMobileDayDetail(dateKey, events, dayNum) {
+            const box = document.getElementById('mobileDayDetailBox');
+            const title = document.getElementById('mobileDayTitle');
+            const list = document.getElementById('mobileDayEventsList');
+            if (!box || !title || !list) return;
+
+            const langData = i18nText[currentLang];
+            const dateParts = dateKey.split('-');
+            const nzDateStr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+
+            title.textContent = `${nzDateStr} (${events.length} ${currentLang==='ZH'?'项预约':'Appts'})`;
+            list.innerHTML = '';
+
+            if (events.length === 0) {
+                list.appendChild(createSafeElement('p', 'text-slate-400 italic', currentLang==='ZH'?'当日无预约安排':'No appts scheduled.'));
+            } else {
+                events.forEach(ev => {
+                    const tagText = ev.type === 'quote' ? langData.tagMeasure : langData.tagJob;
+                    const item = createSafeElement('div', `p-2.5 rounded-xl border cursor-pointer flex justify-between items-center ${ev.type==='quote' ? 'bg-amber-500/10 border-amber-500/30' : 'bg-sky-500/10 border-sky-500/30'}`);
+                    item.onclick = () => openClientModal(ev.id);
+
+                    item.innerHTML = `
+                        <div>
+                            <div class="font-bold text-white text-xs">
+                                <span class="${ev.type==='quote'?'text-amber-400':'text-sky-400'}">[${tagText} ${ev.time}]</span> ${ev.name}
+                            </div>
+                            <div class="text-[11px] text-slate-400 mt-0.5">📍 ${ev.suburb} - ${ev.address || ''}</div>
+                        </div>
+                        <div class="text-indigo-400 text-xs font-semibold">➔</div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+            box.classList.remove('hidden');
+        }
+
+        function closeMobileDayDetail() {
+            document.getElementById('mobileDayDetailBox').classList.add('hidden');
         }
 
         function changeMonth(dir) {
             currentMonth += dir;
             if (currentMonth > 11) { currentMonth = 0; currentYear++; }
             if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            closeMobileDayDetail();
             renderCalendar();
         }
 
@@ -768,6 +883,7 @@
             const now = new Date();
             currentYear = now.getFullYear();
             currentMonth = now.getMonth();
+            closeMobileDayDetail();
             renderCalendar();
         }
 
@@ -814,7 +930,6 @@
                 document.getElementById('custSuburb').value = 'Pyes Pa';
                 document.getElementById('custAddress').value = '';
                 
-                // 默认初始化当前本地时间的 ISO 格式 (YYYY-MM-DDTHH:mm)
                 const nowIso = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
                 document.getElementById('custQuoteDate').value = nowIso;
                 document.getElementById('custJobDate').value = '';
