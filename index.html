@@ -177,14 +177,14 @@
                         <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block" data-i18n="lblEstCost">Est. Material Cost / 预估材料费</span><span id="resEstCost" class="text-base font-bold text-purple-400 font-mono">$0.00</span></div>
                     </div>
 
-                    <!-- 📱 画布整体居中固定容器 (支持双指缩放/中心原点缩放) -->
-                    <div id="optimizerCanvasContainer" class="w-full bg-slate-950 p-4 rounded-xl border border-slate-700 flex flex-col items-center overflow-hidden relative select-none" style="height: 420px;">
+                    <!-- 📱 完美居中 + 平移缩放画布容器 -->
+                    <div id="optimizerCanvasContainer" class="w-full bg-slate-950 p-4 rounded-xl border border-slate-700 flex flex-col items-center overflow-hidden relative select-none" style="height: 440px;">
                         <div class="absolute top-3 left-3 z-10 flex items-center gap-3 text-[11px] text-slate-300 bg-slate-900/90 px-3 py-1.5 rounded-lg border border-slate-700 pointer-events-none shadow">
                             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-indigo-600 border border-indigo-400 inline-block rounded"></span> <span data-i18n="legendCut">Cut Pieces</span></span>
                             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-amber-500/30 border border-dashed border-amber-400 inline-block rounded"></span> <span data-i18n="legendOffcut">Offcut</span></span>
                             <span class="text-indigo-400 font-mono text-[10px]" id="zoomIndicator">100%</span>
                         </div>
-                        <div class="w-full h-full flex items-center justify-center overflow-hidden">
+                        <div class="w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing">
                             <canvas id="optimizerCanvas" class="rounded shadow bg-slate-900 border border-slate-700"></canvas>
                         </div>
                     </div>
@@ -336,8 +336,12 @@
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth(); // 0-11
 
-        // 裁膜图纸中心缩放变量
+        // 裁膜图纸缩放与平移控制变量
         let canvasZoom = 1;
+        let canvasPanX = 0;
+        let canvasPanY = 0;
+        let isDragging = false;
+        let startX = 0, startY = 0;
         let lastTouchDist = null;
         let currentRenderData = null;
 
@@ -364,10 +368,10 @@
                 lblJobDate: '🛠️ 施工预约 (Job Date)',
                 tagMeasure: '测量',
                 tagJob: '施工',
-                optDesc: '高对比度 2D 裁切引擎：整体居中固定，支持双指自由缩放。',
+                optDesc: '高对比度 2D 裁切引擎：完美居中显示，支持双指缩放与自由拖动。',
                 btnSendToCalc: '带入报价器',
                 btnRecalculate: '重新计算',
-                btnResetZoom: '重置缩放',
+                btnResetZoom: '重置视角',
                 lblRollWidth: '膜卷宽度 (默认1524mm)',
                 lblMargin: '裁边预留 Margin (mm/边)',
                 lblCostPerMeter: '每米材料成本 ($/m)',
@@ -419,10 +423,10 @@
                 lblJobDate: '🛠️ Installation Job Appt',
                 tagMeasure: 'Measure',
                 tagJob: 'Job',
-                optDesc: 'High-contrast 2D layout calculation with centered pinch-to-zoom.',
+                optDesc: 'High-contrast 2D layout with perfect centering, pan & pinch-to-zoom.',
                 btnSendToCalc: 'Send to Estimator',
                 btnRecalculate: 'Recalculate',
-                btnResetZoom: 'Reset Zoom',
+                btnResetZoom: 'Reset View',
                 lblRollWidth: 'Roll Width (Default 1524mm)',
                 lblMargin: 'Margin (mm/side)',
                 lblCostPerMeter: 'Material Cost ($/m)',
@@ -1145,9 +1149,11 @@
             tbody.appendChild(tr);
         }
 
-        // --- 🔍 裁膜图纸整体居中缩放交互核心逻辑 ---
+        // --- 🔍 完美平移与缩放核心交互 ---
         function resetZoom() {
             canvasZoom = 1;
+            canvasPanX = 0;
+            canvasPanY = 0;
             if (currentRenderData) drawOptimizerCanvas(currentRenderData);
         }
 
@@ -1155,17 +1161,37 @@
             const canvas = document.getElementById('optimizerCanvas');
             if (!canvas) return;
 
+            // 鼠标拖动平移
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX - canvasPanX;
+                startY = e.clientY - canvasPanY;
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                canvasPanX = e.clientX - startX;
+                canvasPanY = e.clientY - startY;
+                if (currentRenderData) drawOptimizerCanvas(currentRenderData);
+            });
+            window.addEventListener('mouseup', () => { isDragging = false; });
+
             // 鼠标滚轮缩放
             canvas.addEventListener('wheel', (e) => {
                 e.preventDefault();
                 const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-                canvasZoom = Math.min(Math.max(0.5, canvasZoom * zoomFactor), 4);
+                canvasZoom = Math.min(Math.max(0.5, canvasZoom * zoomFactor), 5);
                 if (currentRenderData) drawOptimizerCanvas(currentRenderData);
             }, { passive: false });
 
-            // 📱 手机端双指捏合缩放（以画面中心为原点缩放，绝不会漂移出背景）
+            // 📱 手机端单指拖动平移 + 双指捏合缩放
             canvas.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 2) {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    startX = e.touches[0].clientX - canvasPanX;
+                    startY = e.touches[0].clientY - canvasPanY;
+                    lastTouchDist = null;
+                } else if (e.touches.length === 2) {
+                    isDragging = false;
                     lastTouchDist = Math.hypot(
                         e.touches[0].clientX - e.touches[1].clientX,
                         e.touches[0].clientY - e.touches[1].clientY
@@ -1174,19 +1200,24 @@
             }, { passive: true });
 
             canvas.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 2 && lastTouchDist !== null) {
+                if (e.touches.length === 1 && isDragging) {
+                    canvasPanX = e.touches[0].clientX - startX;
+                    canvasPanY = e.touches[0].clientY - startY;
+                    if (currentRenderData) drawOptimizerCanvas(currentRenderData);
+                } else if (e.touches.length === 2 && lastTouchDist !== null) {
                     const dist = Math.hypot(
                         e.touches[0].clientX - e.touches[1].clientX,
                         e.touches[0].clientY - e.touches[1].clientY
                     );
                     const factor = dist / lastTouchDist;
-                    canvasZoom = Math.min(Math.max(0.5, canvasZoom * factor), 4);
+                    canvasZoom = Math.min(Math.max(0.5, canvasZoom * factor), 5);
                     lastTouchDist = dist;
                     if (currentRenderData) drawOptimizerCanvas(currentRenderData);
                 }
             }, { passive: true });
 
             canvas.addEventListener('touchend', () => {
+                isDragging = false;
                 lastTouchDist = null;
             });
         }
@@ -1267,6 +1298,11 @@
             document.getElementById('resEstCost').textContent = `$${totalCost.toFixed(2)}`;
 
             currentRenderData = { rollW, canvasH, placed, freeSpaces };
+            
+            // 自动重置并居中计算缩放比例
+            canvasZoom = 1;
+            canvasPanX = 0;
+            canvasPanY = 0;
             drawOptimizerCanvas(currentRenderData);
             runQuickCalc();
         }
@@ -1276,21 +1312,34 @@
             const canvas = document.getElementById('optimizerCanvas');
             const ctx = canvas.getContext('2d');
             
-            const rightPadding = 120;
-            const baseScale = Math.min(350 / (rollW + rightPadding), 0.38);
+            const containerW = canvas.parentElement.clientWidth || 360;
+            const containerH = canvas.parentElement.clientHeight || 380;
+            
+            const baseScale = Math.min((containerW - 40) / rollW, (containerH - 40) / canvasH, 0.45);
             const scale = baseScale * canvasZoom;
             
-            canvas.width = (rollW + rightPadding) * scale; 
-            canvas.height = canvasH * scale;
+            canvas.width = containerW; 
+            canvas.height = containerH;
 
             document.getElementById('zoomIndicator').textContent = `${Math.round(canvasZoom * 100)}%`;
             
             ctx.fillStyle = "#0f172a"; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
             
+            // 自动居中偏移 + 拖动偏移
+            const contentW = rollW * scale;
+            const contentH = canvasH * scale;
+            const autoX = (containerW - contentW) / 2;
+            const autoY = (containerH - contentH) / 2;
+            
+            ctx.translate(autoX + canvasPanX, autoY + canvasPanY);
+
+            // 绘制膜卷外框
             ctx.strokeStyle = "#475569"; 
             ctx.lineWidth = 1.5; 
-            ctx.strokeRect(0, 0, rollW * scale, canvas.height);
+            ctx.strokeRect(0, 0, rollW * scale, canvasH * scale);
 
             // 余料区 (琥珀金网格)
             freeSpaces.forEach(sp => {
@@ -1333,6 +1382,8 @@
                     ctx.fillText(`H:${p.dispH}mm`, rx + 6, textY + 28);
                 }
             });
+
+            ctx.restore();
         }
 
         function sendOptimizerToCalc() {
