@@ -22,7 +22,6 @@
         .cal-event.quote { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border-left: 3px solid #f59e0b; }
         .cal-event.scheduled { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border-left: 3px solid #3b82f6; }
         
-        /* 手机端 Canvas 触摸容器防默认滚动 */
         #optimizerCanvasContainer { touch-action: none; }
     </style>
 </head>
@@ -178,15 +177,15 @@
                         <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block" data-i18n="lblEstCost">Est. Material Cost / 预估材料费</span><span id="resEstCost" class="text-base font-bold text-purple-400 font-mono">$0.00</span></div>
                     </div>
 
-                    <!-- 📱 画布外层容器 (支持触控双指缩放与拖动) -->
-                    <div id="optimizerCanvasContainer" class="w-full bg-slate-950 p-4 rounded-xl border border-slate-700 flex flex-col items-center overflow-hidden relative select-none" style="height: 400px;">
-                        <div class="absolute top-3 left-3 z-10 flex items-center gap-3 text-[11px] text-slate-300 bg-slate-900/90 px-3 py-1.5 rounded-lg border border-slate-700 pointer-events-none">
+                    <!-- 📱 画布整体居中固定容器 (支持双指缩放/中心原点缩放) -->
+                    <div id="optimizerCanvasContainer" class="w-full bg-slate-950 p-4 rounded-xl border border-slate-700 flex flex-col items-center overflow-hidden relative select-none" style="height: 420px;">
+                        <div class="absolute top-3 left-3 z-10 flex items-center gap-3 text-[11px] text-slate-300 bg-slate-900/90 px-3 py-1.5 rounded-lg border border-slate-700 pointer-events-none shadow">
                             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-indigo-600 border border-indigo-400 inline-block rounded"></span> <span data-i18n="legendCut">Cut Pieces</span></span>
                             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-amber-500/30 border border-dashed border-amber-400 inline-block rounded"></span> <span data-i18n="legendOffcut">Offcut</span></span>
                             <span class="text-indigo-400 font-mono text-[10px]" id="zoomIndicator">100%</span>
                         </div>
                         <div class="w-full h-full flex items-center justify-center overflow-hidden">
-                            <canvas id="optimizerCanvas" class="cursor-grab active:cursor-grabbing rounded shadow bg-slate-900 border border-slate-700"></canvas>
+                            <canvas id="optimizerCanvas" class="rounded shadow bg-slate-900 border border-slate-700"></canvas>
                         </div>
                     </div>
                 </div>
@@ -337,13 +336,10 @@
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth(); // 0-11
 
-        // 裁膜图画布缩放与平移变量
+        // 裁膜图纸中心缩放变量
         let canvasZoom = 1;
-        let canvasPanX = 0;
-        let canvasPanY = 0;
-        let isDragging = false;
-        let startX = 0, startY = 0;
         let lastTouchDist = null;
+        let currentRenderData = null;
 
         // 多语言字典
         const i18nText = {
@@ -368,7 +364,7 @@
                 lblJobDate: '🛠️ 施工预约 (Job Date)',
                 tagMeasure: '测量',
                 tagJob: '施工',
-                optDesc: '高对比度 2D 裁切引擎：支持手机双指缩放、拖动查看与余料管理。',
+                optDesc: '高对比度 2D 裁切引擎：整体居中固定，支持双指自由缩放。',
                 btnSendToCalc: '带入报价器',
                 btnRecalculate: '重新计算',
                 btnResetZoom: '重置缩放',
@@ -423,7 +419,7 @@
                 lblJobDate: '🛠️ Installation Job Appt',
                 tagMeasure: 'Measure',
                 tagJob: 'Job',
-                optDesc: 'High-contrast 2D layout calculation with pinch-to-zoom & pan.',
+                optDesc: 'High-contrast 2D layout calculation with centered pinch-to-zoom.',
                 btnSendToCalc: 'Send to Estimator',
                 btnRecalculate: 'Recalculate',
                 btnResetZoom: 'Reset Zoom',
@@ -1149,52 +1145,27 @@
             tbody.appendChild(tr);
         }
 
-        // --- 🔍 裁膜图纸手势缩放与拖动交互核心逻辑 ---
-        let currentRenderData = null;
-
+        // --- 🔍 裁膜图纸整体居中缩放交互核心逻辑 ---
         function resetZoom() {
             canvasZoom = 1;
-            canvasPanX = 0;
-            canvasPanY = 0;
             if (currentRenderData) drawOptimizerCanvas(currentRenderData);
         }
 
         function initCanvasTouchEvents() {
-            const container = document.getElementById('optimizerCanvasContainer');
             const canvas = document.getElementById('optimizerCanvas');
-            if (!container || !canvas) return;
-
-            // 鼠标拖动支持
-            canvas.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                startX = e.clientX - canvasPanX;
-                startY = e.clientY - canvasPanY;
-            });
-            window.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                canvasPanX = e.clientX - startX;
-                canvasPanY = e.clientY - startY;
-                if (currentRenderData) drawOptimizerCanvas(currentRenderData);
-            });
-            window.addEventListener('mouseup', () => { isDragging = false; });
+            if (!canvas) return;
 
             // 鼠标滚轮缩放
             canvas.addEventListener('wheel', (e) => {
                 e.preventDefault();
                 const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-                canvasZoom = Math.min(Math.max(0.5, canvasZoom * zoomFactor), 5);
+                canvasZoom = Math.min(Math.max(0.5, canvasZoom * zoomFactor), 4);
                 if (currentRenderData) drawOptimizerCanvas(currentRenderData);
             }, { passive: false });
 
-            // 📱 手机端触摸事件 (双指捏合缩放 + 单指拖动平移)
+            // 📱 手机端双指捏合缩放（以画面中心为原点缩放，绝不会漂移出背景）
             canvas.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 1) {
-                    isDragging = true;
-                    startX = e.touches[0].clientX - canvasPanX;
-                    startY = e.touches[0].clientY - canvasPanY;
-                    lastTouchDist = null;
-                } else if (e.touches.length === 2) {
-                    isDragging = false;
+                if (e.touches.length === 2) {
                     lastTouchDist = Math.hypot(
                         e.touches[0].clientX - e.touches[1].clientX,
                         e.touches[0].clientY - e.touches[1].clientY
@@ -1203,24 +1174,19 @@
             }, { passive: true });
 
             canvas.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 1 && isDragging) {
-                    canvasPanX = e.touches[0].clientX - startX;
-                    canvasPanY = e.touches[0].clientY - startY;
-                    if (currentRenderData) drawOptimizerCanvas(currentRenderData);
-                } else if (e.touches.length === 2 && lastTouchDist !== null) {
+                if (e.touches.length === 2 && lastTouchDist !== null) {
                     const dist = Math.hypot(
                         e.touches[0].clientX - e.touches[1].clientX,
                         e.touches[0].clientY - e.touches[1].clientY
                     );
                     const factor = dist / lastTouchDist;
-                    canvasZoom = Math.min(Math.max(0.5, canvasZoom * factor), 5);
+                    canvasZoom = Math.min(Math.max(0.5, canvasZoom * factor), 4);
                     lastTouchDist = dist;
                     if (currentRenderData) drawOptimizerCanvas(currentRenderData);
                 }
             }, { passive: true });
 
             canvas.addEventListener('touchend', () => {
-                isDragging = false;
                 lastTouchDist = null;
             });
         }
@@ -1311,7 +1277,7 @@
             const ctx = canvas.getContext('2d');
             
             const rightPadding = 120;
-            const baseScale = Math.min(360 / (rollW + rightPadding), 0.40);
+            const baseScale = Math.min(350 / (rollW + rightPadding), 0.38);
             const scale = baseScale * canvasZoom;
             
             canvas.width = (rollW + rightPadding) * scale; 
@@ -1319,9 +1285,6 @@
 
             document.getElementById('zoomIndicator').textContent = `${Math.round(canvasZoom * 100)}%`;
             
-            ctx.save();
-            ctx.translate(canvasPanX, canvasPanY);
-
             ctx.fillStyle = "#0f172a"; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
@@ -1341,7 +1304,7 @@
                     ctx.strokeRect(rx, ry, rw, rh);
                     ctx.setLineDash([]);
                     
-                    if (rw > 35 && rh > 20 && canvasZoom >= 0.9) {
+                    if (rw > 35 && rh > 20 && canvasZoom >= 0.8) {
                         ctx.fillStyle = "#fbbf24";
                         ctx.font = "bold 10px monospace";
                         ctx.fillText(`${Math.round(sp.w)}×${Math.round(sp.h)}`, rx + 4, ry + 14);
@@ -1370,8 +1333,6 @@
                     ctx.fillText(`H:${p.dispH}mm`, rx + 6, textY + 28);
                 }
             });
-
-            ctx.restore();
         }
 
         function sendOptimizerToCalc() {
