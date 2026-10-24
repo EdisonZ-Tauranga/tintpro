@@ -21,6 +21,9 @@
         .cal-event { font-size: 11px; padding: 3px 6px; border-radius: 4px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
         .cal-event.quote { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border-left: 3px solid #f59e0b; }
         .cal-event.scheduled { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border-left: 3px solid #3b82f6; }
+        
+        /* 手机端 Canvas 触摸容器防默认滚动 */
+        #optimizerCanvasContainer { touch-action: none; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
@@ -142,6 +145,7 @@
                             <button onclick="sendOptimizerToCalc()" class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1 shadow">
                                 <i data-lucide="calculator" class="w-4 h-4"></i> <span data-i18n="btnSendToCalc">Send to Estimator / 带入报价</span>
                             </button>
+                            <button onclick="resetZoom()" class="px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold shadow" data-i18n="btnResetZoom">Reset Zoom / 重置缩放</button>
                             <button onclick="optimizeRollLayout()" class="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow" data-i18n="btnRecalculate">Recalculate / 重新计算</button>
                         </div>
                     </div>
@@ -174,12 +178,16 @@
                         <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block" data-i18n="lblEstCost">Est. Material Cost / 预估材料费</span><span id="resEstCost" class="text-base font-bold text-purple-400 font-mono">$0.00</span></div>
                     </div>
 
-                    <div class="w-full bg-slate-950 p-4 rounded-xl border border-slate-700 flex flex-col items-center overflow-x-auto custom-scroll space-y-2">
-                        <div class="flex items-center gap-4 text-[11px] text-slate-300">
-                            <span class="flex items-center gap-1"><span class="w-3 h-3 bg-indigo-600 border border-indigo-400 inline-block rounded"></span> <span data-i18n="legendCut">Cut Pieces / 裁切膜片 (高对比深色)</span></span>
-                            <span class="flex items-center gap-1"><span class="w-3 h-3 bg-amber-500/30 border border-dashed border-amber-400 inline-block rounded"></span> <span data-i18n="legendOffcut">Reusable Offcut / 琥珀金余料区</span></span>
+                    <!-- 📱 画布外层容器 (支持触控双指缩放与拖动) -->
+                    <div id="optimizerCanvasContainer" class="w-full bg-slate-950 p-4 rounded-xl border border-slate-700 flex flex-col items-center overflow-hidden relative select-none" style="height: 400px;">
+                        <div class="absolute top-3 left-3 z-10 flex items-center gap-3 text-[11px] text-slate-300 bg-slate-900/90 px-3 py-1.5 rounded-lg border border-slate-700 pointer-events-none">
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-indigo-600 border border-indigo-400 inline-block rounded"></span> <span data-i18n="legendCut">Cut Pieces</span></span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-amber-500/30 border border-dashed border-amber-400 inline-block rounded"></span> <span data-i18n="legendOffcut">Offcut</span></span>
+                            <span class="text-indigo-400 font-mono text-[10px]" id="zoomIndicator">100%</span>
                         </div>
-                        <canvas id="optimizerCanvas" class="max-w-full rounded shadow bg-slate-900 border border-slate-700"></canvas>
+                        <div class="w-full h-full flex items-center justify-center overflow-hidden">
+                            <canvas id="optimizerCanvas" class="cursor-grab active:cursor-grabbing rounded shadow bg-slate-900 border border-slate-700"></canvas>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -329,10 +337,18 @@
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth(); // 0-11
 
-        // 完美的多语言字典对照表
+        // 裁膜图画布缩放与平移变量
+        let canvasZoom = 1;
+        let canvasPanX = 0;
+        let canvasPanY = 0;
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let lastTouchDist = null;
+
+        // 多语言字典
         const i18nText = {
             ZH: {
-                subtitle: '新西兰住宅及商业窗户贴膜业务管理系统',
+                subtitle: '新西兰住宅及商业窗户贴膜业务系统',
                 btnBindGoogle: '绑定 Google 账号',
                 btnSync: '双向云同步',
                 btnExport: '导出备份',
@@ -352,9 +368,10 @@
                 lblJobDate: '🛠️ 施工预约 (Job Date)',
                 tagMeasure: '测量',
                 tagJob: '施工',
-                optDesc: '高对比度 2D 裁切引擎：精准计算玻璃面积、材料消耗与余料管理。',
+                optDesc: '高对比度 2D 裁切引擎：支持手机双指缩放、拖动查看与余料管理。',
                 btnSendToCalc: '带入报价器',
                 btnRecalculate: '重新计算',
+                btnResetZoom: '重置缩放',
                 lblRollWidth: '膜卷宽度 (默认1524mm)',
                 lblMargin: '裁边预留 Margin (mm/边)',
                 lblCostPerMeter: '每米材料成本 ($/m)',
@@ -369,8 +386,8 @@
                 lblWastePct: '卷膜损耗率 Waste Rate',
                 lblGlassArea: '玻璃净面积 Glass Area',
                 lblEstCost: '预估材料成本 Material Cost',
-                legendCut: '裁切膜片 (高对比深色)',
-                legendOffcut: '可复用余料区 (琥珀金网格)',
+                legendCut: '裁切膜片',
+                legendOffcut: '余料区',
                 lblPricingMode: '报价计价模式 (Pricing Mode)：',
                 modeGlassTitle: '按玻璃面积 (Glass Area)',
                 modeGlassDesc: '自动填入净玻璃面积',
@@ -406,9 +423,10 @@
                 lblJobDate: '🛠️ Installation Job Appt',
                 tagMeasure: 'Measure',
                 tagJob: 'Job',
-                optDesc: 'High-contrast 2D layout calculation for glass tinting.',
+                optDesc: 'High-contrast 2D layout calculation with pinch-to-zoom & pan.',
                 btnSendToCalc: 'Send to Estimator',
                 btnRecalculate: 'Recalculate',
+                btnResetZoom: 'Reset Zoom',
                 lblRollWidth: 'Roll Width (Default 1524mm)',
                 lblMargin: 'Margin (mm/side)',
                 lblCostPerMeter: 'Material Cost ($/m)',
@@ -423,8 +441,8 @@
                 lblWastePct: 'Waste Rate',
                 lblGlassArea: 'Net Glass Area',
                 lblEstCost: 'Est. Material Cost',
-                legendCut: 'Cut Pieces (High Contrast)',
-                legendOffcut: 'Reusable Offcut Area',
+                legendCut: 'Cut Pieces',
+                legendOffcut: 'Offcut',
                 lblPricingMode: 'Pricing Calculation Mode:',
                 modeGlassTitle: 'Net Glass Area Mode',
                 modeGlassDesc: 'Auto-fills Net Glass Area',
@@ -667,6 +685,7 @@
             setTimeout(initGoogleAuth, 1000);
             applyLanguage();
             initOptimizerRows();
+            initCanvasTouchEvents();
             runQuickCalc();
             renderCalendar();
             lucide.createIcons();
@@ -747,7 +766,7 @@
             lucide.createIcons();
         }
 
-        // --- 📅 预约日历逻辑 (双端高度优化 + 完整中英文) ---
+        // --- 📅 预约日历逻辑 ---
         async function renderCalendar() {
             const gridEl = document.getElementById('cal-grid');
             const titleEl = document.getElementById('cal-month-title');
@@ -757,14 +776,12 @@
             const langData = i18nText[currentLang];
             const monthNamesEN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             
-            // 动态标题多语言
             if (currentLang === 'ZH') {
                 titleEl.textContent = `${currentYear}年 ${currentMonth + 1}月预约日历`;
             } else {
                 titleEl.textContent = `${monthNamesEN[currentMonth]} ${currentYear} Schedule Calendar`;
             }
 
-            // 动态星期表头
             weekHeaderEl.innerHTML = '';
             langData.weeks.forEach(w => {
                 weekHeaderEl.appendChild(createSafeElement('div', '', w));
@@ -777,15 +794,12 @@
             const todayStr = new Date().toISOString().split('T')[0];
             const clients = await dbGetAllClients();
 
-            // 填充前置空白格子
             for (let i = 0; i < firstDayIndex; i++) {
                 gridEl.appendChild(createSafeElement('div', 'cal-day-cell opacity-20 bg-transparent border-none'));
             }
 
-            // 判断是否是移动端屏幕
             const isMobile = window.innerWidth < 640;
 
-            // 填充当月日期格子
             for (let day = 1; day <= totalDays; day++) {
                 const monthStr = String(currentMonth + 1).padStart(2, '0');
                 const dayStr = String(day).padStart(2, '0');
@@ -811,7 +825,6 @@
                 cell.appendChild(numHeader);
 
                 if (isMobile) {
-                    // 📱 手机端：小圆点/徽章极简展示，防止截断
                     if (dayEvents.length > 0) {
                         const dotsWrap = createSafeElement('div', 'flex flex-wrap gap-1 mt-1 justify-center');
                         dayEvents.forEach(ev => {
@@ -820,10 +833,8 @@
                         });
                         cell.appendChild(dotsWrap);
                     }
-                    // 点击手机端格子弹出当日卡片
                     cell.onclick = () => showMobileDayDetail(dateKey, dayEvents, day);
                 } else {
-                    // 💻 桌面端：显示完整多语言标签
                     dayEvents.forEach(ev => {
                         const tagText = ev.type === 'quote' ? langData.tagMeasure : langData.tagJob;
                         const labelText = `[${tagText} ${ev.time}] ${ev.name}`;
@@ -837,7 +848,6 @@
             }
         }
 
-        // 📱 手机端点击日期弹出卡片详情
         function showMobileDayDetail(dateKey, events, dayNum) {
             const box = document.getElementById('mobileDayDetailBox');
             const title = document.getElementById('mobileDayTitle');
@@ -990,7 +1000,7 @@
             const container = document.getElementById('photoPreviewContainer');
             container.innerHTML = '';
             if (currentPhotos.length === 0) {
-                container.appendChild(createSafeElement('span', 'text-slate-400 text-[11px]', currentLang==='ZH'?'暂无现场照片（手机原图保留在相册）':'No photos added.'));
+                container.appendChild(createSafeElement('span', 'text-slate-400 text-[11px]', currentLang==='ZH'?'暂无现场照片':'No photos added.'));
                 return;
             }
             currentPhotos.forEach((pObj, idx) => {
@@ -1015,7 +1025,6 @@
                 wrap.appendChild(delBtn);
 
                 const protBtn = createSafeElement('button', 'absolute top-0.5 left-0.5 z-20 bg-slate-800/80 text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px]', pObj.isProtected ? '✓' : '🔒');
-                protBtn.title = "Toggle Protection";
                 protBtn.onclick = (e) => {
                     e.stopPropagation();
                     pObj.isProtected = !pObj.isProtected;
@@ -1140,6 +1149,82 @@
             tbody.appendChild(tr);
         }
 
+        // --- 🔍 裁膜图纸手势缩放与拖动交互核心逻辑 ---
+        let currentRenderData = null;
+
+        function resetZoom() {
+            canvasZoom = 1;
+            canvasPanX = 0;
+            canvasPanY = 0;
+            if (currentRenderData) drawOptimizerCanvas(currentRenderData);
+        }
+
+        function initCanvasTouchEvents() {
+            const container = document.getElementById('optimizerCanvasContainer');
+            const canvas = document.getElementById('optimizerCanvas');
+            if (!container || !canvas) return;
+
+            // 鼠标拖动支持
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX - canvasPanX;
+                startY = e.clientY - canvasPanY;
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                canvasPanX = e.clientX - startX;
+                canvasPanY = e.clientY - startY;
+                if (currentRenderData) drawOptimizerCanvas(currentRenderData);
+            });
+            window.addEventListener('mouseup', () => { isDragging = false; });
+
+            // 鼠标滚轮缩放
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
+                canvasZoom = Math.min(Math.max(0.5, canvasZoom * zoomFactor), 5);
+                if (currentRenderData) drawOptimizerCanvas(currentRenderData);
+            }, { passive: false });
+
+            // 📱 手机端触摸事件 (双指捏合缩放 + 单指拖动平移)
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    startX = e.touches[0].clientX - canvasPanX;
+                    startY = e.touches[0].clientY - canvasPanY;
+                    lastTouchDist = null;
+                } else if (e.touches.length === 2) {
+                    isDragging = false;
+                    lastTouchDist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                }
+            }, { passive: true });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging) {
+                    canvasPanX = e.touches[0].clientX - startX;
+                    canvasPanY = e.touches[0].clientY - startY;
+                    if (currentRenderData) drawOptimizerCanvas(currentRenderData);
+                } else if (e.touches.length === 2 && lastTouchDist !== null) {
+                    const dist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    const factor = dist / lastTouchDist;
+                    canvasZoom = Math.min(Math.max(0.5, canvasZoom * factor), 5);
+                    lastTouchDist = dist;
+                    if (currentRenderData) drawOptimizerCanvas(currentRenderData);
+                }
+            }, { passive: true });
+
+            canvas.addEventListener('touchend', () => {
+                isDragging = false;
+                lastTouchDist = null;
+            });
+        }
+
         function optimizeRollLayout() {
             const rollW = parseFloat(document.getElementById('optRollWidth').value) || 1524;
             const margin = Math.max(0, Number(document.getElementById('optMargin').value) || 0);
@@ -1215,16 +1300,34 @@
             document.getElementById('resUsedArea').textContent = `${totalGlassArea.toFixed(2)} m²`;
             document.getElementById('resEstCost').textContent = `$${totalCost.toFixed(2)}`;
 
+            currentRenderData = { rollW, canvasH, placed, freeSpaces };
+            drawOptimizerCanvas(currentRenderData);
+            runQuickCalc();
+        }
+
+        function drawOptimizerCanvas(data) {
+            const { rollW, canvasH, placed, freeSpaces } = data;
             const canvas = document.getElementById('optimizerCanvas');
             const ctx = canvas.getContext('2d');
+            
             const rightPadding = 120;
-            const scale = Math.min(580 / (rollW + rightPadding), 0.42);
+            const baseScale = Math.min(360 / (rollW + rightPadding), 0.40);
+            const scale = baseScale * canvasZoom;
             
             canvas.width = (rollW + rightPadding) * scale; 
             canvas.height = canvasH * scale;
+
+            document.getElementById('zoomIndicator').textContent = `${Math.round(canvasZoom * 100)}%`;
             
-            ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = "#475569"; ctx.lineWidth = 1.5; ctx.strokeRect(0, 0, rollW * scale, canvas.height);
+            ctx.save();
+            ctx.translate(canvasPanX, canvasPanY);
+
+            ctx.fillStyle = "#0f172a"; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = "#475569"; 
+            ctx.lineWidth = 1.5; 
+            ctx.strokeRect(0, 0, rollW * scale, canvas.height);
 
             // 余料区 (琥珀金网格)
             freeSpaces.forEach(sp => {
@@ -1238,34 +1341,37 @@
                     ctx.strokeRect(rx, ry, rw, rh);
                     ctx.setLineDash([]);
                     
-                    if (rw > 35 && rh > 20) {
+                    if (rw > 35 && rh > 20 && canvasZoom >= 0.9) {
                         ctx.fillStyle = "#fbbf24";
                         ctx.font = "bold 10px monospace";
-                        const txt = `${Math.round(sp.w)}×${Math.round(sp.h)}`;
-                        ctx.fillText(txt, rx + 4, ry + 14);
+                        ctx.fillText(`${Math.round(sp.w)}×${Math.round(sp.h)}`, rx + 4, ry + 14);
                     }
                 }
             });
 
-            // 裁切膜块 (高对比深蓝色)
+            // 裁切膜块
             placed.forEach(p => {
                 let rx = p.x * scale, ry = p.y * scale, rw = p.w * scale, rh = p.h * scale;
                 ctx.fillStyle = "#1e3a8a";
                 ctx.fillRect(rx, ry, rw, rh);
-                ctx.strokeStyle = "#60a5fa"; ctx.lineWidth = 2; ctx.strokeRect(rx, ry, rw, rh);
+                ctx.strokeStyle = "#60a5fa"; 
+                ctx.lineWidth = 2; 
+                ctx.strokeRect(rx, ry, rw, rh);
                 
                 ctx.fillStyle = "#ffffff"; 
                 ctx.font = "bold 11px sans-serif";
                 let textY = ry + 16;
                 ctx.fillText(`#${p.seq} ${p.label}${p.rotated ? ' (R)' : ''}`, rx + 6, textY);
                 
-                ctx.font = "10px monospace";
-                ctx.fillStyle = "#93c5fd";
-                ctx.fillText(`W:${p.dispW}mm`, rx + 6, textY + 14);
-                ctx.fillText(`H:${p.dispH}mm`, rx + 6, textY + 28);
+                if (canvasZoom >= 0.8) {
+                    ctx.font = "10px monospace";
+                    ctx.fillStyle = "#93c5fd";
+                    ctx.fillText(`W:${p.dispW}mm`, rx + 6, textY + 14);
+                    ctx.fillText(`H:${p.dispH}mm`, rx + 6, textY + 28);
+                }
             });
 
-            runQuickCalc();
+            ctx.restore();
         }
 
         function sendOptimizerToCalc() {
