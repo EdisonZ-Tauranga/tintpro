@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TintPro Manager v12.7 Pro - Light & Salt / Bayview Edition</title>
+    <title>TintPro Manager v12.8 Pro - Light & Salt / Bayview Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -62,55 +62,52 @@
                     </div>
                     <div>
                         <h1 class="text-base font-bold text-white flex items-center gap-2">
-                            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">v12.7 Pro</span>
+                            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">v12.8 Pro</span>
                         </h1>
                         <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
                     </div>
                 </div>
-                <button onclick="toggleLanguage()" class="sm:hidden px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-sky-300 text-xs font-bold border border-slate-600 transition">
-                    <span id="langBtnMobile">中 / EN</span>
-                </button>
             </div>
             
             <div class="flex items-center flex-wrap gap-2">
-                <button onclick="toggleLanguage()" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 hover:bg-slate-600 text-sky-300 border border-slate-600 transition">
-                    <i data-lucide="languages" class="w-4 h-4"></i> <span id="langBtnText">切换语言 / Switch Lang</span>
+                <button onclick="toggleLanguage()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 hover:bg-slate-600 text-sky-300 border border-slate-600 transition">
+                    <i data-lucide="languages" class="w-4 h-4"></i> <span id="langBtnText">中文 / English</span>
                 </button>
                 <button id="googleAuthBtn" onclick="handleGoogleAuth()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition">
                     <i data-lucide="log-in" class="w-4 h-4 text-sky-400"></i> <span id="authBtnText">Bind Google</span>
                 </button>
                 <button onclick="syncToCloud(true)" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white shadow transition">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span>Cloud Sync</span>
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span data-i18n="cloudSync">Cloud Sync</span>
                 </button>
                 <button onclick="exportDataJSON()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition">
-                    <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> <span>Export</span>
+                    <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> <span data-i18n="export">Export</span>
                 </button>
                 <button onclick="document.getElementById('importFile').click()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition">
-                    <i data-lucide="upload" class="w-4 h-4 text-indigo-400"></i> <span>Import</span>
+                    <i data-lucide="upload" class="w-4 h-4 text-indigo-400"></i> <span data-i18n="import">Import</span>
                 </button>
                 <input type="file" id="importFile" class="hidden" accept=".json" onchange="importDataJSON(event)">
             </div>
         </div>
     </header>
 
-    <!-- 主体布局：侧边栏拓宽至 w-72 避免排版换行 -->
+    <!-- 主体布局 -->
     <div class="flex-1 max-w-7xl w-full mx-auto p-4 flex flex-col md:flex-row gap-6 mb-16">
         <aside class="flex flex-col w-full md:w-72 shrink-0 gap-2">
             <nav class="bg-slate-800 p-2.5 rounded-2xl border border-slate-700 space-y-1.5 shadow">
                 <button onclick="switchTab('jobs')" id="nav-jobs" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-sky-600 text-white shadow-md transition whitespace-nowrap">
-                    <i data-lucide="briefcase" class="w-5 h-5 shrink-0"></i><span class="truncate">Clients & Projects / 客户项目</span>
+                    <i data-lucide="briefcase" class="w-5 h-5 shrink-0"></i><span class="truncate" data-i18n="menuClients">Clients & Projects / 客户项目</span>
                 </button>
                 <button onclick="switchTab('calendar')" id="nav-calendar" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition whitespace-nowrap">
-                    <i data-lucide="calendar" class="w-5 h-5 shrink-0"></i><span class="truncate">Schedule Calendar / 预约日历</span>
+                    <i data-lucide="calendar" class="w-5 h-5 shrink-0"></i><span class="truncate" data-i18n="menuCalendar">Schedule Calendar / 预约日历</span>
                 </button>
                 <button onclick="switchTab('optimizer')" id="nav-optimizer" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition whitespace-nowrap">
-                    <i data-lucide="scissors" class="w-5 h-5 shrink-0"></i><span class="truncate">Cutting Optimizer / 裁膜引擎</span>
+                    <i data-lucide="scissors" class="w-5 h-5 shrink-0"></i><span class="truncate" data-i18n="menuOptimizer">Cutting Optimizer / 裁膜引擎</span>
                 </button>
                 <button onclick="switchTab('invoices')" id="nav-invoices" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition whitespace-nowrap">
-                    <i data-lucide="file-text" class="w-5 h-5 shrink-0"></i><span class="truncate">Tax Invoices / 发票管理</span>
+                    <i data-lucide="file-text" class="w-5 h-5 shrink-0"></i><span class="truncate" data-i18n="menuInvoices">Tax Invoices / 发票管理</span>
                 </button>
                 <button onclick="switchTab('calculator')" id="nav-calculator" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition whitespace-nowrap">
-                    <i data-lucide="calculator" class="w-5 h-5 shrink-0"></i><span class="truncate">Job Estimator / 报价计算</span>
+                    <i data-lucide="calculator" class="w-5 h-5 shrink-0"></i><span class="truncate" data-i18n="menuEstimator">Job Estimator / 报价计算</span>
                 </button>
             </nav>
         </aside>
@@ -121,7 +118,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
                     <input type="text" id="jobSearchInput" oninput="renderJobsList()" placeholder="Search Name, Phone, Address... / 搜索客户..." class="flex-1 bg-slate-800 border border-slate-700 px-4 py-2.5 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-sky-500 shadow-inner">
                     <button onclick="openClientModal()" class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm shadow-lg transition">
-                        <i data-lucide="plus" class="w-4 h-4"></i> <span>+ New Client / 新建客户档案</span>
+                        <i data-lucide="plus" class="w-4 h-4"></i> <span data-i18n="newClientBtn">+ New Client / 新建客户档案</span>
                     </button>
                 </div>
                 <div id="jobsListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -138,9 +135,9 @@
                             <p class="text-xs text-slate-400 mt-1">Manage measurement quotes and installation jobs scheduling.</p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="changeMonth(-1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold" id="btnCalPrev">◀ Prev</button>
-                            <button onclick="goToday()" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold" id="btnCalToday">Today</button>
-                            <button onclick="changeMonth(1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold" id="btnCalNext">Next ▶</button>
+                            <button onclick="changeMonth(-1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold">◀ Prev</button>
+                            <button onclick="goToday()" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold">Today</button>
+                            <button onclick="changeMonth(1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold">Next ▶</button>
                         </div>
                     </div>
                     <div id="cal-week-header" class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-bold text-slate-400 py-2 border-b border-slate-700"></div>
@@ -199,7 +196,7 @@
                 </div>
             </section>
 
-            <!-- TAB 2.5: TAX INVOICES 发票管理模块 (支持纯英文 + 一口价) -->
+            <!-- TAB 2.5: TAX INVOICES 发票管理模块 (支持“一口价”与“面积单价”双模式 + 多行自由排版描述框) -->
             <section id="tab-invoices" class="hidden space-y-6">
                 <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-6 space-y-6 shadow-xl">
                     <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 border-b border-slate-700 pb-4">
@@ -230,26 +227,13 @@
                             </div>
                         </div>
 
-                        <!-- 行项目表格：扩大 Description 宽度，支持包干一口价 -->
+                        <!-- 行项目：支持“一口价”与“面积单价”双模式切换，并采用大文本域供自由排版 -->
                         <div class="space-y-2">
                             <div class="flex justify-between items-center">
-                                <span class="font-bold text-slate-300">Line Items (15% GST)</span>
-                                <div class="flex gap-2">
-                                    <button onclick="addInvoiceItemRow('', 1, 0)" class="text-sky-400 hover:underline">+ Add Row</button>
-                                </div>
+                                <span class="font-bold text-slate-300">Line Items (15% GST) — 支持 一口价 (Fixed Price) 或 面积单价 (Area & Rate)</span>
+                                <button onclick="addInvoiceItemRow('Residential Window Tinting Application', 'fixed', 1, 0, 0, 207)" class="text-sky-400 hover:underline">+ Add Line Item</button>
                             </div>
-                            <table class="w-full text-left">
-                                <thead>
-                                    <tr class="text-slate-400 border-b border-slate-700">
-                                        <th class="p-2 w-3/5">Description / 项目描述</th>
-                                        <th class="p-2 w-16 text-center">Qty</th>
-                                        <th class="p-2 w-28 text-right">Price / 包干价 ($)</th>
-                                        <th class="p-2 w-28 text-right">Amount ($)</th>
-                                        <th class="p-2 w-10 text-center"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="invoiceItemsTbody" class="divide-y divide-slate-800"></tbody>
-                            </table>
+                            <div id="invoiceItemsContainer" class="space-y-3"></div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -276,7 +260,7 @@
                         </div>
                     </div>
 
-                    <!-- 🖨️ A4 打印预览容器 (纯英文正式发票，符合洋人客户标准) -->
+                    <!-- 🖨️ A4 打印预览容器 -->
                     <div id="printableInvoice" class="bg-white text-slate-900 p-8 rounded-xl shadow-2xl space-y-6 hidden border border-slate-200">
                         <div class="flex justify-between items-start border-b-2 border-slate-900 pb-6">
                             <div>
@@ -315,7 +299,6 @@
                             </div>
                         </div>
 
-                        <!-- 客户信息精简：只保留 Client Name -->
                         <div class="grid grid-cols-2 gap-6 text-xs bg-slate-50 p-4 rounded-lg border border-slate-200">
                             <div>
                                 <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">BILLED TO:</span>
@@ -330,7 +313,7 @@
 
                         <table class="w-full text-left text-xs divide-y divide-slate-200">
                             <thead>
-                                <tr class="text-slate-700 font-bold bg-slate-100"><th class="p-2.5 w-3/5">Item Description</th><th class="p-2.5 text-center">Qty</th><th class="p-2.5 text-right">Unit Rate</th><th class="p-2.5 text-right">Amount (NZD)</th></tr>
+                                <tr class="text-slate-700 font-bold bg-slate-100"><th class="p-2.5 w-3/5">Item Description</th><th class="p-2.5 text-center">Qty</th><th class="p-2.5 text-right">Rate / Total</th><th class="p-2.5 text-right">Amount (NZD)</th></tr>
                             </thead>
                             <tbody id="pInvoiceTbody" class="divide-y divide-slate-100"></tbody>
                         </table>
@@ -479,12 +462,47 @@
         let currentMonth = new Date().getMonth();
         let currentPhotos = [];
 
-        // 语言切换全局修复
+        // 真正的全局多语言词典
+        const i18n = {
+            ZH: {
+                menuClients: "Clients & Projects / 客户项目",
+                menuCalendar: "Schedule Calendar / 预约日历",
+                menuOptimizer: "Cutting Optimizer / 裁膜引擎",
+                menuInvoices: "Tax Invoices / 发票管理",
+                menuEstimator: "Job Estimator / 报价计算",
+                newClientBtn: "+ New Client / 新建客户档案",
+                cloudSync: "Cloud Sync",
+                export: "Export",
+                import: "Import"
+            },
+            EN: {
+                menuClients: "Clients & Projects",
+                menuCalendar: "Schedule Calendar",
+                menuOptimizer: "Cutting Optimizer",
+                menuInvoices: "Tax Invoices",
+                menuEstimator: "Job Estimator",
+                newClientBtn: "+ New Client",
+                cloudSync: "Cloud Sync",
+                export: "Export",
+                import: "Import"
+            }
+        };
+
         function toggleLanguage() {
             currentLang = currentLang === 'ZH' ? 'EN' : 'ZH';
             localStorage.setItem('nz_lang', currentLang);
+            updateLanguageUI();
+        }
+
+        function updateLanguageUI() {
             const langBtnText = document.getElementById('langBtnText');
-            if (langBtnText) langBtnText.textContent = currentLang === 'ZH' ? 'English' : '中文';
+            if (langBtnText) langBtnText.textContent = currentLang === 'ZH' ? '中文 / English' : 'English / 中文';
+
+            const dict = i18n[currentLang] || i18n.EN;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.textContent = dict[key];
+            });
             renderJobsList();
             renderCalendar();
         }
@@ -541,7 +559,7 @@
 
                 renderJobsList();
 
-                const backupData = { version: 'v12.7', updatedAt: new Date().toISOString(), clients: mergedClients };
+                const backupData = { version: 'v12.8', updatedAt: new Date().toISOString(), clients: mergedClients };
                 const fileContent = JSON.stringify(backupData, null, 2);
 
                 if (fileId) {
@@ -608,6 +626,7 @@
         window.addEventListener('DOMContentLoaded', async () => {
             await initDB();
             setTimeout(initGoogleAuth, 1000);
+            updateLanguageUI();
             renderJobsList();
             renderCalendar();
             populateInvoiceClientSelect();
@@ -904,7 +923,6 @@
             }
         }
 
-        // ✨ 优化：客户弹窗直接带入该客户发票，锁住下拉框并填充包干价
         async function generateInvoiceFromClientModal() {
             const savedClient = await saveClientModal();
             if (!savedClient) return;
@@ -918,14 +936,15 @@
                 autoFillInvoiceClient();
             }
 
-            const tbody = document.getElementById('invoiceItemsTbody');
-            tbody.innerHTML = '';
+            const container = document.getElementById('invoiceItemsContainer');
+            container.innerHTML = '';
 
             let desc = `Residential Window Tinting Application`;
             if (savedClient.address) desc += ` (${savedClient.address})`;
 
             const lumpSum = savedClient.price || 207;
-            addInvoiceItemRow(desc, 1, lumpSum);
+            // 默认填充一口价模式
+            addInvoiceItemRow(desc, 'fixed', 1, 0, 0, lumpSum);
             recalcInvoiceTotals();
         }
 
@@ -1055,7 +1074,6 @@
             const clients = await dbGetAllClients();
             const client = clients.find(c => c.id === Number(select.value));
             if (client) {
-                // 精简，仅渲染姓名
                 document.getElementById('pClientName').textContent = client.name;
             }
         }
@@ -1069,45 +1087,112 @@
         function openNewInvoiceBuilder() {
             document.getElementById('invDate').value = new Date().toISOString().slice(0, 10);
             updateBankRefAuto();
-            const tbody = document.getElementById('invoiceItemsTbody');
-            tbody.innerHTML = '';
-            addInvoiceItemRow('Residential Window Tinting Application', 1, 207);
+            const container = document.getElementById('invoiceItemsContainer');
+            container.innerHTML = '';
+            addInvoiceItemRow('Residential Window Tinting Application', 'fixed', 1, 0, 0, 207);
             recalcInvoiceTotals();
         }
 
         function createInvoiceFromOptimizer() {
             switchTab('invoices');
             openNewInvoiceBuilder();
-            const tbody = document.getElementById('invoiceItemsTbody');
-            tbody.innerHTML = '';
-            addInvoiceItemRow('Solar Control Film Application (MaxRects Optimized)', 1, 350);
+            const container = document.getElementById('invoiceItemsContainer');
+            container.innerHTML = '';
+            addInvoiceItemRow('Solar Control Film Application (MaxRects Optimized)', 'fixed', 1, 0, 0, 350);
             recalcInvoiceTotals();
         }
 
-        // 拓宽描述栏并支持包干一口价
-        function addInvoiceItemRow(desc = '', qty = 1, price = 0) {
-            const tbody = document.getElementById('invoiceItemsTbody');
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="p-2"><input type="text" value="${desc}" oninput="recalcInvoiceTotals()" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-xs"></td>
-                <td class="p-2 text-center"><input type="number" min="1" value="${qty}" oninput="recalcInvoiceTotals()" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-center font-mono text-xs"></td>
-                <td class="p-2 text-right"><input type="number" step="0.01" value="${price}" oninput="recalcInvoiceTotals()" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-right font-mono text-xs text-emerald-400 font-bold"></td>
-                <td class="p-2 text-right font-mono font-bold text-emerald-400 row-amount">$0.00</td>
-                <td class="p-2 text-center"><button onclick="this.closest('tr').remove(); recalcInvoiceTotals();" class="text-rose-400 font-bold">✕</button></td>
+        // ✨ 核心升级：支持 一口价 (fixed) 与 面积单价 (area) 双模式，且描述框升级为大文本域
+        function addInvoiceItemRow(desc = '', mode = 'fixed', qty = 1, area = 0, rate = 0, price = 0) {
+            const container = document.getElementById('invoiceItemsContainer');
+            const rowId = 'item_row_' + Date.now() + Math.random().toString(36).substr(2, 5);
+            
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = "bg-slate-800/90 border border-slate-700 p-3 rounded-xl space-y-2 relative";
+            div.innerHTML = `
+                <div class="flex justify-between items-center gap-2">
+                    <div class="flex items-center gap-2">
+                        <label class="text-[11px] text-slate-400 font-bold">Billing Mode / 计费模式:</label>
+                        <select onchange="toggleItemMode('${rowId}')" class="item-mode bg-slate-900 text-sky-300 font-semibold border border-slate-700 rounded px-2 py-1 text-xs">
+                            <option value="fixed" ${mode==='fixed'?'selected':''}>Fixed Price (一口价 / 包干)</option>
+                            <option value="area" ${mode==='area'?'selected':''}>Area & Rate (按面积算钱)</option>
+                        </select>
+                    </div>
+                    <button type="button" onclick="document.getElementById('${rowId}').remove(); recalcInvoiceTotals();" class="text-rose-400 font-bold text-sm hover:text-rose-300">✕ Remove</button>
+                </div>
+                
+                <!-- 大文本域：支持自由打字、换行、排版多块玻璃明细 -->
+                <div>
+                    <label class="text-[10px] text-slate-400 block mb-0.5">Item Description (自由排版多行备注与玻璃明细):</label>
+                    <textarea rows="3" oninput="recalcInvoiceTotals()" class="item-desc w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-xs custom-scroll">${desc}</textarea>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 items-center">
+                    <div class="mode-fixed-fields ${mode==='fixed'?'':'hidden'}">
+                        <label class="text-[10px] text-slate-400 block">Total Price ($ incl. GST)</label>
+                        <input type="number" step="0.01" value="${price}" oninput="recalcInvoiceTotals()" class="item-price w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-white font-mono text-xs text-emerald-400 font-bold">
+                    </div>
+                    
+                    <div class="mode-area-fields ${mode==='area'?'grid grid-cols-3 gap-1 col-span-3':'hidden'}">
+                        <div>
+                            <label class="text-[10px] text-slate-400 block">Area (m²)</label>
+                            <input type="number" step="0.01" value="${area}" oninput="recalcInvoiceTotals()" class="item-area w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-white font-mono text-xs text-center">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 block">Rate ($/m²)</label>
+                            <input type="number" step="0.01" value="${rate}" oninput="recalcInvoiceTotals()" class="item-rate w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-white font-mono text-xs text-right">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-400 block">Qty</label>
+                            <input type="number" min="1" value="${qty}" oninput="recalcInvoiceTotals()" class="item-qty w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-white font-mono text-xs text-center">
+                        </div>
+                    </div>
+
+                    <div class="text-right sm:col-start-4">
+                        <span class="text-[10px] text-slate-400 block">Line Amount:</span>
+                        <span class="row-amount font-mono font-bold text-emerald-400 text-sm">$0.00</span>
+                    </div>
+                </div>
             `;
-            tbody.appendChild(tr);
+            container.appendChild(div);
+            recalcInvoiceTotals();
+        }
+
+        function toggleItemMode(rowId) {
+            const row = document.getElementById(rowId);
+            if (!row) return;
+            const mode = row.querySelector('.item-mode').value;
+            const fixedFields = row.querySelector('.mode-fixed-fields');
+            const areaFields = row.querySelector('.mode-area-fields');
+
+            if (mode === 'fixed') {
+                fixedFields.classList.remove('hidden');
+                areaFields.classList.add('hidden');
+                areaFields.classList.remove('grid', 'grid-cols-3', 'gap-1', 'col-span-3');
+            } else {
+                fixedFields.classList.add('hidden');
+                areaFields.classList.remove('hidden');
+                areaFields.classList.add('grid', 'grid-cols-3', 'gap-1', 'col-span-3');
+            }
             recalcInvoiceTotals();
         }
 
         function recalcInvoiceTotals() {
             let grandTotal = 0;
-            document.querySelectorAll('#invoiceItemsTbody tr').forEach(tr => {
-                const inputs = tr.querySelectorAll('input');
-                const qty = parseFloat(inputs[1].value) || 0;
-                const price = parseFloat(inputs[2].value) || 0;
-                const amt = qty * price;
+            document.querySelectorAll('#invoiceItemsContainer > div').forEach(row => {
+                const mode = row.querySelector('.item-mode').value;
+                let amt = 0;
+                if (mode === 'fixed') {
+                    amt = parseFloat(row.querySelector('.item-price').value) || 0;
+                } else {
+                    const area = parseFloat(row.querySelector('.item-area').value) || 0;
+                    const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+                    const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
+                    amt = area * rate * qty;
+                }
+                row.querySelector('.row-amount').textContent = `$${amt.toFixed(2)}`;
                 grandTotal += amt;
-                tr.querySelector('.row-amount').textContent = `$${amt.toFixed(2)}`;
             });
 
             // 反算未税 Subtotal 与 15% GST
@@ -1132,19 +1217,28 @@
             pTbody.innerHTML = '';
 
             let grandTotal = 0;
-            document.querySelectorAll('#invoiceItemsTbody tr').forEach(tr => {
-                const inputs = tr.querySelectorAll('input');
-                const desc = inputs[0].value;
-                const qty = parseFloat(inputs[1].value) || 0;
-                const price = parseFloat(inputs[2].value) || 0;
-                const amt = qty * price;
+            document.querySelectorAll('#invoiceItemsContainer > div').forEach(row => {
+                const mode = row.querySelector('.item-mode').value;
+                const desc = row.querySelector('.item-desc').value;
+                let amt = 0, rateOrDetail = '';
+
+                if (mode === 'fixed') {
+                    amt = parseFloat(row.querySelector('.item-price').value) || 0;
+                    rateOrDetail = `Lump Sum`;
+                } else {
+                    const area = parseFloat(row.querySelector('.item-area').value) || 0;
+                    const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+                    const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
+                    amt = area * rate * qty;
+                    rateOrDetail = `${area}m² @ $${rate}/m²`;
+                }
                 grandTotal += amt;
 
                 const ptr = document.createElement('tr');
                 ptr.innerHTML = `
-                    <td class="p-2.5 font-medium text-slate-800">${desc}</td>
-                    <td class="p-2.5 text-center font-mono">${qty}</td>
-                    <td class="p-2.5 text-right font-mono">$${price.toFixed(2)}</td>
+                    <td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${desc}</td>
+                    <td class="p-2.5 text-center font-mono">1</td>
+                    <td class="p-2.5 text-right font-mono">${rateOrDetail}</td>
                     <td class="p-2.5 text-right font-mono font-bold">$${amt.toFixed(2)}</td>
                 `;
                 pTbody.appendChild(ptr);
@@ -1174,7 +1268,7 @@
 
         async function exportDataJSON() {
             const clients = await dbGetAllClients();
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: 'v12.7', clients }, null, 2));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: 'v12.8', clients }, null, 2));
             const dl = document.createElement('a');
             dl.setAttribute("href", dataStr);
             dl.setAttribute("download", `TintPro_Manager_Backup_${new Date().toISOString().slice(0,10)}.json`);
