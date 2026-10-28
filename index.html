@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TintPro Manager v12.11 Pro - Light & Salt / Bayview Edition</title>
+    <title>TintPro Manager v12.12 Pro - Light & Salt / Bayview Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -22,11 +22,44 @@
         
         #optimizerCanvasContainer { touch-action: none; }
 
+        /* 🖨️ 精准打印排版修复：彻底解决多页空白与两边贴边问题 */
+        @page {
+            size: A4 portrait;
+            margin: 12mm 15mm;
+        }
+
         @media print {
-            body * { visibility: hidden; }
-            #printableInvoice, #printableInvoice * { visibility: visible; }
-            #printableInvoice { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 0 !important; }
-            .no-print { display: none !important; }
+            html, body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                height: 100%;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+            }
+            body * {
+                visibility: hidden;
+            }
+            #printableInvoice, #printableInvoice * {
+                visibility: visible;
+            }
+            #printableInvoice {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                background: #ffffff !important;
+                page-break-inside: avoid;
+                page-break-after: avoid;
+            }
+            .no-print {
+                display: none !important;
+            }
         }
     </style>
 </head>
@@ -62,7 +95,7 @@
                     </div>
                     <div>
                         <h1 class="text-base font-bold text-white flex items-center gap-2">
-                            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">v12.11 Pro</span>
+                            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">v12.12 Pro</span>
                         </h1>
                         <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
                     </div>
@@ -265,7 +298,7 @@
                         </div>
                     </div>
 
-                    <!-- 🖨️ A4 打印预览容器 -->
+                    <!-- 🖨️ A4 打印预览容器：修复布局与一页完整输出 -->
                     <div id="printableInvoice" class="bg-white text-slate-900 p-8 rounded-xl shadow-2xl space-y-6 hidden border border-slate-200">
                         <div class="flex justify-between items-start border-b-2 border-slate-900 pb-6">
                             <div>
@@ -525,7 +558,6 @@
             if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' });
         }
 
-        // 彻底修复重复客户：基于唯一 ID 严格去重，并清理云端冗余数据
         async function syncToCloud(showAlert = false) {
             if (!accessToken) { handleGoogleAuth(); return; }
             try {
@@ -545,7 +577,6 @@
                     remoteClients = remoteData.clients || [];
                 }
 
-                // 严格按照 ID 去重合并，确保相同 ID 只保留最新更新的一个
                 const clientMap = new Map();
                 remoteClients.forEach(c => { if (c && c.id) clientMap.set(c.id, c); });
                 localClients.forEach(c => {
@@ -558,7 +589,6 @@
 
                 const mergedClients = Array.from(clientMap.values());
                 
-                // 清空并重新存入去重后的干净数据
                 const txClear = db.transaction('clients', 'readwrite');
                 txClear.objectStore('clients').clear();
                 await new Promise(resolve => txClear.oncomplete = resolve);
@@ -568,7 +598,7 @@
                 renderJobsList();
                 populateInvoiceClientSelect();
 
-                const backupData = { version: 'v12.11', updatedAt: new Date().toISOString(), clients: mergedClients };
+                const backupData = { version: 'v12.12', updatedAt: new Date().toISOString(), clients: mergedClients };
                 const fileContent = JSON.stringify(backupData, null, 2);
 
                 if (fileId) {
@@ -590,11 +620,9 @@
             } catch (err) { console.error(err); if (showAlert) alert('Sync failed'); }
         }
 
-        // 手动一键去重清理函数
         async function cleanDuplicateClients() {
             const clients = await dbGetAllClients();
             const map = new Map();
-            // 如果名字或ID相同，只保留最新的一条
             clients.forEach(c => {
                 const key = c.id || c.name.trim().toLowerCase();
                 if (!map.has(key) || (c.updatedAt || 0) > (map.get(key).updatedAt || 0)) {
@@ -975,7 +1003,6 @@
             container.innerHTML = '';
 
             const price = savedClient.price || 0;
-            // 一口价按 Excl. GST 传入
             addInvoiceItemRow('', 'fixed', 1, 0, 0, price);
             recalcInvoiceTotals();
         }
@@ -1135,7 +1162,6 @@
             recalcInvoiceTotals();
         }
 
-        // 行项目：输入 Excl. GST 金额，Line Amount 展示含 GST 总额（或净额根据Tradie习惯）
         function addInvoiceItemRow(desc = '', mode = 'fixed', qty = 1, area = 0, rate = 0, price = 0) {
             const container = document.getElementById('invoiceItemsContainer');
             const rowId = 'item_row_' + Date.now() + Math.random().toString(36).substr(2, 5);
@@ -1210,7 +1236,6 @@
             recalcInvoiceTotals();
         }
 
-        // 改为 Excl. GST 汇总逻辑
         function recalcInvoiceTotals() {
             let subtotal = 0;
             document.querySelectorAll('#invoiceItemsContainer > div').forEach(row => {
@@ -1236,7 +1261,6 @@
             document.getElementById('invCalcTotal').textContent = `$${grandTotal.toFixed(2)}`;
         }
 
-        // 格式化日期为新西兰标准 DD/MM/YYYY
         function formatDateNZ(dateStr) {
             if (!dateStr) return '';
             const parts = dateStr.split('-');
@@ -1347,7 +1371,7 @@
 
         async function exportDataJSON() {
             const clients = await dbGetAllClients();
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: 'v12.11', clients }, null, 2));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: 'v12.12', clients }, null, 2));
             const dl = document.createElement('a');
             dl.setAttribute("href", dataStr);
             dl.setAttribute("download", `TintPro_Manager_Backup_${new Date().toISOString().slice(0,10)}.json`);
