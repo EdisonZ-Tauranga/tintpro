@@ -32,7 +32,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
 
-    <!-- 顶部 Header：Bayview 标准色 Logo -->
+    <!-- 顶部 Header -->
     <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-30 shadow-md">
         <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div class="flex items-center space-x-3 w-full sm:w-auto justify-between">
@@ -64,7 +64,7 @@
                         <h1 class="text-base font-bold text-white flex items-center gap-2">
                             TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">v12.6 Pro</span>
                         </h1>
-                        <p class="text-[11px] text-slate-400">Bayview NZ Tinting & Cloud Drive Sync</p>
+                        <p class="text-[11px] text-slate-400">Bayview NZ Tinting & Cloud Sync</p>
                     </div>
                 </div>
                 <button onclick="toggleLanguage()" class="sm:hidden px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-sky-300 text-xs font-bold border border-slate-600 transition">
@@ -80,7 +80,7 @@
                     <i data-lucide="log-in" class="w-4 h-4 text-sky-400"></i> <span id="authBtnText">Bind Google</span>
                 </button>
                 <button onclick="syncToCloud(true)" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white shadow transition">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span>Cloud Sync (Photos+)</span>
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span>Cloud Sync (Photos+Data)</span>
                 </button>
                 <button onclick="exportDataJSON()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition">
                     <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> <span>Export</span>
@@ -146,14 +146,6 @@
                     <div id="cal-week-header" class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-bold text-slate-400 py-2 border-b border-slate-700"></div>
                     <div id="cal-grid" class="grid grid-cols-7 gap-1 sm:gap-2"></div>
                 </div>
-
-                <div id="mobileDayDetailBox" class="hidden bg-slate-800 border border-sky-500/50 rounded-2xl p-4 space-y-3 shadow-2xl">
-                    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-                        <h3 id="mobileDayTitle" class="text-sm font-bold text-sky-300">Selected Day Schedule</h3>
-                        <button onclick="closeMobileDayDetail()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
-                    </div>
-                    <div id="mobileDayEventsList" class="space-y-2 text-xs"></div>
-                </div>
             </section>
 
             <!-- TAB 2: 裁切优化 -->
@@ -176,11 +168,6 @@
                             <button onclick="resetZoom()" class="px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold shadow">Reset Zoom</button>
                             <button onclick="optimizeRollLayout()" class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow">Recalculate</button>
                         </div>
-                    </div>
-
-                    <div id="optWarningBox" class="hidden p-3 rounded-xl bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs flex items-start gap-2">
-                        <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0 mt-0.5"></i>
-                        <div id="optWarningText"></div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
@@ -207,14 +194,7 @@
                     </div>
 
                     <div id="optimizerCanvasContainer" class="w-full bg-slate-950 p-4 rounded-xl border border-slate-700 flex flex-col items-center overflow-hidden relative select-none" style="height: 440px;">
-                        <div class="absolute top-3 left-3 z-10 flex items-center gap-3 text-[11px] text-slate-300 bg-slate-900/90 px-3 py-1.5 rounded-lg border border-slate-700 pointer-events-none shadow">
-                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-sky-600 border border-sky-400 inline-block rounded"></span> <span>Cut Pieces</span></span>
-                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-amber-500/30 border border-dashed border-amber-400 inline-block rounded"></span> <span>Offcut</span></span>
-                            <span class="text-sky-400 font-mono text-[10px]" id="zoomIndicator">100%</span>
-                        </div>
-                        <div class="w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing">
-                            <canvas id="optimizerCanvas" class="rounded shadow bg-slate-900 border border-slate-700"></canvas>
-                        </div>
+                        <canvas id="optimizerCanvas" class="rounded shadow bg-slate-900 border border-slate-700"></canvas>
                     </div>
                 </div>
             </section>
@@ -324,9 +304,9 @@ Ref: [Invoice Number]</textarea>
                         <div class="grid grid-cols-2 gap-6 text-xs bg-slate-50 p-4 rounded-lg border border-slate-200">
                             <div>
                                 <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">Billed To / 客户信息:</span>
-                                <p class="font-bold text-sm text-slate-900" id="pClientName">Edison Zhou</p>
-                                <p class="text-slate-600" id="pClientAddress">17 Veda Place, Pyes Pa, Tauranga</p>
-                                <p class="text-slate-600" id="pClientPhone">Phone: 027 448 4555</p>
+                                <p class="font-bold text-sm text-slate-900" id="pClientName">Glynis Diamond</p>
+                                <p class="text-slate-600" id="pClientAddress">310B, Bethlehem</p>
+                                <p class="text-slate-600" id="pClientPhone">Phone: 0221052318</p>
                             </div>
                             <div>
                                 <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">Service Details / 服务说明:</span>
@@ -375,28 +355,8 @@ Ref: [Invoice Number]</textarea>
                         <span class="text-[11px] px-2 py-0.5 rounded bg-sky-500/20 text-sky-300">Standard NZD</span>
                     </div>
 
-                    <div class="bg-slate-900/80 p-3 rounded-xl border border-sky-500/30 space-y-2">
-                        <label class="text-slate-300 font-bold block">Pricing Calculation Mode:</label>
-                        <div class="grid grid-cols-2 gap-2 text-xs">
-                            <label class="flex items-center gap-2 bg-slate-800 p-2 rounded-lg cursor-pointer border border-slate-700 hover:border-sky-500">
-                                <input type="radio" name="calcMode" value="glass" checked onchange="onPricingModeChange()" class="text-sky-600 focus:ring-0">
-                                <div>
-                                    <span class="block font-semibold text-white">Net Glass Area Mode</span>
-                                    <span class="block text-[10px] text-slate-400">Auto-fills Net Glass Area</span>
-                                </div>
-                            </label>
-                            <label class="flex items-center gap-2 bg-slate-800 p-2 rounded-lg cursor-pointer border border-slate-700 hover:border-sky-500">
-                                <input type="radio" name="calcMode" value="film" onchange="onPricingModeChange()" class="text-sky-600 focus:ring-0">
-                                <div>
-                                    <span class="block font-semibold text-white">Film Consumption Mode</span>
-                                    <span class="block text-[10px] text-slate-400">Auto-fills Film Consumption</span>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
                     <div class="grid grid-cols-2 gap-4">
-                        <div><label class="text-slate-400 block mb-1" id="lblCalcArea">Area / 计价面积 (m²)</label><input type="number" id="calcArea" value="12" step="0.01" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono font-bold text-emerald-400"></div>
+                        <div><label class="text-slate-400 block mb-1">Area / 计价面积 (m²)</label><input type="number" id="calcArea" value="12" step="0.01" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono font-bold text-emerald-400"></div>
                         <div><label class="text-slate-400 block mb-1">Rate / 单价 ($/m²)</label><input type="number" id="calcRate" value="85" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
                         <div><label class="text-slate-400 block mb-1">Callout Fee / 上门费 ($)</label><input type="number" id="calcCallout" value="150" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
                         <div><label class="text-slate-400 block mb-1">Extra / 杂费折扣 ($)</label><input type="number" id="calcExtra" value="45" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
@@ -441,7 +401,7 @@ Ref: [Invoice Number]</textarea>
                             </optgroup>
                         </select>
                     </div>
-                    <div><label class="text-slate-400 block mb-1">Address / 详细地址</label><input type="text" id="custAddress" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white" placeholder="17 Veda Place"></div>
+                    <div><label class="text-slate-400 block mb-1">Address / 详细地址</label><input type="text" id="custAddress" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white" placeholder="310B"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-3 bg-slate-900/60 p-3 rounded-xl border border-sky-500/20">
                     <div><label class="text-slate-300 block mb-1 font-semibold">🔍 测量预约 (Quote Date)</label><input type="datetime-local" id="custQuoteDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
@@ -454,7 +414,7 @@ Ref: [Invoice Number]</textarea>
 
                 <div class="pt-3 border-t border-slate-700 space-y-2">
                     <div class="flex justify-between items-center">
-                        <h4 class="font-bold text-sky-400 flex items-center gap-1"><i data-lucide="camera" class="w-4 h-4"></i> <span>Site Photos / 现场照片 (Drive Sync)</span></h4>
+                        <h4 class="font-bold text-sky-400 flex items-center gap-1"><i data-lucide="camera" class="w-4 h-4"></i> <span>Site Photos / 现场照片 (Base64 Cloud Sync)</span></h4>
                         <label class="cursor-pointer px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-[11px] font-semibold transition">
                             <span>+ Upload / 拍照上传</span>
                             <input type="file" accept="image/*" multiple onchange="handlePhotoUpload(event)" class="hidden">
@@ -472,7 +432,11 @@ Ref: [Invoice Number]</textarea>
                 </div>
             </div>
             <div class="px-5 py-3 border-t border-slate-700 bg-slate-800 flex justify-between items-center">
-                <button type="button" onclick="sendClientToOptimizer()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-white font-medium shadow transition">Import to Optimizer</button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="sendClientToOptimizer()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-white font-medium shadow transition">Import to Optimizer</button>
+                    <!-- ✨ 新增：在客户弹窗中直接生成发票按钮 -->
+                    <button type="button" onclick="generateInvoiceFromClientModal()" class="px-3 py-2 bg-sky-600 hover:bg-sky-500 rounded-xl text-white font-medium shadow transition flex items-center gap-1"><i data-lucide="file-text" class="w-4 h-4"></i> Generate Invoice</button>
+                </div>
                 <div class="flex gap-2">
                     <button type="button" onclick="closeClientModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-slate-300 transition">Cancel</button>
                     <button type="button" onclick="saveClientModal()" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 rounded-xl font-bold text-white shadow transition">Save Profile</button>
@@ -496,26 +460,12 @@ Ref: [Invoice Number]</textarea>
         let currentLang = localStorage.getItem('nz_lang') || 'ZH';
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
-
-        let canvasZoom = 1;
-        let canvasPanX = 0;
-        let canvasPanY = 0;
-        let isDragging = false;
-        let startX = 0, startY = 0;
-        let currentRenderData = null;
+        let currentPhotos = []; // 存储 Base64 照片数组
 
         function toggleLanguage() {
             currentLang = currentLang === 'ZH' ? 'EN' : 'ZH';
             localStorage.setItem('nz_lang', currentLang);
-            applyLanguage();
-        }
-
-        function applyLanguage() {
-            document.getElementById('langBtnText').textContent = currentLang === 'ZH' ? 'English' : '中文';
-            document.getElementById('langBtnMobile').textContent = currentLang === 'ZH' ? 'English' : '中文';
-            runQuickCalc();
             renderJobsList();
-            renderCalendar();
         }
 
         function initGoogleAuth() {
@@ -538,54 +488,17 @@ Ref: [Invoice Number]</textarea>
             if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' });
         }
 
-        // --- ☁️ Google Drive 独立文件夹云端同步（方案 2） ---
-        async function getOrCreatePhotosFolder() {
-            const queryRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='TintPro_Photos' and mimeType='application/vnd.google-apps.folder' and trashed=false`, {
-                headers: { 'Authorization': `Bearer ${accessToken}` }
-            });
-            const queryJson = await queryRes.json();
-            if (queryJson.files && queryJson.files.length > 0) {
-                return queryJson.files[0].id;
-            }
-            // 创建新文件夹
-            const createRes = await fetch(`https://www.googleapis.com/drive/v3/files`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: 'TintPro_Photos', mimeType: 'application/vnd.google-apps.folder' })
-            });
-            const folderJson = await createRes.json();
-            return folderJson.id;
-        }
-
+        // --- ☁️ 稳健的 Base64 嵌入式云端同步方案（照片+数据完美同步） ---
         async function syncToCloud(showAlert = false) {
             if (!accessToken) { handleGoogleAuth(); return; }
             try {
-                const photosFolderId = await getOrCreatePhotosFolder();
-
-                // 1. 同步本地未上传的图片到 Google Drive 独立文件夹
-                const allPhotos = await dbGetAllPhotos();
-                for (let p of allPhotos) {
-                    if (p.isNew && p.blob) {
-                        const metadata = { name: p.id + '.jpg', parents: [photosFolderId] };
-                        const form = new FormData();
-                        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-                        form.append('file', p.blob, p.id + '.jpg');
-
-                        await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                            method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}` }, body: form
-                        });
-                        p.isNew = false;
-                        await dbSavePhoto(p);
-                    }
-                }
-
-                // 2. 从云端同步 bayview-backup.json 文本与照片索引
+                const localClients = await dbGetAllClients();
                 const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='bayview-backup.json' and trashed=false`, {
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
                 const searchJson = await searchRes.json();
 
-                let remoteClients = [], remoteDeletedIds = [], fileId = null;
+                let remoteClients = [], fileId = null;
                 if (searchJson.files && searchJson.files.length > 0) {
                     fileId = searchJson.files[0].id;
                     const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
@@ -593,55 +506,23 @@ Ref: [Invoice Number]</textarea>
                     });
                     const remoteData = await fileRes.json();
                     remoteClients = remoteData.clients || [];
-                    remoteDeletedIds = remoteData.deletedIds || [];
                 }
 
-                const localClients = await dbGetAllClients();
-                let localDeletedIds = JSON.parse(localStorage.getItem('nz_deleted_ids') || '[]');
-                const allDeletedIdsSet = new Set([...localDeletedIds, ...remoteDeletedIds]);
-
+                // 合并本地与云端数据 (以更新时间为准)
                 const clientMap = new Map();
-                remoteClients.forEach(c => { if (!allDeletedIdsSet.has(c.id)) clientMap.set(c.id, c); });
+                remoteClients.forEach(c => clientMap.set(c.id, c));
                 localClients.forEach(c => {
-                    if (!allDeletedIdsSet.has(c.id)) {
-                        if (!clientMap.has(c.id) || (c.updatedAt || 0) >= (clientMap.get(c.id).updatedAt || 0)) {
-                            clientMap.set(c.id, c);
-                        }
+                    if (!clientMap.has(c.id) || (c.updatedAt || 0) >= (clientMap.get(c.id).updatedAt || 0)) {
+                        clientMap.set(c.id, c);
                     }
                 });
 
                 const mergedClients = Array.from(clientMap.values());
-                const finalDeletedIds = Array.from(allDeletedIdsSet);
+                for (let c of mergedClients) await dbSaveClient(c);
 
-                // 3. 检查云端是否有本地缺失的图片，自动下载并存入 IndexedDB
-                for (let c of mergedClients) {
-                    if (c.photosMeta) {
-                        for (let pMeta of c.photosMeta) {
-                            let existingP = await dbGetPhoto(pMeta.id);
-                            if (!existingP) {
-                                // 从 Google Drive 的 TintPro_Photos 文件夹中按名称寻找该图片
-                                const imgSearch = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${pMeta.id}.jpg' and '${photosFolderId}' in parents and trashed=false`, {
-                                    headers: { 'Authorization': `Bearer ${accessToken}` }
-                                });
-                                const imgSearchJson = await imgSearch.json();
-                                if (imgSearchJson.files && imgSearchJson.files.length > 0) {
-                                    const imgId = imgSearchJson.files[0].id;
-                                    const imgBlobRes = await fetch(`https://www.googleapis.com/drive/v3/files/${imgId}?alt=media`, {
-                                        headers: { 'Authorization': `Bearer ${accessToken}` }
-                                    });
-                                    const blob = await imgBlobRes.blob();
-                                    await dbSavePhoto({ id: pMeta.id, blob });
-                                }
-                            }
-                        }
-                    }
-                    await dbSaveClient(c);
-                }
+                renderJobsList();
 
-                localStorage.setItem('nz_deleted_ids', JSON.stringify(finalDeletedIds));
-                renderJobsList(); renderCalendar();
-
-                const backupData = { version: 'v12.6', updatedAt: new Date().toISOString(), clients: mergedClients, deletedIds: finalDeletedIds };
+                const backupData = { version: 'v12.6', updatedAt: new Date().toISOString(), clients: mergedClients };
                 const fileContent = JSON.stringify(backupData, null, 2);
 
                 if (fileId) {
@@ -659,14 +540,13 @@ Ref: [Invoice Number]</textarea>
                         method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}` }, body: form
                     });
                 }
-                if (showAlert) alert('Cloud Drive & Photos Sync Complete! / 云端照片与数据同步完成！');
+                if (showAlert) alert('Cloud Sync Complete! Photos and Data synchronized successfully! / 云端照片与数据同步完成！');
             } catch (err) { console.error(err); if (showAlert) alert('Sync failed'); }
         }
 
         const DB_NAME = 'NZTintDB_v12';
         const DB_VERSION = 1;
         let db = null;
-        let currentPhotos = [];
 
         function initDB() {
             return new Promise((resolve, reject) => {
@@ -674,7 +554,6 @@ Ref: [Invoice Number]</textarea>
                 request.onupgradeneeded = (e) => {
                     const database = e.target.result;
                     if (!database.objectStoreNames.contains('clients')) database.createObjectStore('clients', { keyPath: 'id' });
-                    if (!database.objectStoreNames.contains('photos')) database.createObjectStore('photos', { keyPath: 'id' });
                 };
                 request.onsuccess = (e) => { db = e.target.result; resolve(db); };
                 request.onerror = (e) => reject(e);
@@ -705,47 +584,12 @@ Ref: [Invoice Number]</textarea>
             });
         }
 
-        function dbSavePhoto(photoObj) {
-            return new Promise((resolve) => {
-                const tx = db.transaction('photos', 'readwrite');
-                tx.objectStore('photos').put(photoObj);
-                tx.oncomplete = () => resolve();
-            });
-        }
-
-        function dbGetPhoto(id) {
-            return new Promise((resolve) => {
-                const tx = db.transaction('photos', 'readonly');
-                const req = tx.objectStore('photos').get(id);
-                req.onsuccess = () => resolve(req.result);
-            });
-        }
-
-        function dbGetAllPhotos() {
-            return new Promise((resolve) => {
-                const tx = db.transaction('photos', 'readonly');
-                const req = tx.objectStore('photos').getAll();
-                req.onsuccess = () => resolve(req.result || []);
-            });
-        }
-
-        function dbDeletePhoto(id) {
-            return new Promise((resolve) => {
-                const tx = db.transaction('photos', 'readwrite');
-                tx.objectStore('photos').delete(id);
-                tx.oncomplete = () => resolve();
-            });
-        }
-
         let lastCalcResult = { totalLenM: 0, totalGlassArea: 0, filmArea: 0, cost: 0 };
 
         window.addEventListener('DOMContentLoaded', async () => {
             await initDB();
             setTimeout(initGoogleAuth, 1000);
-            applyLanguage();
-            initOptimizerRows();
-            initCanvasTouchEvents();
-            runQuickCalc();
+            renderJobsList();
             renderCalendar();
             populateInvoiceClientSelect();
             lucide.createIcons();
@@ -783,7 +627,7 @@ Ref: [Invoice Number]</textarea>
 
             clients.filter(c => (c.name + c.suburb + c.address + c.phone).toLowerCase().includes(search)).forEach(c => {
                 const measureCount = (c.measures || []).reduce((acc, m) => acc + Number(m.qty || 1), 0);
-                const photoCount = (c.photosMeta || []).length;
+                const photoCount = (c.photos || []).length;
 
                 let statusBadgeClass = "bg-amber-500/20 text-amber-300 border border-amber-500/30";
                 if (c.status && c.status.includes('Completed')) statusBadgeClass = "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
@@ -827,7 +671,7 @@ Ref: [Invoice Number]</textarea>
             if (!gridEl || !titleEl || !weekHeaderEl) return;
 
             const monthNamesEN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            titleEl.textContent = currentLang === 'ZH' ? `${currentYear}年 ${currentMonth + 1}月预约日历` : `${monthNamesEN[currentMonth]} ${currentYear} Schedule Calendar`;
+            titleEl.textContent = `${monthNamesEN[currentMonth]} ${currentYear} Schedule Calendar`;
 
             weekHeaderEl.innerHTML = '';
             ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(w => weekHeaderEl.appendChild(createSafeElement('div', '', w)));
@@ -893,31 +737,28 @@ Ref: [Invoice Number]</textarea>
                 if (client) {
                     document.getElementById('custName').value = client.name || '';
                     document.getElementById('custPhone').value = client.phone || '';
-                    document.getElementById('custSuburb').value = client.suburb || 'Pyes Pa';
+                    document.getElementById('custSuburb').value = client.suburb || 'Bethlehem';
                     document.getElementById('custAddress').value = client.address || '';
                     document.getElementById('custQuoteDate').value = client.quoteDate || '';
                     document.getElementById('custJobDate').value = client.jobDate || '';
-                    document.getElementById('custStatus').value = client.status || 'Quote 报价中';
+                    document.getElementById('custStatus').value = client.status || 'Completed 已完工';
                     document.getElementById('custPrice').value = client.price || 0;
 
-                    if (client.photosMeta) {
-                        for (let pMeta of client.photosMeta) {
-                            const pObj = await dbGetPhoto(pMeta.id);
-                            if (pObj && pObj.blob) {
-                                currentPhotos.push({ id: pObj.id, blob: pObj.blob, url: URL.createObjectURL(pObj.blob), createdAt: pMeta.createdAt || Date.now(), isProtected: pMeta.isProtected || false });
-                            }
-                        }
+                    if (client.photos) {
+                        currentPhotos = [...client.photos];
                     }
                     (client.measures || []).forEach(m => addModalMeasureRow(m.label, m.w, m.h, m.qty));
                 }
             } else {
                 document.getElementById('custName').value = '';
                 document.getElementById('custPhone').value = '';
-                document.getElementById('custSuburb').value = 'Pyes Pa';
+                document.getElementById('custSuburb').value = 'Bethlehem';
                 document.getElementById('custAddress').value = '';
-                document.getElementById('custQuoteDate').value = new Date().toISOString().slice(0, 16);
+                document.getElementById('custQuoteDate').value = '';
+                document.getElementById('custJobDate').value = new Date().toISOString().slice(0, 16);
+                document.getElementById('custStatus').value = 'Completed 已完工';
                 document.getElementById('custPrice').value = '';
-                addModalMeasureRow('Living Room', 1200, 1500, 2);
+                addModalMeasureRow('Kitchen', 780, 520, 2);
             }
             renderPhotoPreviews();
             document.getElementById('clientModal').classList.remove('hidden');
@@ -925,7 +766,6 @@ Ref: [Invoice Number]</textarea>
 
         function closeClientModal() {
             document.getElementById('clientModal').classList.add('hidden');
-            currentPhotos.forEach(p => { if (p.url) URL.revokeObjectURL(p.url); });
             currentPhotos = [];
         }
 
@@ -933,26 +773,24 @@ Ref: [Invoice Number]</textarea>
             const files = e.target.files;
             if (!files) return;
             for (let file of files) {
-                const img = new Image();
-                const tempUrl = URL.createObjectURL(file);
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX = 1200;
-                    let w = img.width, h = img.height;
-                    if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
-                    else { if (h > MAX) { w *= MAX / h; h = MAX; } }
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    canvas.toBlob(async (blob) => {
-                        const photoId = 'photo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
-                        const photoObj = { id: photoId, blob, createdAt: Date.now(), isProtected: false, isNew: true };
-                        await dbSavePhoto(photoObj);
-                        currentPhotos.push({ id: photoId, blob, url: URL.createObjectURL(blob), createdAt: photoObj.createdAt, isProtected: false });
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX = 900;
+                        let w = img.width, h = img.height;
+                        if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
+                        else { if (h > MAX) { w *= MAX / h; h = MAX; } }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        const base64Str = canvas.toDataURL('image/jpeg', 0.8);
+                        currentPhotos.push(base64Str);
                         renderPhotoPreviews();
-                        URL.revokeObjectURL(tempUrl);
-                    }, 'image/jpeg', 0.82);
+                    };
+                    img.src = evt.target.result;
                 };
-                img.src = tempUrl;
+                reader.readAsDataURL(file);
             }
         }
 
@@ -963,16 +801,16 @@ Ref: [Invoice Number]</textarea>
                 container.appendChild(createSafeElement('span', 'text-slate-400 text-[11px]', 'No photos added.'));
                 return;
             }
-            currentPhotos.forEach((pObj, idx) => {
+            currentPhotos.forEach((b64, idx) => {
                 const wrap = createSafeElement('div', 'relative w-20 h-20 rounded-lg overflow-hidden border border-slate-600 cursor-pointer shadow flex flex-col justify-end bg-slate-900');
+                wrap.onclick = () => openLightbox(b64);
                 const img = document.createElement('img');
-                img.src = pObj.url; img.className = 'absolute inset-0 w-full h-full object-cover';
+                img.src = b64; img.className = 'absolute inset-0 w-full h-full object-cover';
                 wrap.appendChild(img);
 
                 const delBtn = createSafeElement('button', 'absolute top-0.5 right-0.5 z-20 bg-rose-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-[10px]', '×');
-                delBtn.onclick = async (e) => {
+                delBtn.onclick = (e) => {
                     e.stopPropagation();
-                    await dbDeletePhoto(pObj.id);
                     currentPhotos.splice(idx, 1);
                     renderPhotoPreviews();
                 };
@@ -980,6 +818,12 @@ Ref: [Invoice Number]</textarea>
                 container.appendChild(wrap);
             });
         }
+
+        function openLightbox(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('imageLightbox').classList.remove('hidden');
+        }
+        function closeLightbox() { document.getElementById('imageLightbox').classList.add('hidden'); }
 
         function addModalMeasureRow(label = '', w = '', h = '', qty = 1) {
             const tbody = document.getElementById('modalMeasureTbody');
@@ -999,7 +843,6 @@ Ref: [Invoice Number]</textarea>
             if (!name) { alert('Please enter client name'); return; }
             const editingId = Number(document.getElementById('editingClientId').value);
 
-            const photosMeta = currentPhotos.map(p => ({ id: p.id, createdAt: p.createdAt, isProtected: p.isProtected }));
             const measures = [];
             document.querySelectorAll('#modalMeasureTbody tr').forEach(tr => {
                 const inputs = tr.querySelectorAll('input');
@@ -1019,7 +862,7 @@ Ref: [Invoice Number]</textarea>
                 status: document.getElementById('custStatus').value,
                 price: parseFloat(document.getElementById('custPrice').value) || 0,
                 updatedAt: Date.now(),
-                photosMeta,
+                photos: [...currentPhotos], // 将 Base64 图片直接存入对象中随云端同步
                 measures
             };
 
@@ -1044,6 +887,32 @@ Ref: [Invoice Number]</textarea>
             }
         }
 
+        // ✨ 客户弹窗中直接生成发票的联动逻辑
+        async function generateInvoiceFromClientModal() {
+            await saveClientModal();
+            const editingId = Number(document.getElementById('editingClientId').value);
+            const clients = await dbGetAllClients();
+            const client = clients.find(c => c.id === editingId);
+            
+            switchTab('invoices');
+            openNewInvoiceBuilder();
+
+            // 自动填充发票客户
+            const select = document.getElementById('invClientSelect');
+            if (select) select.value = client.id;
+            autoFillInvoiceClient();
+
+            // 如果有总报价或尺寸，自动作为行项目带入发票
+            const tbody = document.getElementById('invoiceItemsTbody');
+            tbody.innerHTML = '';
+            if (client.price && client.price > 0) {
+                addInvoiceItemRow(`Residential Window Tinting Services (${client.address || ''})`, 1, client.price / 1.15);
+            } else {
+                addInvoiceItemRow(`Residential Glass Tinting Installation`, 1, 350);
+            }
+            recalcInvoiceTotals();
+        }
+
         async function deleteClient(id) {
             if (confirm('Delete this client?')) {
                 await dbDeleteClient(id);
@@ -1054,8 +923,7 @@ Ref: [Invoice Number]</textarea>
         function initOptimizerRows() {
             const tbody = document.getElementById('optimizerPanelsTbody');
             tbody.innerHTML = '';
-            addOptimizerPanelRow('Kitchen', 930, 1170, 2);
-            addOptimizerPanelRow('Living 1', 2370, 1290, 1);
+            addOptimizerPanelRow('Kitchen', 780, 520, 2);
             optimizeRollLayout();
         }
 
@@ -1075,23 +943,6 @@ Ref: [Invoice Number]</textarea>
         function resetZoom() {
             canvasZoom = 1; canvasPanX = 0; canvasPanY = 0;
             if (currentRenderData) drawOptimizerCanvas(currentRenderData);
-        }
-
-        function initCanvasTouchEvents() {
-            const canvas = document.getElementById('optimizerCanvas');
-            if (!canvas) return;
-            canvas.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX - canvasPanX; startY = e.clientY - canvasPanY; });
-            window.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                canvasPanX = e.clientX - startX; canvasPanY = e.clientY - startY;
-                if (currentRenderData) drawOptimizerCanvas(currentRenderData);
-            });
-            window.addEventListener('mouseup', () => { isDragging = false; });
-            canvas.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                canvasZoom = Math.min(Math.max(0.5, canvasZoom * (e.deltaY < 0 ? 1.15 : 0.85)), 5);
-                if (currentRenderData) drawOptimizerCanvas(currentRenderData);
-            }, { passive: false });
         }
 
         function optimizeRollLayout() {
@@ -1155,13 +1006,13 @@ Ref: [Invoice Number]</textarea>
             const ctx = canvas.getContext('2d');
             const containerW = canvas.parentElement.clientWidth || 360;
             const containerH = canvas.parentElement.clientHeight || 380;
-            const scale = Math.min((containerW - 40) / rollW, (containerH - 40) / canvasH, 0.45) * canvasZoom;
+            const scale = Math.min((containerW - 40) / rollW, (containerH - 40) / canvasH, 0.45);
 
             canvas.width = containerW; canvas.height = containerH;
             ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.save();
-            ctx.translate((containerW - rollW * scale) / 2 + canvasPanX, (containerH - canvasH * scale) / 2 + canvasPanY);
+            ctx.translate((containerW - rollW * scale) / 2, (containerH - canvasH * scale) / 2);
             ctx.strokeStyle = "#475569"; ctx.strokeRect(0, 0, rollW * scale, canvasH * scale);
 
             placed.forEach(p => {
@@ -1290,15 +1141,8 @@ Ref: [Invoice Number]</textarea>
             printable.scrollIntoView({ behavior: 'smooth' });
         }
 
-        function onPricingModeChange() { runQuickCalc(); }
-
         function runQuickCalc() {
-            const selectedMode = document.querySelector('input[name="calcMode"]:checked').value;
-            const areaInput = document.getElementById('calcArea');
-            if (selectedMode === 'film' && lastCalcResult.filmArea > 0) areaInput.value = lastCalcResult.filmArea.toFixed(2);
-            else if (selectedMode === 'glass' && lastCalcResult.totalGlassArea > 0) areaInput.value = lastCalcResult.totalGlassArea.toFixed(2);
-
-            const area = Number(areaInput.value) || 0;
+            const area = Number(document.getElementById('calcArea').value) || 0;
             const rate = Number(document.getElementById('calcRate').value) || 0;
             const callout = Number(document.getElementById('calcCallout').value) || 0;
             const extra = Number(document.getElementById('calcExtra').value) || 0;
@@ -1338,4 +1182,3 @@ Ref: [Invoice Number]</textarea>
     </script>
 </body>
 </html>
-
