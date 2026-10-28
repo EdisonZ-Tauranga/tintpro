@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TintPro Manager v12.8 Pro - Light & Salt / Bayview Edition</title>
+    <title>TintPro Manager v12.9 Pro - Light & Salt / Bayview Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -62,7 +62,7 @@
                     </div>
                     <div>
                         <h1 class="text-base font-bold text-white flex items-center gap-2">
-                            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">v12.8 Pro</span>
+                            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">v12.9 Pro</span>
                         </h1>
                         <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
                     </div>
@@ -196,7 +196,7 @@
                 </div>
             </section>
 
-            <!-- TAB 2.5: TAX INVOICES 发票管理模块 (支持“一口价”与“面积单价”双模式 + 多行自由排版描述框) -->
+            <!-- TAB 2.5: TAX INVOICES 发票管理模块 -->
             <section id="tab-invoices" class="hidden space-y-6">
                 <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-6 space-y-6 shadow-xl">
                     <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 border-b border-slate-700 pb-4">
@@ -227,10 +227,10 @@
                             </div>
                         </div>
 
-                        <!-- 行项目：支持“一口价”与“面积单价”双模式切换，并采用大文本域供自由排版 -->
+                        <!-- 行项目：支持一口价与面积单价双模式 -->
                         <div class="space-y-2">
                             <div class="flex justify-between items-center">
-                                <span class="font-bold text-slate-300">Line Items (15% GST) — 支持 一口价 (Fixed Price) 或 面积单价 (Area & Rate)</span>
+                                <span class="font-bold text-slate-300">Line Items (15% GST)</span>
                                 <button onclick="addInvoiceItemRow('Residential Window Tinting Application', 'fixed', 1, 0, 0, 207)" class="text-sky-400 hover:underline">+ Add Line Item</button>
                             </div>
                             <div id="invoiceItemsContainer" class="space-y-3"></div>
@@ -260,7 +260,7 @@
                         </div>
                     </div>
 
-                    <!-- 🖨️ A4 打印预览容器 -->
+                    <!-- 🖨️ A4 打印预览容器 (无 Service Details，Payment Due 移至右上角且日期为 DD/MM/YYYY) -->
                     <div id="printableInvoice" class="bg-white text-slate-900 p-8 rounded-xl shadow-2xl space-y-6 hidden border border-slate-200">
                         <div class="flex justify-between items-start border-b-2 border-slate-900 pb-6">
                             <div>
@@ -292,23 +292,18 @@
                                     <p class="font-semibold text-slate-800">GST Reg No: 113-558-806</p>
                                 </div>
                             </div>
-                            <div class="text-right">
+                            <div class="text-right space-y-1">
                                 <h1 class="text-2xl font-black text-slate-900 tracking-wider">TAX INVOICE</h1>
-                                <p class="text-sm font-mono font-bold text-sky-600 mt-1" id="pInvNum">INV-2026-001</p>
-                                <p class="text-xs text-slate-500 mt-1">Date: <span id="pInvDate">28/10/2026</span></p>
+                                <p class="text-sm font-mono font-bold text-sky-600" id="pInvNum">INV-2026-001</p>
+                                <p class="text-xs text-slate-600">Date: <span id="pInvDate">28/10/2026</span></p>
+                                <p class="text-xs font-bold text-slate-900 pt-1">Payment Due: Within 7 Days</p>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-6 text-xs bg-slate-50 p-4 rounded-lg border border-slate-200">
-                            <div>
-                                <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">BILLED TO:</span>
-                                <p class="font-bold text-base text-slate-900" id="pClientName">Glynis Diamond</p>
-                            </div>
-                            <div>
-                                <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">SERVICE DETAILS:</span>
-                                <p class="text-slate-800 font-medium">Residential Window Tinting Application</p>
-                                <p class="text-slate-800 font-semibold mt-1">Payment Due: Within 7 Days</p>
-                            </div>
+                        <!-- 纯客户端名称区域 -->
+                        <div class="text-xs bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">BILLED TO:</span>
+                            <p class="font-bold text-base text-slate-900" id="pClientName">Glynis Diamond</p>
                         </div>
 
                         <table class="w-full text-left text-xs divide-y divide-slate-200">
@@ -462,7 +457,6 @@
         let currentMonth = new Date().getMonth();
         let currentPhotos = [];
 
-        // 真正的全局多语言词典
         const i18n = {
             ZH: {
                 menuClients: "Clients & Projects / 客户项目",
@@ -559,7 +553,7 @@
 
                 renderJobsList();
 
-                const backupData = { version: 'v12.8', updatedAt: new Date().toISOString(), clients: mergedClients };
+                const backupData = { version: 'v12.9', updatedAt: new Date().toISOString(), clients: mergedClients };
                 const fileContent = JSON.stringify(backupData, null, 2);
 
                 if (fileId) {
@@ -943,7 +937,6 @@
             if (savedClient.address) desc += ` (${savedClient.address})`;
 
             const lumpSum = savedClient.price || 207;
-            // 默认填充一口价模式
             addInvoiceItemRow(desc, 'fixed', 1, 0, 0, lumpSum);
             recalcInvoiceTotals();
         }
@@ -1102,7 +1095,6 @@
             recalcInvoiceTotals();
         }
 
-        // ✨ 核心升级：支持 一口价 (fixed) 与 面积单价 (area) 双模式，且描述框升级为大文本域
         function addInvoiceItemRow(desc = '', mode = 'fixed', qty = 1, area = 0, rate = 0, price = 0) {
             const container = document.getElementById('invoiceItemsContainer');
             const rowId = 'item_row_' + Date.now() + Math.random().toString(36).substr(2, 5);
@@ -1122,7 +1114,6 @@
                     <button type="button" onclick="document.getElementById('${rowId}').remove(); recalcInvoiceTotals();" class="text-rose-400 font-bold text-sm hover:text-rose-300">✕ Remove</button>
                 </div>
                 
-                <!-- 大文本域：支持自由打字、换行、排版多块玻璃明细 -->
                 <div>
                     <label class="text-[10px] text-slate-400 block mb-0.5">Item Description (自由排版多行备注与玻璃明细):</label>
                     <textarea rows="3" oninput="recalcInvoiceTotals()" class="item-desc w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-xs custom-scroll">${desc}</textarea>
@@ -1195,7 +1186,6 @@
                 grandTotal += amt;
             });
 
-            // 反算未税 Subtotal 与 15% GST
             const subtotal = grandTotal / 1.15;
             const gst = grandTotal - subtotal;
 
@@ -1204,13 +1194,24 @@
             document.getElementById('invCalcTotal').textContent = `$${grandTotal.toFixed(2)}`;
         }
 
+        // 格式化日期为新西兰标准 DD/MM/YYYY
+        function formatDateNZ(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateStr;
+        }
+
         function renderPrintableInvoice() {
             const printable = document.getElementById('printableInvoice');
             printable.classList.remove('hidden');
 
             const invNum = document.getElementById('invNumber').value;
+            const rawDate = document.getElementById('invDate').value;
             document.getElementById('pInvNum').textContent = invNum;
-            document.getElementById('pInvDate').textContent = document.getElementById('invDate').value;
+            document.getElementById('pInvDate').textContent = formatDateNZ(rawDate);
             document.getElementById('pBankRefText').textContent = invNum;
 
             const pTbody = document.getElementById('pInvoiceTbody');
@@ -1224,7 +1225,7 @@
 
                 if (mode === 'fixed') {
                     amt = parseFloat(row.querySelector('.item-price').value) || 0;
-                    rateOrDetail = `Lump Sum`;
+                    rateOrDetail = `Fixed Price`;
                 } else {
                     const area = parseFloat(row.querySelector('.item-area').value) || 0;
                     const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
@@ -1268,7 +1269,7 @@
 
         async function exportDataJSON() {
             const clients = await dbGetAllClients();
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: 'v12.8', clients }, null, 2));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: 'v12.9', clients }, null, 2));
             const dl = document.createElement('a');
             dl.setAttribute("href", dataStr);
             dl.setAttribute("download", `TintPro_Manager_Backup_${new Date().toISOString().slice(0,10)}.json`);
