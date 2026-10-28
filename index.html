@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TintPro Manager v12.6 Pro - Bayview Edition</title>
+    <title>TintPro Manager v12.7 Pro - Light & Salt / Bayview Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -25,7 +25,7 @@
         @media print {
             body * { visibility: hidden; }
             #printableInvoice, #printableInvoice * { visibility: visible; }
-            #printableInvoice { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; }
+            #printableInvoice { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 0 !important; }
             .no-print { display: none !important; }
         }
     </style>
@@ -62,25 +62,25 @@
                     </div>
                     <div>
                         <h1 class="text-base font-bold text-white flex items-center gap-2">
-                            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">v12.6 Pro</span>
+                            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">v12.7 Pro</span>
                         </h1>
-                        <p class="text-[11px] text-slate-400">Bayview NZ Tinting & Cloud Sync</p>
+                        <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
                     </div>
                 </div>
                 <button onclick="toggleLanguage()" class="sm:hidden px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-sky-300 text-xs font-bold border border-slate-600 transition">
-                    <span id="langBtnMobile">English</span>
+                    <span id="langBtnMobile">中 / EN</span>
                 </button>
             </div>
             
             <div class="flex items-center flex-wrap gap-2">
-                <button onclick="toggleLanguage()" class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 hover:bg-slate-600 text-sky-300 border border-slate-600 transition">
-                    <i data-lucide="languages" class="w-4 h-4"></i> <span id="langBtnText">English</span>
+                <button onclick="toggleLanguage()" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 hover:bg-slate-600 text-sky-300 border border-slate-600 transition">
+                    <i data-lucide="languages" class="w-4 h-4"></i> <span id="langBtnText">切换语言 / Switch Lang</span>
                 </button>
                 <button id="googleAuthBtn" onclick="handleGoogleAuth()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition">
                     <i data-lucide="log-in" class="w-4 h-4 text-sky-400"></i> <span id="authBtnText">Bind Google</span>
                 </button>
                 <button onclick="syncToCloud(true)" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white shadow transition">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span>Cloud Sync (Photos+Data)</span>
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span>Cloud Sync</span>
                 </button>
                 <button onclick="exportDataJSON()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition">
                     <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> <span>Export</span>
@@ -93,24 +93,24 @@
         </div>
     </header>
 
-    <!-- 主体布局 -->
+    <!-- 主体布局：侧边栏拓宽至 w-72 避免排版换行 -->
     <div class="flex-1 max-w-7xl w-full mx-auto p-4 flex flex-col md:flex-row gap-6 mb-16">
-        <aside class="flex flex-col w-full md:w-64 shrink-0 gap-2">
-            <nav class="bg-slate-800 p-2 rounded-2xl border border-slate-700 space-y-1 shadow">
-                <button onclick="switchTab('jobs')" id="nav-jobs" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-sky-600 text-white shadow-md transition">
-                    <i data-lucide="briefcase" class="w-5 h-5"></i><span>Clients & Projects / 客户项目</span>
+        <aside class="flex flex-col w-full md:w-72 shrink-0 gap-2">
+            <nav class="bg-slate-800 p-2.5 rounded-2xl border border-slate-700 space-y-1.5 shadow">
+                <button onclick="switchTab('jobs')" id="nav-jobs" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-sky-600 text-white shadow-md transition whitespace-nowrap">
+                    <i data-lucide="briefcase" class="w-5 h-5 shrink-0"></i><span class="truncate">Clients & Projects / 客户项目</span>
                 </button>
-                <button onclick="switchTab('calendar')" id="nav-calendar" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition">
-                    <i data-lucide="calendar" class="w-5 h-5"></i><span>Schedule Calendar / 预约日历</span>
+                <button onclick="switchTab('calendar')" id="nav-calendar" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition whitespace-nowrap">
+                    <i data-lucide="calendar" class="w-5 h-5 shrink-0"></i><span class="truncate">Schedule Calendar / 预约日历</span>
                 </button>
-                <button onclick="switchTab('optimizer')" id="nav-optimizer" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition">
-                    <i data-lucide="scissors" class="w-5 h-5"></i><span>Cutting Optimizer / 裁膜引擎</span>
+                <button onclick="switchTab('optimizer')" id="nav-optimizer" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition whitespace-nowrap">
+                    <i data-lucide="scissors" class="w-5 h-5 shrink-0"></i><span class="truncate">Cutting Optimizer / 裁膜引擎</span>
                 </button>
-                <button onclick="switchTab('invoices')" id="nav-invoices" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition">
-                    <i data-lucide="file-text" class="w-5 h-5"></i><span>Tax Invoices / 发票管理</span>
+                <button onclick="switchTab('invoices')" id="nav-invoices" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition whitespace-nowrap">
+                    <i data-lucide="file-text" class="w-5 h-5 shrink-0"></i><span class="truncate">Tax Invoices / 发票管理</span>
                 </button>
-                <button onclick="switchTab('calculator')" id="nav-calculator" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition">
-                    <i data-lucide="calculator" class="w-5 h-5"></i><span>Job Estimator / 报价计算</span>
+                <button onclick="switchTab('calculator')" id="nav-calculator" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition whitespace-nowrap">
+                    <i data-lucide="calculator" class="w-5 h-5 shrink-0"></i><span class="truncate">Job Estimator / 报价计算</span>
                 </button>
             </nav>
         </aside>
@@ -199,15 +199,15 @@
                 </div>
             </section>
 
-            <!-- TAB 2.5: TAX INVOICES 发票管理模块 -->
+            <!-- TAB 2.5: TAX INVOICES 发票管理模块 (支持纯英文 + 一口价) -->
             <section id="tab-invoices" class="hidden space-y-6">
                 <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-6 space-y-6 shadow-xl">
                     <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 border-b border-slate-700 pb-4">
                         <div>
                             <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                                <i data-lucide="file-text" class="w-5 h-5 text-sky-400"></i> NZ GST Tax Invoice & Quotes
+                                <i data-lucide="file-text" class="w-5 h-5 text-sky-400"></i> NZ GST Tax Invoice Generator
                             </h2>
-                            <p class="text-xs text-slate-400 mt-0.5">Generate compliant 15% GST invoices with Bayview branding.</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Generate compliant 15% GST invoices with Light and Salt Ltd branding.</p>
                         </div>
                         <button onclick="openNewInvoiceBuilder()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5">
                             <i data-lucide="plus" class="w-4 h-4"></i> + Create Invoice / 新建发票
@@ -218,11 +218,11 @@
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
                                 <label class="text-slate-400 block mb-1">Select Client / 选择客户</label>
-                                <select id="invClientSelect" onchange="autoFillInvoiceClient()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white"></select>
+                                <select id="invClientSelect" onchange="autoFillInvoiceClient()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white font-medium"></select>
                             </div>
                             <div>
                                 <label class="text-slate-400 block mb-1">Invoice Number / 发票编号</label>
-                                <input type="text" id="invNumber" value="INV-2026-001" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono">
+                                <input type="text" id="invNumber" value="INV-2026-001" oninput="updateBankRefAuto()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono">
                             </div>
                             <div>
                                 <label class="text-slate-400 block mb-1">Invoice Date / 发票日期</label>
@@ -230,11 +230,23 @@
                             </div>
                         </div>
 
+                        <!-- 行项目表格：扩大 Description 宽度，支持包干一口价 -->
                         <div class="space-y-2">
-                            <div class="flex justify-between items-center"><span class="font-bold text-slate-300">Line Items / 计费细项 (15% GST)</span><button onclick="addInvoiceItemRow()" class="text-sky-400 hover:underline">+ Add Line Item</button></div>
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-300">Line Items (15% GST)</span>
+                                <div class="flex gap-2">
+                                    <button onclick="addInvoiceItemRow('', 1, 0)" class="text-sky-400 hover:underline">+ Add Row</button>
+                                </div>
+                            </div>
                             <table class="w-full text-left">
                                 <thead>
-                                    <tr class="text-slate-400 border-b border-slate-700"><th class="p-2">Description / 项目描述</th><th class="p-2 w-20">Qty/m²</th><th class="p-2 w-24">Rate ($)</th><th class="p-2 w-24 text-right">Amount ($)</th><th class="p-2 w-10 text-center"></th></tr>
+                                    <tr class="text-slate-400 border-b border-slate-700">
+                                        <th class="p-2 w-3/5">Description / 项目描述</th>
+                                        <th class="p-2 w-16 text-center">Qty</th>
+                                        <th class="p-2 w-28 text-right">Price / 包干价 ($)</th>
+                                        <th class="p-2 w-28 text-right">Amount ($)</th>
+                                        <th class="p-2 w-10 text-center"></th>
+                                    </tr>
                                 </thead>
                                 <tbody id="invoiceItemsTbody" class="divide-y divide-slate-800"></tbody>
                             </table>
@@ -242,11 +254,13 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                             <div>
-                                <label class="text-slate-400 block mb-1">Bank Payment Details / 银行转账信息</label>
-                                <textarea id="invBankDetails" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-300 text-[11px]" rows="3">Bank: ANZ NZ
-Account: 01-0435-0123456-00
-Name: Bayview Window Tinting
-Ref: [Invoice Number]</textarea>
+                                <label class="text-slate-400 block mb-1">Direct Deposit Bank Details</label>
+                                <div class="bg-slate-800 border border-slate-700 rounded-lg p-3 text-slate-300 text-xs font-mono space-y-1">
+                                    <p>Bank: ANZ NZ</p>
+                                    <p>Account: 01-0414-0842902-00</p>
+                                    <p>Name: Light and Salt Ltd</p>
+                                    <p class="text-sky-400 font-bold">Ref: <span id="bankRefDisplay">INV-2026-001</span></p>
+                                </div>
                             </div>
                             <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700 space-y-1.5">
                                 <div class="flex justify-between text-slate-300"><span>Subtotal (Excl. GST):</span><span id="invCalcSubtotal" class="font-mono font-bold">$0.00</span></div>
@@ -262,7 +276,7 @@ Ref: [Invoice Number]</textarea>
                         </div>
                     </div>
 
-                    <!-- 🖨️ A4 打印预览容器 -->
+                    <!-- 🖨️ A4 打印预览容器 (纯英文正式发票，符合洋人客户标准) -->
                     <div id="printableInvoice" class="bg-white text-slate-900 p-8 rounded-xl shadow-2xl space-y-6 hidden border border-slate-200">
                         <div class="flex justify-between items-start border-b-2 border-slate-900 pb-6">
                             <div>
@@ -288,10 +302,10 @@ Ref: [Invoice Number]</textarea>
                                     </text>
                                 </svg>
                                 <div class="text-xs text-slate-600 mt-2 space-y-0.5">
-                                    <p class="font-bold">Bayview Window Tinting Limited</p>
+                                    <p class="font-bold text-slate-900">Light and Salt Ltd t/a Bayview Window Tinting</p>
                                     <p>Tauranga & Bay of Plenty, New Zealand</p>
                                     <p>Email: bwt.tauranga@gmail.com | Phone: 027 448 4555</p>
-                                    <p>GST Reg No: 134-567-890</p>
+                                    <p class="font-semibold text-slate-800">GST Reg No: 113-558-806</p>
                                 </div>
                             </div>
                             <div class="text-right">
@@ -301,23 +315,22 @@ Ref: [Invoice Number]</textarea>
                             </div>
                         </div>
 
+                        <!-- 客户信息精简：只保留 Client Name -->
                         <div class="grid grid-cols-2 gap-6 text-xs bg-slate-50 p-4 rounded-lg border border-slate-200">
                             <div>
-                                <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">Billed To / 客户信息:</span>
-                                <p class="font-bold text-sm text-slate-900" id="pClientName">Glynis Diamond</p>
-                                <p class="text-slate-600" id="pClientAddress">310B, Bethlehem</p>
-                                <p class="text-slate-600" id="pClientPhone">Phone: 0221052318</p>
+                                <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">BILLED TO:</span>
+                                <p class="font-bold text-base text-slate-900" id="pClientName">Glynis Diamond</p>
                             </div>
                             <div>
-                                <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">Service Details / 服务说明:</span>
-                                <p class="text-slate-700">Residential Glass Film Installation</p>
-                                <p class="text-slate-700">Payment Due: Upon Completion</p>
+                                <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">SERVICE DETAILS:</span>
+                                <p class="text-slate-800 font-medium">Residential Window Tinting Application</p>
+                                <p class="text-slate-800 font-semibold mt-1">Payment Due: Within 7 Days</p>
                             </div>
                         </div>
 
                         <table class="w-full text-left text-xs divide-y divide-slate-200">
                             <thead>
-                                <tr class="text-slate-700 font-bold bg-slate-100"><th class="p-2.5">Item Description</th><th class="p-2.5 text-center">Qty / Area</th><th class="p-2.5 text-right">Unit Rate</th><th class="p-2.5 text-right">Amount (NZD)</th></tr>
+                                <tr class="text-slate-700 font-bold bg-slate-100"><th class="p-2.5 w-3/5">Item Description</th><th class="p-2.5 text-center">Qty</th><th class="p-2.5 text-right">Unit Rate</th><th class="p-2.5 text-right">Amount (NZD)</th></tr>
                             </thead>
                             <tbody id="pInvoiceTbody" class="divide-y divide-slate-100"></tbody>
                         </table>
@@ -325,7 +338,12 @@ Ref: [Invoice Number]</textarea>
                         <div class="flex justify-between items-end pt-4 border-t-2 border-slate-900 text-xs">
                             <div class="text-slate-600 space-y-1">
                                 <p class="font-bold text-slate-900">Direct Deposit Payment Info:</p>
-                                <pre id="pBankText" class="font-sans text-[11px] bg-slate-50 p-2.5 rounded border border-slate-200"></pre>
+                                <div class="font-mono text-xs bg-slate-50 p-3 rounded border border-slate-200 space-y-0.5">
+                                    <p>Bank: ANZ NZ</p>
+                                    <p>Account: 01-0414-0842902-00</p>
+                                    <p>Name: Light and Salt Ltd</p>
+                                    <p class="font-bold text-slate-900">Ref: <span id="pBankRefText">INV-2026-001</span></p>
+                                </div>
                             </div>
                             <div class="w-56 space-y-1.5 text-right">
                                 <div class="flex justify-between text-slate-600"><span>Subtotal (Excl. GST):</span><span id="pSubtotal" class="font-mono">$0.00</span></div>
@@ -409,7 +427,7 @@ Ref: [Invoice Number]</textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="text-slate-400 block mb-1">Project Status / 项目状态</label><select id="custStatus" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"><option value="Quote 报价中">Quote 报价中</option><option value="Scheduled 待施工">Scheduled 待施工</option><option value="Completed 已完工">Completed 已完工</option><option value="Warranty 售后/争议中">Warranty 售后/争议中</option></select></div>
-                    <div><label class="text-slate-400 block mb-1">Total Price ($ incl. GST) / 总报价</label><input type="number" id="custPrice" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-emerald-400 font-bold font-mono"></div>
+                    <div><label class="text-slate-400 block mb-1">Total Price ($ incl. GST) / 包干一口价</label><input type="number" id="custPrice" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-emerald-400 font-bold font-mono" placeholder="如 207"></div>
                 </div>
 
                 <div class="pt-3 border-t border-slate-700 space-y-2">
@@ -434,7 +452,6 @@ Ref: [Invoice Number]</textarea>
             <div class="px-5 py-3 border-t border-slate-700 bg-slate-800 flex justify-between items-center">
                 <div class="flex gap-2">
                     <button type="button" onclick="sendClientToOptimizer()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-white font-medium shadow transition">Import to Optimizer</button>
-                    <!-- ✨ 新增：在客户弹窗中直接生成发票按钮 -->
                     <button type="button" onclick="generateInvoiceFromClientModal()" class="px-3 py-2 bg-sky-600 hover:bg-sky-500 rounded-xl text-white font-medium shadow transition flex items-center gap-1"><i data-lucide="file-text" class="w-4 h-4"></i> Generate Invoice</button>
                 </div>
                 <div class="flex gap-2">
@@ -460,12 +477,16 @@ Ref: [Invoice Number]</textarea>
         let currentLang = localStorage.getItem('nz_lang') || 'ZH';
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
-        let currentPhotos = []; // 存储 Base64 照片数组
+        let currentPhotos = [];
 
+        // 语言切换全局修复
         function toggleLanguage() {
             currentLang = currentLang === 'ZH' ? 'EN' : 'ZH';
             localStorage.setItem('nz_lang', currentLang);
+            const langBtnText = document.getElementById('langBtnText');
+            if (langBtnText) langBtnText.textContent = currentLang === 'ZH' ? 'English' : '中文';
             renderJobsList();
+            renderCalendar();
         }
 
         function initGoogleAuth() {
@@ -488,7 +509,6 @@ Ref: [Invoice Number]</textarea>
             if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' });
         }
 
-        // --- ☁️ 稳健的 Base64 嵌入式云端同步方案（照片+数据完美同步） ---
         async function syncToCloud(showAlert = false) {
             if (!accessToken) { handleGoogleAuth(); return; }
             try {
@@ -508,7 +528,6 @@ Ref: [Invoice Number]</textarea>
                     remoteClients = remoteData.clients || [];
                 }
 
-                // 合并本地与云端数据 (以更新时间为准)
                 const clientMap = new Map();
                 remoteClients.forEach(c => clientMap.set(c.id, c));
                 localClients.forEach(c => {
@@ -522,7 +541,7 @@ Ref: [Invoice Number]</textarea>
 
                 renderJobsList();
 
-                const backupData = { version: 'v12.6', updatedAt: new Date().toISOString(), clients: mergedClients };
+                const backupData = { version: 'v12.7', updatedAt: new Date().toISOString(), clients: mergedClients };
                 const fileContent = JSON.stringify(backupData, null, 2);
 
                 if (fileId) {
@@ -540,7 +559,7 @@ Ref: [Invoice Number]</textarea>
                         method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}` }, body: form
                     });
                 }
-                if (showAlert) alert('Cloud Sync Complete! Photos and Data synchronized successfully! / 云端照片与数据同步完成！');
+                if (showAlert) alert('Cloud Sync Complete! / 云端数据与照片同步成功！');
             } catch (err) { console.error(err); if (showAlert) alert('Sync failed'); }
         }
 
@@ -600,12 +619,12 @@ Ref: [Invoice Number]</textarea>
                 const el = document.getElementById('tab-' + t);
                 const nav = document.getElementById('nav-' + t);
                 if (el) el.classList.add('hidden');
-                if (nav) nav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition";
+                if (nav) nav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition whitespace-nowrap";
             });
             const targetTab = document.getElementById('tab-' + tab);
             const targetNav = document.getElementById('nav-' + tab);
             if (targetTab) targetTab.classList.remove('hidden');
-            if (targetNav) targetNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-sky-600 text-white shadow-md transition";
+            if (targetNav) targetNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-sky-600 text-white shadow-md transition whitespace-nowrap";
             if (tab === 'optimizer') optimizeRollLayout();
             if (tab === 'calendar') renderCalendar();
             if (tab === 'invoices') populateInvoiceClientSelect();
@@ -742,7 +761,7 @@ Ref: [Invoice Number]</textarea>
                     document.getElementById('custQuoteDate').value = client.quoteDate || '';
                     document.getElementById('custJobDate').value = client.jobDate || '';
                     document.getElementById('custStatus').value = client.status || 'Completed 已完工';
-                    document.getElementById('custPrice').value = client.price || 0;
+                    document.getElementById('custPrice').value = client.price || '';
 
                     if (client.photos) {
                         currentPhotos = [...client.photos];
@@ -862,7 +881,7 @@ Ref: [Invoice Number]</textarea>
                 status: document.getElementById('custStatus').value,
                 price: parseFloat(document.getElementById('custPrice').value) || 0,
                 updatedAt: Date.now(),
-                photos: [...currentPhotos], // 将 Base64 图片直接存入对象中随云端同步
+                photos: [...currentPhotos],
                 measures
             };
 
@@ -872,44 +891,41 @@ Ref: [Invoice Number]</textarea>
             renderCalendar();
             populateInvoiceClientSelect();
             if (accessToken) syncToCloud(false);
+            return clientData;
         }
 
         async function sendClientToOptimizer() {
-            await saveClientModal();
-            const clients = await dbGetAllClients();
-            const editingId = Number(document.getElementById('editingClientId').value) || (clients[0] && clients[0].id);
-            const client = clients.find(c => c.id === editingId);
-            if (client && client.measures) {
+            const saved = await saveClientModal();
+            if (saved && saved.measures) {
                 const tbody = document.getElementById('optimizerPanelsTbody');
                 tbody.innerHTML = '';
-                client.measures.forEach(m => addOptimizerPanelRow(m.label, m.w, m.h, m.qty));
+                saved.measures.forEach(m => addOptimizerPanelRow(m.label, m.w, m.h, m.qty));
                 switchTab('optimizer');
             }
         }
 
-        // ✨ 客户弹窗中直接生成发票的联动逻辑
+        // ✨ 优化：客户弹窗直接带入该客户发票，锁住下拉框并填充包干价
         async function generateInvoiceFromClientModal() {
-            await saveClientModal();
-            const editingId = Number(document.getElementById('editingClientId').value);
-            const clients = await dbGetAllClients();
-            const client = clients.find(c => c.id === editingId);
-            
+            const savedClient = await saveClientModal();
+            if (!savedClient) return;
+
             switchTab('invoices');
-            openNewInvoiceBuilder();
+            await populateInvoiceClientSelect();
 
-            // 自动填充发票客户
             const select = document.getElementById('invClientSelect');
-            if (select) select.value = client.id;
-            autoFillInvoiceClient();
+            if (select) {
+                select.value = savedClient.id;
+                autoFillInvoiceClient();
+            }
 
-            // 如果有总报价或尺寸，自动作为行项目带入发票
             const tbody = document.getElementById('invoiceItemsTbody');
             tbody.innerHTML = '';
-            if (client.price && client.price > 0) {
-                addInvoiceItemRow(`Residential Window Tinting Services (${client.address || ''})`, 1, client.price / 1.15);
-            } else {
-                addInvoiceItemRow(`Residential Glass Tinting Installation`, 1, 350);
-            }
+
+            let desc = `Residential Window Tinting Application`;
+            if (savedClient.address) desc += ` (${savedClient.address})`;
+
+            const lumpSum = savedClient.price || 207;
+            addInvoiceItemRow(desc, 1, lumpSum);
             recalcInvoiceTotals();
         }
 
@@ -918,13 +934,6 @@ Ref: [Invoice Number]</textarea>
                 await dbDeleteClient(id);
                 renderJobsList(); renderCalendar();
             }
-        }
-
-        function initOptimizerRows() {
-            const tbody = document.getElementById('optimizerPanelsTbody');
-            tbody.innerHTML = '';
-            addOptimizerPanelRow('Kitchen', 780, 520, 2);
-            optimizeRollLayout();
         }
 
         function addOptimizerPanelRow(label = '', w = '', h = '', qty = 1) {
@@ -941,7 +950,6 @@ Ref: [Invoice Number]</textarea>
         }
 
         function resetZoom() {
-            canvasZoom = 1; canvasPanX = 0; canvasPanY = 0;
             if (currentRenderData) drawOptimizerCanvas(currentRenderData);
         }
 
@@ -1001,7 +1009,7 @@ Ref: [Invoice Number]</textarea>
         }
 
         function drawOptimizerCanvas(data) {
-            const { rollW, canvasH, placed, freeSpaces } = data;
+            const { rollW, canvasH, placed } = data;
             const canvas = document.getElementById('optimizerCanvas');
             const ctx = canvas.getContext('2d');
             const containerW = canvas.parentElement.clientWidth || 360;
@@ -1047,18 +1055,23 @@ Ref: [Invoice Number]</textarea>
             const clients = await dbGetAllClients();
             const client = clients.find(c => c.id === Number(select.value));
             if (client) {
+                // 精简，仅渲染姓名
                 document.getElementById('pClientName').textContent = client.name;
-                document.getElementById('pClientAddress').textContent = `${client.address || ''}, ${client.suburb || ''}`;
-                document.getElementById('pClientPhone').textContent = `Phone: ${client.phone || 'N/A'}`;
             }
+        }
+
+        function updateBankRefAuto() {
+            const num = document.getElementById('invNumber').value.trim() || 'INV-2026-001';
+            document.getElementById('bankRefDisplay').textContent = num;
+            document.getElementById('pBankRefText').textContent = num;
         }
 
         function openNewInvoiceBuilder() {
             document.getElementById('invDate').value = new Date().toISOString().slice(0, 10);
+            updateBankRefAuto();
             const tbody = document.getElementById('invoiceItemsTbody');
             tbody.innerHTML = '';
-            addInvoiceItemRow('Residential Architectural Film Application', 12.5, 85);
-            addInvoiceItemRow('Surface Prep & Callout Fee', 1, 150);
+            addInvoiceItemRow('Residential Window Tinting Application', 1, 207);
             recalcInvoiceTotals();
         }
 
@@ -1067,18 +1080,18 @@ Ref: [Invoice Number]</textarea>
             openNewInvoiceBuilder();
             const tbody = document.getElementById('invoiceItemsTbody');
             tbody.innerHTML = '';
-            addInvoiceItemRow('Solar Control Film (1524mm Roll Material Cons.)', lastCalcResult.filmArea.toFixed(2), 85);
-            addInvoiceItemRow('Surface Prep & Installation', 1, 150);
+            addInvoiceItemRow('Solar Control Film Application (MaxRects Optimized)', 1, 350);
             recalcInvoiceTotals();
         }
 
-        function addInvoiceItemRow(desc = '', qty = 1, rate = 0) {
+        // 拓宽描述栏并支持包干一口价
+        function addInvoiceItemRow(desc = '', qty = 1, price = 0) {
             const tbody = document.getElementById('invoiceItemsTbody');
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td class="p-2"><input type="text" value="${desc}" oninput="recalcInvoiceTotals()" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-white"></td>
-                <td class="p-2"><input type="number" step="0.01" value="${qty}" oninput="recalcInvoiceTotals()" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-white text-center font-mono"></td>
-                <td class="p-2"><input type="number" step="0.01" value="${rate}" oninput="recalcInvoiceTotals()" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-white text-right font-mono"></td>
+                <td class="p-2"><input type="text" value="${desc}" oninput="recalcInvoiceTotals()" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-xs"></td>
+                <td class="p-2 text-center"><input type="number" min="1" value="${qty}" oninput="recalcInvoiceTotals()" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-center font-mono text-xs"></td>
+                <td class="p-2 text-right"><input type="number" step="0.01" value="${price}" oninput="recalcInvoiceTotals()" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-white text-right font-mono text-xs text-emerald-400 font-bold"></td>
                 <td class="p-2 text-right font-mono font-bold text-emerald-400 row-amount">$0.00</td>
                 <td class="p-2 text-center"><button onclick="this.closest('tr').remove(); recalcInvoiceTotals();" class="text-rose-400 font-bold">✕</button></td>
             `;
@@ -1087,57 +1100,62 @@ Ref: [Invoice Number]</textarea>
         }
 
         function recalcInvoiceTotals() {
-            let subtotal = 0;
+            let grandTotal = 0;
             document.querySelectorAll('#invoiceItemsTbody tr').forEach(tr => {
                 const inputs = tr.querySelectorAll('input');
                 const qty = parseFloat(inputs[1].value) || 0;
-                const rate = parseFloat(inputs[2].value) || 0;
-                const amt = qty * rate;
-                subtotal += amt;
+                const price = parseFloat(inputs[2].value) || 0;
+                const amt = qty * price;
+                grandTotal += amt;
                 tr.querySelector('.row-amount').textContent = `$${amt.toFixed(2)}`;
             });
-            const gst = subtotal * 0.15;
-            const total = subtotal + gst;
+
+            // 反算未税 Subtotal 与 15% GST
+            const subtotal = grandTotal / 1.15;
+            const gst = grandTotal - subtotal;
+
             document.getElementById('invCalcSubtotal').textContent = `$${subtotal.toFixed(2)}`;
             document.getElementById('invCalcGst').textContent = `$${gst.toFixed(2)}`;
-            document.getElementById('invCalcTotal').textContent = `$${total.toFixed(2)}`;
+            document.getElementById('invCalcTotal').textContent = `$${grandTotal.toFixed(2)}`;
         }
 
         function renderPrintableInvoice() {
             const printable = document.getElementById('printableInvoice');
             printable.classList.remove('hidden');
 
-            document.getElementById('pInvNum').textContent = document.getElementById('invNumber').value;
+            const invNum = document.getElementById('invNumber').value;
+            document.getElementById('pInvNum').textContent = invNum;
             document.getElementById('pInvDate').textContent = document.getElementById('invDate').value;
-            document.getElementById('pBankText').textContent = document.getElementById('invBankDetails').value;
+            document.getElementById('pBankRefText').textContent = invNum;
 
             const pTbody = document.getElementById('pInvoiceTbody');
             pTbody.innerHTML = '';
 
-            let subtotal = 0;
+            let grandTotal = 0;
             document.querySelectorAll('#invoiceItemsTbody tr').forEach(tr => {
                 const inputs = tr.querySelectorAll('input');
                 const desc = inputs[0].value;
                 const qty = parseFloat(inputs[1].value) || 0;
-                const rate = parseFloat(inputs[2].value) || 0;
-                const amt = qty * rate;
-                subtotal += amt;
+                const price = parseFloat(inputs[2].value) || 0;
+                const amt = qty * price;
+                grandTotal += amt;
 
                 const ptr = document.createElement('tr');
                 ptr.innerHTML = `
-                    <td class="p-2.5 font-medium">${desc}</td>
+                    <td class="p-2.5 font-medium text-slate-800">${desc}</td>
                     <td class="p-2.5 text-center font-mono">${qty}</td>
-                    <td class="p-2.5 text-right font-mono">$${rate.toFixed(2)}</td>
+                    <td class="p-2.5 text-right font-mono">$${price.toFixed(2)}</td>
                     <td class="p-2.5 text-right font-mono font-bold">$${amt.toFixed(2)}</td>
                 `;
                 pTbody.appendChild(ptr);
             });
 
-            const gst = subtotal * 0.15;
-            const total = subtotal + gst;
+            const subtotal = grandTotal / 1.15;
+            const gst = grandTotal - subtotal;
+
             document.getElementById('pSubtotal').textContent = `$${subtotal.toFixed(2)}`;
             document.getElementById('pGst').textContent = `$${gst.toFixed(2)}`;
-            document.getElementById('pTotal').textContent = `$${total.toFixed(2)}`;
+            document.getElementById('pTotal').textContent = `$${grandTotal.toFixed(2)}`;
             printable.scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -1156,7 +1174,7 @@ Ref: [Invoice Number]</textarea>
 
         async function exportDataJSON() {
             const clients = await dbGetAllClients();
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: 'v12.6', clients }, null, 2));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: 'v12.7', clients }, null, 2));
             const dl = document.createElement('a');
             dl.setAttribute("href", dataStr);
             dl.setAttribute("download", `TintPro_Manager_Backup_${new Date().toISOString().slice(0,10)}.json`);
