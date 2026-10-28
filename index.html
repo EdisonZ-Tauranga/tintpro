@@ -32,12 +32,11 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
 
-    <!-- 顶部 Header：嵌入 Bayview 标准色 Logo 白底卡片 -->
+    <!-- 顶部 Header：Bayview 标准色 Logo -->
     <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-30 shadow-md">
         <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div class="flex items-center space-x-3 w-full sm:w-auto justify-between">
                 <div class="flex items-center space-x-3">
-                    <!-- 白底防色彩失真 Logo 卡片 -->
                     <div class="bg-white px-3 py-1.5 rounded-xl shadow border border-slate-200 flex items-center h-11">
                         <svg viewBox="0 0 400 120" class="h-8 w-auto">
                             <defs>
@@ -65,7 +64,7 @@
                         <h1 class="text-base font-bold text-white flex items-center gap-2">
                             TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">v12.6 Pro</span>
                         </h1>
-                        <p class="text-[11px] text-slate-400" data-i18n="subtitle">Bayview NZ Tinting & Invoice System</p>
+                        <p class="text-[11px] text-slate-400">Bayview NZ Tinting & Cloud Drive Sync</p>
                     </div>
                 </div>
                 <button onclick="toggleLanguage()" class="sm:hidden px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-sky-300 text-xs font-bold border border-slate-600 transition">
@@ -78,16 +77,16 @@
                     <i data-lucide="languages" class="w-4 h-4"></i> <span id="langBtnText">English</span>
                 </button>
                 <button id="googleAuthBtn" onclick="handleGoogleAuth()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition">
-                    <i data-lucide="log-in" class="w-4 h-4 text-sky-400"></i> <span id="authBtnText" data-i18n="btnBindGoogle">Bind Google</span>
+                    <i data-lucide="log-in" class="w-4 h-4 text-sky-400"></i> <span id="authBtnText">Bind Google</span>
                 </button>
                 <button onclick="syncToCloud(true)" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white shadow transition">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span data-i18n="btnSync">Cloud Sync</span>
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> <span>Cloud Sync (Photos+)</span>
                 </button>
                 <button onclick="exportDataJSON()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition">
-                    <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> <span data-i18n="btnExport">Export</span>
+                    <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> <span>Export</span>
                 </button>
                 <button onclick="document.getElementById('importFile').click()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition">
-                    <i data-lucide="upload" class="w-4 h-4 text-indigo-400"></i> <span data-i18n="btnImport">Import</span>
+                    <i data-lucide="upload" class="w-4 h-4 text-indigo-400"></i> <span>Import</span>
                 </button>
                 <input type="file" id="importFile" class="hidden" accept=".json" onchange="importDataJSON(event)">
             </div>
@@ -99,19 +98,19 @@
         <aside class="flex flex-col w-full md:w-64 shrink-0 gap-2">
             <nav class="bg-slate-800 p-2 rounded-2xl border border-slate-700 space-y-1 shadow">
                 <button onclick="switchTab('jobs')" id="nav-jobs" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-sky-600 text-white shadow-md transition">
-                    <i data-lucide="briefcase" class="w-5 h-5"></i><span data-i18n="navClients">Clients & Projects / 客户项目</span>
+                    <i data-lucide="briefcase" class="w-5 h-5"></i><span>Clients & Projects / 客户项目</span>
                 </button>
                 <button onclick="switchTab('calendar')" id="nav-calendar" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition">
-                    <i data-lucide="calendar" class="w-5 h-5"></i><span data-i18n="navCalendar">Schedule Calendar / 预约日历</span>
+                    <i data-lucide="calendar" class="w-5 h-5"></i><span>Schedule Calendar / 预约日历</span>
                 </button>
                 <button onclick="switchTab('optimizer')" id="nav-optimizer" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition">
-                    <i data-lucide="scissors" class="w-5 h-5"></i><span data-i18n="navOptimizer">Cutting Optimizer / 裁膜引擎</span>
+                    <i data-lucide="scissors" class="w-5 h-5"></i><span>Cutting Optimizer / 裁膜引擎</span>
                 </button>
                 <button onclick="switchTab('invoices')" id="nav-invoices" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition">
-                    <i data-lucide="file-text" class="w-5 h-5"></i><span data-i18n="navInvoices">Tax Invoices / 发票管理</span>
+                    <i data-lucide="file-text" class="w-5 h-5"></i><span>Tax Invoices / 发票管理</span>
                 </button>
                 <button onclick="switchTab('calculator')" id="nav-calculator" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition">
-                    <i data-lucide="calculator" class="w-5 h-5"></i><span data-i18n="navCalculator">Job Estimator / 报价计算</span>
+                    <i data-lucide="calculator" class="w-5 h-5"></i><span>Job Estimator / 报价计算</span>
                 </button>
             </nav>
         </aside>
@@ -120,9 +119,9 @@
             <!-- TAB 1: 客户列表 -->
             <section id="tab-jobs" class="space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-                    <input type="text" id="jobSearchInput" oninput="renderJobsList()" data-i18n-placeholder="searchPlaceholder" placeholder="Search Name, Phone, Address... / 搜索客户..." class="flex-1 bg-slate-800 border border-slate-700 px-4 py-2.5 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-sky-500 shadow-inner">
+                    <input type="text" id="jobSearchInput" oninput="renderJobsList()" placeholder="Search Name, Phone, Address... / 搜索客户..." class="flex-1 bg-slate-800 border border-slate-700 px-4 py-2.5 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-sky-500 shadow-inner">
                     <button onclick="openClientModal()" class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm shadow-lg transition">
-                        <i data-lucide="plus" class="w-4 h-4"></i> <span data-i18n="btnNewClient">+ New Client / 新建客户档案</span>
+                        <i data-lucide="plus" class="w-4 h-4"></i> <span>+ New Client / 新建客户档案</span>
                     </button>
                 </div>
                 <div id="jobsListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -136,7 +135,7 @@
                             <h2 class="text-base font-bold text-white flex items-center gap-2">
                                 <i data-lucide="calendar" class="w-5 h-5 text-sky-400"></i> <span id="cal-month-title">Schedule Calendar</span>
                             </h2>
-                            <p class="text-xs text-slate-400 mt-1" data-i18n="calDesc">Manage measurement quotes and installation jobs scheduling.</p>
+                            <p class="text-xs text-slate-400 mt-1">Manage measurement quotes and installation jobs scheduling.</p>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="changeMonth(-1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold" id="btnCalPrev">◀ Prev</button>
@@ -165,17 +164,17 @@
                             <h2 class="text-lg font-bold text-white flex items-center gap-2">
                                 <i data-lucide="scissors" class="w-5 h-5 text-sky-400"></i> MaxRects 2D Optimizer (1524mm)
                             </h2>
-                            <p class="text-xs text-slate-400 mt-1" data-i18n="optDesc">High-contrast 2D layout calculation for glass tinting.</p>
+                            <p class="text-xs text-slate-400 mt-1">High-contrast 2D layout calculation for glass tinting.</p>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <button onclick="createInvoiceFromOptimizer()" class="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 shadow">
-                                <i data-lucide="file-plus" class="w-4 h-4"></i> <span data-i18n="btnGenInvoice">Generate Tax Invoice / 一键生成发票</span>
+                                <i data-lucide="file-plus" class="w-4 h-4"></i> <span>Generate Tax Invoice / 一键生成发票</span>
                             </button>
                             <button onclick="sendOptimizerToCalc()" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold flex items-center gap-1 shadow">
-                                <i data-lucide="calculator" class="w-4 h-4"></i> <span data-i18n="btnSendToCalc">Send to Estimator / 带入报价</span>
+                                <i data-lucide="calculator" class="w-4 h-4"></i> <span>Send to Estimator / 带入报价</span>
                             </button>
-                            <button onclick="resetZoom()" class="px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold shadow" data-i18n="btnResetZoom">Reset Zoom</button>
-                            <button onclick="optimizeRollLayout()" class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow" data-i18n="btnRecalculate">Recalculate</button>
+                            <button onclick="resetZoom()" class="px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold shadow">Reset Zoom</button>
+                            <button onclick="optimizeRollLayout()" class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow">Recalculate</button>
                         </div>
                     </div>
 
@@ -185,32 +184,32 @@
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                        <div><label class="text-slate-400 block mb-1" data-i18n="lblRollWidth">Roll Width / 膜卷宽度</label><select id="optRollWidth" onchange="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"><option value="1524">1524 mm (60") Standard</option><option value="1016">1016 mm (40")</option></select></div>
-                        <div><label class="text-slate-400 block mb-1" data-i18n="lblMargin">Margin (mm/side) / 裁边余量</label><input type="number" id="optMargin" value="0" min="0" onchange="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
-                        <div><label class="text-slate-400 block mb-1" data-i18n="lblCostPerMeter">Cost/Meter ($/m) / 每米材料成本</label><input type="number" id="optCostPerMeter" value="25" min="0" onchange="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                        <div><label class="text-slate-400 block mb-1">Roll Width / 膜卷宽度</label><select id="optRollWidth" onchange="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"><option value="1524">1524 mm (60") Standard</option><option value="1016">1016 mm (40")</option></select></div>
+                        <div><label class="text-slate-400 block mb-1">Margin (mm/side) / 裁边余量</label><input type="number" id="optMargin" value="0" min="0" onchange="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                        <div><label class="text-slate-400 block mb-1">Cost/Meter ($/m) / 每米材料成本</label><input type="number" id="optCostPerMeter" value="25" min="0" onchange="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
                     </div>
 
                     <div class="space-y-2">
-                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-300" data-i18n="lblPanelsList">Glass Panels List / 玻璃面板清单</span><button onclick="addOptimizerPanelRow()" class="text-xs text-sky-400 hover:underline" data-i18n="btnAddRow">+ Add Row / 添加一行</button></div>
+                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-300">Glass Panels List / 玻璃面板清单</span><button onclick="addOptimizerPanelRow()" class="text-xs text-sky-400 hover:underline">+ Add Row / 添加一行</button></div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
-                                <thead><tr class="text-slate-400 border-b border-slate-700"><th class="p-2" data-i18n="thLabel">Label</th><th class="p-2" data-i18n="thW">Width W (mm)</th><th class="p-2" data-i18n="thH">Height H (mm)</th><th class="p-2" data-i18n="thQty">Qty</th><th class="p-2 text-center" data-i18n="thAction">Action</th></tr></thead>
+                                <thead><tr class="text-slate-400 border-b border-slate-700"><th class="p-2">Label</th><th class="p-2">Width W (mm)</th><th class="p-2">Height H (mm)</th><th class="p-2">Qty</th><th class="p-2 text-center">Action</th></tr></thead>
                                 <tbody id="optimizerPanelsTbody" class="divide-y divide-slate-700/50"></tbody>
                             </table>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
-                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block" data-i18n="lblFilmCons">Film Consumption</span><span id="resTotalLength" class="text-base font-bold text-emerald-400 font-mono">0.00 m</span></div>
-                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block" data-i18n="lblWastePct">Waste Rate</span><span id="resWastePct" class="text-base font-bold text-amber-400 font-mono">0.0%</span></div>
-                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block" data-i18n="lblGlassArea">Net Glass Area</span><span id="resUsedArea" class="text-base font-bold text-sky-400 font-mono">0.00 m²</span></div>
-                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block" data-i18n="lblEstCost">Est. Material Cost</span><span id="resEstCost" class="text-base font-bold text-purple-400 font-mono">$0.00</span></div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block">Film Consumption</span><span id="resTotalLength" class="text-base font-bold text-emerald-400 font-mono">0.00 m</span></div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block">Waste Rate</span><span id="resWastePct" class="text-base font-bold text-amber-400 font-mono">0.0%</span></div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block">Net Glass Area</span><span id="resUsedArea" class="text-base font-bold text-sky-400 font-mono">0.00 m²</span></div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block">Est. Material Cost</span><span id="resEstCost" class="text-base font-bold text-purple-400 font-mono">$0.00</span></div>
                     </div>
 
                     <div id="optimizerCanvasContainer" class="w-full bg-slate-950 p-4 rounded-xl border border-slate-700 flex flex-col items-center overflow-hidden relative select-none" style="height: 440px;">
                         <div class="absolute top-3 left-3 z-10 flex items-center gap-3 text-[11px] text-slate-300 bg-slate-900/90 px-3 py-1.5 rounded-lg border border-slate-700 pointer-events-none shadow">
-                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-sky-600 border border-sky-400 inline-block rounded"></span> <span data-i18n="legendCut">Cut Pieces</span></span>
-                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-amber-500/30 border border-dashed border-amber-400 inline-block rounded"></span> <span data-i18n="legendOffcut">Offcut</span></span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-sky-600 border border-sky-400 inline-block rounded"></span> <span>Cut Pieces</span></span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-amber-500/30 border border-dashed border-amber-400 inline-block rounded"></span> <span>Offcut</span></span>
                             <span class="text-sky-400 font-mono text-[10px]" id="zoomIndicator">100%</span>
                         </div>
                         <div class="w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing">
@@ -235,7 +234,6 @@
                         </button>
                     </div>
 
-                    <!-- 发票编辑/生成表单 -->
                     <div id="invoiceBuilderBox" class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 space-y-4 text-xs">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
@@ -252,7 +250,6 @@
                             </div>
                         </div>
 
-                        <!-- 细项表格 -->
                         <div class="space-y-2">
                             <div class="flex justify-between items-center"><span class="font-bold text-slate-300">Line Items / 计费细项 (15% GST)</span><button onclick="addInvoiceItemRow()" class="text-sky-400 hover:underline">+ Add Line Item</button></div>
                             <table class="w-full text-left">
@@ -263,7 +260,6 @@
                             </table>
                         </div>
 
-                        <!-- 汇款与备注 -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                             <div>
                                 <label class="text-slate-400 block mb-1">Bank Payment Details / 银行转账信息</label>
@@ -288,7 +284,6 @@ Ref: [Invoice Number]</textarea>
 
                     <!-- 🖨️ A4 打印预览容器 -->
                     <div id="printableInvoice" class="bg-white text-slate-900 p-8 rounded-xl shadow-2xl space-y-6 hidden border border-slate-200">
-                        <!-- 页眉：高精 Bayview Logo + GST 信息 -->
                         <div class="flex justify-between items-start border-b-2 border-slate-900 pb-6">
                             <div>
                                 <svg viewBox="0 0 400 120" class="h-12 w-auto">
@@ -326,7 +321,6 @@ Ref: [Invoice Number]</textarea>
                             </div>
                         </div>
 
-                        <!-- 客户与项目信息 -->
                         <div class="grid grid-cols-2 gap-6 text-xs bg-slate-50 p-4 rounded-lg border border-slate-200">
                             <div>
                                 <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">Billed To / 客户信息:</span>
@@ -341,7 +335,6 @@ Ref: [Invoice Number]</textarea>
                             </div>
                         </div>
 
-                        <!-- 打印细项表格 -->
                         <table class="w-full text-left text-xs divide-y divide-slate-200">
                             <thead>
                                 <tr class="text-slate-700 font-bold bg-slate-100"><th class="p-2.5">Item Description</th><th class="p-2.5 text-center">Qty / Area</th><th class="p-2.5 text-right">Unit Rate</th><th class="p-2.5 text-right">Amount (NZD)</th></tr>
@@ -349,7 +342,6 @@ Ref: [Invoice Number]</textarea>
                             <tbody id="pInvoiceTbody" class="divide-y divide-slate-100"></tbody>
                         </table>
 
-                        <!-- 打印总额 -->
                         <div class="flex justify-between items-end pt-4 border-t-2 border-slate-900 text-xs">
                             <div class="text-slate-600 space-y-1">
                                 <p class="font-bold text-slate-900">Direct Deposit Payment Info:</p>
@@ -384,20 +376,20 @@ Ref: [Invoice Number]</textarea>
                     </div>
 
                     <div class="bg-slate-900/80 p-3 rounded-xl border border-sky-500/30 space-y-2">
-                        <label class="text-slate-300 font-bold block" data-i18n="lblPricingMode">Pricing Mode / 计价方式：</label>
+                        <label class="text-slate-300 font-bold block">Pricing Calculation Mode:</label>
                         <div class="grid grid-cols-2 gap-2 text-xs">
                             <label class="flex items-center gap-2 bg-slate-800 p-2 rounded-lg cursor-pointer border border-slate-700 hover:border-sky-500">
                                 <input type="radio" name="calcMode" value="glass" checked onchange="onPricingModeChange()" class="text-sky-600 focus:ring-0">
                                 <div>
-                                    <span class="block font-semibold text-white" data-i18n="modeGlassTitle">Glass Area Mode</span>
-                                    <span class="block text-[10px] text-slate-400" data-i18n="modeGlassDesc">Auto-fills Net Glass Area</span>
+                                    <span class="block font-semibold text-white">Net Glass Area Mode</span>
+                                    <span class="block text-[10px] text-slate-400">Auto-fills Net Glass Area</span>
                                 </div>
                             </label>
                             <label class="flex items-center gap-2 bg-slate-800 p-2 rounded-lg cursor-pointer border border-slate-700 hover:border-sky-500">
                                 <input type="radio" name="calcMode" value="film" onchange="onPricingModeChange()" class="text-sky-600 focus:ring-0">
                                 <div>
-                                    <span class="block font-semibold text-white" data-i18n="modeFilmTitle">Film Roll Mode</span>
-                                    <span class="block text-[10px] text-slate-400" data-i18n="modeFilmDesc">Auto-fills Film Consumption</span>
+                                    <span class="block font-semibold text-white">Film Consumption Mode</span>
+                                    <span class="block text-[10px] text-slate-400">Auto-fills Film Consumption</span>
                                 </div>
                             </label>
                         </div>
@@ -405,15 +397,15 @@ Ref: [Invoice Number]</textarea>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div><label class="text-slate-400 block mb-1" id="lblCalcArea">Area / 计价面积 (m²)</label><input type="number" id="calcArea" value="12" step="0.01" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono font-bold text-emerald-400"></div>
-                        <div><label class="text-slate-400 block mb-1" data-i18n="lblRate">Rate / 单价 ($/m²)</label><input type="number" id="calcRate" value="85" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
-                        <div><label class="text-slate-400 block mb-1" data-i18n="lblCallout">Callout Fee / 上门费 ($)</label><input type="number" id="calcCallout" value="150" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
-                        <div><label class="text-slate-400 block mb-1" data-i18n="lblExtra">Extra / 杂费折扣 ($)</label><input type="number" id="calcExtra" value="45" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                        <div><label class="text-slate-400 block mb-1">Rate / 单价 ($/m²)</label><input type="number" id="calcRate" value="85" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                        <div><label class="text-slate-400 block mb-1">Callout Fee / 上门费 ($)</label><input type="number" id="calcCallout" value="150" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                        <div><label class="text-slate-400 block mb-1">Extra / 杂费折扣 ($)</label><input type="number" id="calcExtra" value="45" min="0" oninput="runQuickCalc()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
                     </div>
 
                     <div class="p-4 bg-slate-900 rounded-xl space-y-2 border border-slate-800">
-                        <div class="flex justify-between text-slate-300"><span data-i18n="lblSubtotal">Subtotal (Excl. GST):</span><span id="quickSubtotal" class="font-mono">$0.00</span></div>
+                        <div class="flex justify-between text-slate-300"><span>Subtotal (Excl. GST):</span><span id="quickSubtotal" class="font-mono">$0.00</span></div>
                         <div class="flex justify-between text-slate-300"><span>15% NZ GST:</span><span id="quickGst" class="font-mono">$0.00</span></div>
-                        <div class="flex justify-between text-base font-bold text-emerald-400 pt-2 border-t border-slate-800"><span data-i18n="lblTotal">Total (Incl. GST):</span><span id="quickTotal" class="font-mono">$0.00</span></div>
+                        <div class="flex justify-between text-base font-bold text-emerald-400 pt-2 border-t border-slate-800"><span>Total (Incl. GST):</span><span id="quickTotal" class="font-mono">$0.00</span></div>
                     </div>
                 </div>
             </section>
@@ -424,18 +416,18 @@ Ref: [Invoice Number]</textarea>
     <div id="clientModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden overflow-y-auto">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden text-xs">
             <div class="px-5 py-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/90">
-                <h3 id="modalTitle" class="text-base font-bold text-white" data-i18n="modalClientTitle">Client Profile & Photos</h3>
+                <h3 id="modalTitle" class="text-base font-bold text-white">Client Profile & Photos</h3>
                 <button type="button" onclick="closeClientModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <div class="p-5 space-y-4 overflow-y-auto flex-1 custom-scroll">
                 <input type="hidden" id="editingClientId">
                 <div class="grid grid-cols-2 gap-3">
-                    <div><label class="text-slate-400 block mb-1" data-i18n="lblCustName">Client Name / 姓名*</label><input type="text" id="custName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
-                    <div><label class="text-slate-400 block mb-1" data-i18n="lblCustPhone">Phone / 电话</label><input type="text" id="custPhone" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                    <div><label class="text-slate-400 block mb-1">Client Name / 姓名*</label><input type="text" id="custName" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                    <div><label class="text-slate-400 block mb-1">Phone / 电话</label><input type="text" id="custPhone" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-slate-400 block mb-1" data-i18n="lblCustSuburb">Suburb / 区域选择</label>
+                        <label class="text-slate-400 block mb-1">Suburb / 区域选择</label>
                         <select id="custSuburb" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
                             <optgroup label="Tauranga 地区">
                                 <option value="Bellevue">Bellevue</option>
@@ -449,22 +441,22 @@ Ref: [Invoice Number]</textarea>
                             </optgroup>
                         </select>
                     </div>
-                    <div><label class="text-slate-400 block mb-1" data-i18n="lblCustAddress">Address / 详细地址</label><input type="text" id="custAddress" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white" placeholder="17 Veda Place"></div>
+                    <div><label class="text-slate-400 block mb-1">Address / 详细地址</label><input type="text" id="custAddress" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white" placeholder="17 Veda Place"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-3 bg-slate-900/60 p-3 rounded-xl border border-sky-500/20">
-                    <div><label class="text-slate-300 block mb-1 font-semibold" data-i18n="lblQuoteDate">🔍 测量预约 (Quote Date)</label><input type="datetime-local" id="custQuoteDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
-                    <div><label class="text-slate-300 block mb-1 font-semibold" data-i18n="lblJobDate">🛠️ 施工预约 (Job Date)</label><input type="datetime-local" id="custJobDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                    <div><label class="text-slate-300 block mb-1 font-semibold">🔍 测量预约 (Quote Date)</label><input type="datetime-local" id="custQuoteDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
+                    <div><label class="text-slate-300 block mb-1 font-semibold">🛠️ 施工预约 (Job Date)</label><input type="datetime-local" id="custJobDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <div><label class="text-slate-400 block mb-1" data-i18n="lblCustStatus">Project Status / 项目状态</label><select id="custStatus" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"><option value="Quote 报价中">Quote 报价中</option><option value="Scheduled 待施工">Scheduled 待施工</option><option value="Completed 已完工">Completed 已完工</option><option value="Warranty 售后/争议中">Warranty 售后/争议中</option></select></div>
-                    <div><label class="text-slate-400 block mb-1" data-i18n="lblCustPrice">Total Price ($ incl. GST) / 总报价</label><input type="number" id="custPrice" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-emerald-400 font-bold font-mono"></div>
+                    <div><label class="text-slate-400 block mb-1">Project Status / 项目状态</label><select id="custStatus" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"><option value="Quote 报价中">Quote 报价中</option><option value="Scheduled 待施工">Scheduled 待施工</option><option value="Completed 已完工">Completed 已完工</option><option value="Warranty 售后/争议中">Warranty 售后/争议中</option></select></div>
+                    <div><label class="text-slate-400 block mb-1">Total Price ($ incl. GST) / 总报价</label><input type="number" id="custPrice" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-emerald-400 font-bold font-mono"></div>
                 </div>
 
                 <div class="pt-3 border-t border-slate-700 space-y-2">
                     <div class="flex justify-between items-center">
-                        <h4 class="font-bold text-sky-400 flex items-center gap-1"><i data-lucide="camera" class="w-4 h-4"></i> <span data-i18n="lblPhotosSection">Site Photos / 现场照片</span></h4>
+                        <h4 class="font-bold text-sky-400 flex items-center gap-1"><i data-lucide="camera" class="w-4 h-4"></i> <span>Site Photos / 现场照片 (Drive Sync)</span></h4>
                         <label class="cursor-pointer px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-[11px] font-semibold transition">
-                            <span data-i18n="btnAddPhotos">+ Upload / 拍照上传</span>
+                            <span>+ Upload / 拍照上传</span>
                             <input type="file" accept="image/*" multiple onchange="handlePhotoUpload(event)" class="hidden">
                         </label>
                     </div>
@@ -472,18 +464,18 @@ Ref: [Invoice Number]</textarea>
                 </div>
 
                 <div class="pt-3 border-t border-slate-700 space-y-2">
-                    <div class="flex justify-between items-center"><h4 class="font-bold text-sky-400" data-i18n="lblMeasuresSection">Glass Measurements / 测量尺寸</h4><button type="button" onclick="addModalMeasureRow()" class="text-emerald-400 font-semibold hover:underline" data-i18n="btnAddGlass">+ Add Glass</button></div>
+                    <div class="flex justify-between items-center"><h4 class="font-bold text-sky-400">Glass Measurements / 测量尺寸</h4><button type="button" onclick="addModalMeasureRow()" class="text-emerald-400 font-semibold hover:underline">+ Add Glass</button></div>
                     <table class="w-full text-left">
-                        <thead><tr class="text-slate-400"><th class="p-1" data-i18n="thLabel">Label</th><th class="p-1" data-i18n="thW">W (mm)</th><th class="p-1" data-i18n="thH">H (mm)</th><th class="p-1" data-i18n="thQty">Qty</th><th class="p-1 text-center" data-i18n="thAction">Action</th></tr></thead>
+                        <thead><tr class="text-slate-400"><th class="p-1">Label</th><th class="p-1">W (mm)</th><th class="p-1">H (mm)</th><th class="p-1">Qty</th><th class="p-1 text-center">Action</th></tr></thead>
                         <tbody id="modalMeasureTbody" class="divide-y divide-slate-700/50"></tbody>
                     </table>
                 </div>
             </div>
             <div class="px-5 py-3 border-t border-slate-700 bg-slate-800 flex justify-between items-center">
-                <button type="button" onclick="sendClientToOptimizer()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-white font-medium shadow transition" data-i18n="btnToOpt">Import to Optimizer</button>
+                <button type="button" onclick="sendClientToOptimizer()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-white font-medium shadow transition">Import to Optimizer</button>
                 <div class="flex gap-2">
-                    <button type="button" onclick="closeClientModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-slate-300 transition" data-i18n="btnCancel">Cancel</button>
-                    <button type="button" onclick="saveClientModal()" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 rounded-xl font-bold text-white shadow transition" data-i18n="btnSaveProfile">Save Profile</button>
+                    <button type="button" onclick="closeClientModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-slate-300 transition">Cancel</button>
+                    <button type="button" onclick="saveClientModal()" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 rounded-xl font-bold text-white shadow transition">Save Profile</button>
                 </div>
             </div>
         </div>
@@ -510,136 +502,7 @@ Ref: [Invoice Number]</textarea>
         let canvasPanY = 0;
         let isDragging = false;
         let startX = 0, startY = 0;
-        let lastTouchDist = null;
         let currentRenderData = null;
-
-        const i18nText = {
-            ZH: {
-                subtitle: 'Bayview 窗户贴膜与发票管理系统',
-                btnBindGoogle: '绑定 Google 账号',
-                btnSync: '双向云同步',
-                btnExport: '导出备份',
-                btnImport: '导入',
-                navClients: '客户项目 (Clients)',
-                navCalendar: '预约日历 (Schedule)',
-                navOptimizer: '裁膜引擎 (Optimizer)',
-                navInvoices: '发票管理 (Tax Invoices)',
-                navCalculator: '报价计算 (Estimator)',
-                btnNewClient: '+ 新建客户与项目',
-                searchPlaceholder: '搜索客户姓名、电话、地址...',
-                calDesc: '统筹管理测量报价与现场施工排期任务。',
-                btnCalPrev: '◀ 上月',
-                btnCalToday: '今天',
-                btnCalNext: '下月 ▶',
-                weeks: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
-                lblQuoteDate: '🔍 测量预约 (Quote Date)',
-                lblJobDate: '🛠️ 施工预约 (Job Date)',
-                tagMeasure: '测量',
-                tagJob: '施工',
-                optDesc: '高对比度 2D 裁切引擎：完美居中显示，支持双指缩放与自由拖动。',
-                btnGenInvoice: '一键生成 Tax Invoice',
-                btnSendToCalc: '带入报价器',
-                btnRecalculate: '重新计算',
-                btnResetZoom: '重置视角',
-                lblRollWidth: '膜卷宽度 (默认1524mm)',
-                lblMargin: '裁边预留 Margin (mm/边)',
-                lblCostPerMeter: '每米材料成本 ($/m)',
-                lblPanelsList: '窗户玻璃面板清单',
-                btnAddRow: '+ 添加一行',
-                thLabel: '位置 Label',
-                thW: '宽 W (mm)',
-                thH: '高 H (mm)',
-                thQty: '数量 Qty',
-                thAction: '操作 Action',
-                lblFilmCons: '材料消耗 (Consumption)',
-                lblWastePct: '卷膜损耗率 Waste Rate',
-                lblGlassArea: '玻璃净面积 Glass Area',
-                lblEstCost: '预估材料成本 Material Cost',
-                legendCut: '裁切膜片',
-                legendOffcut: '余料区',
-                lblPricingMode: '报价计价模式 (Pricing Mode)：',
-                modeGlassTitle: '按玻璃面积 (Glass Area)',
-                modeGlassDesc: '自动填入净玻璃面积',
-                modeFilmTitle: '按材料用量 (Film Cons.)',
-                modeFilmDesc: '自动填入卷膜消耗长度',
-                lblRate: '单价 Rate ($/m²)',
-                lblCallout: '上门费 Callout ($)',
-                lblExtra: '杂费折扣 Extra ($)',
-                lblSubtotal: '小计 (Excl. GST):',
-                lblTotal: '总计 (Incl. GST):',
-                btnToOpt: '导入裁膜优化',
-                btnCancel: '取消',
-                btnSaveProfile: '保存档案'
-            },
-            EN: {
-                subtitle: 'Bayview NZ Tinting & Invoice System',
-                btnBindGoogle: 'Bind Google Account',
-                btnSync: 'Two-Way Sync',
-                btnExport: 'Export Backup',
-                btnImport: 'Import JSON',
-                navClients: 'Clients & Projects',
-                navCalendar: 'Schedule Calendar',
-                navOptimizer: 'Cutting Optimizer',
-                navInvoices: 'Tax Invoices',
-                navCalculator: 'Job Estimator',
-                btnNewClient: '+ New Client & Project',
-                searchPlaceholder: 'Search Name, Phone, Address...',
-                calDesc: 'Manage measurement quotes and installation jobs scheduling.',
-                btnCalPrev: '◀ Prev',
-                btnCalToday: 'Today',
-                btnCalNext: 'Next ▶',
-                weeks: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-                lblQuoteDate: '🔍 Quote Measurement Appt',
-                lblJobDate: '🛠️ Installation Job Appt',
-                tagMeasure: 'Measure',
-                tagJob: 'Job',
-                optDesc: 'High-contrast 2D layout with perfect centering, pan & pinch-to-zoom.',
-                btnGenInvoice: 'Generate Tax Invoice',
-                btnSendToCalc: 'Send to Estimator',
-                btnRecalculate: 'Recalculate',
-                btnResetZoom: 'Reset View',
-                lblRollWidth: 'Roll Width (Default 1524mm)',
-                lblMargin: 'Margin (mm/side)',
-                lblCostPerMeter: 'Material Cost ($/m)',
-                lblPanelsList: 'Glass Panels List',
-                btnAddRow: '+ Add Row',
-                thLabel: 'Location Label',
-                thW: 'Width W (mm)',
-                thH: 'Height H (mm)',
-                thQty: 'Qty',
-                thAction: 'Action',
-                lblFilmCons: 'Film Consumption',
-                lblWastePct: 'Waste Rate',
-                lblGlassArea: 'Net Glass Area',
-                lblEstCost: 'Est. Material Cost',
-                legendCut: 'Cut Pieces',
-                legendOffcut: 'Offcut',
-                lblPricingMode: 'Pricing Calculation Mode:',
-                modeGlassTitle: 'Net Glass Area Mode',
-                modeGlassDesc: 'Auto-fills Net Glass Area',
-                modeFilmTitle: 'Film Consumption Mode',
-                modeFilmDesc: 'Auto-fills Film Consumption',
-                lblRate: 'Unit Rate ($/m²)',
-                lblCallout: 'Callout Fee ($)',
-                lblExtra: 'Extra / Discount ($)',
-                lblSubtotal: 'Subtotal (Excl. GST):',
-                lblTotal: 'Total (Incl. GST):',
-                btnToOpt: 'Import to Optimizer',
-                btnCancel: 'Cancel',
-                btnSaveProfile: 'Save Profile'
-            }
-        };
-
-        function formatNZDateTime(isoStr) {
-            if (!isoStr) return currentLang === 'ZH' ? '未定' : 'TBD';
-            const parts = isoStr.split('T');
-            if (parts.length < 1) return currentLang === 'ZH' ? '未定' : 'TBD';
-            const dateParts = parts[0].split('-');
-            if (dateParts.length !== 3) return isoStr;
-            const nzDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-            if (parts[1]) return `${nzDate} ${parts[1].slice(0, 5)}`;
-            return nzDate;
-        }
 
         function toggleLanguage() {
             currentLang = currentLang === 'ZH' ? 'EN' : 'ZH';
@@ -650,15 +513,6 @@ Ref: [Invoice Number]</textarea>
         function applyLanguage() {
             document.getElementById('langBtnText').textContent = currentLang === 'ZH' ? 'English' : '中文';
             document.getElementById('langBtnMobile').textContent = currentLang === 'ZH' ? 'English' : '中文';
-            const langData = i18nText[currentLang];
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (langData[key]) el.textContent = langData[key];
-            });
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                const key = el.getAttribute('data-i18n-placeholder');
-                if (langData[key]) el.placeholder = langData[key];
-            });
             runQuickCalc();
             renderJobsList();
             renderCalendar();
@@ -684,9 +538,48 @@ Ref: [Invoice Number]</textarea>
             if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' });
         }
 
+        // --- ☁️ Google Drive 独立文件夹云端同步（方案 2） ---
+        async function getOrCreatePhotosFolder() {
+            const queryRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='TintPro_Photos' and mimeType='application/vnd.google-apps.folder' and trashed=false`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            const queryJson = await queryRes.json();
+            if (queryJson.files && queryJson.files.length > 0) {
+                return queryJson.files[0].id;
+            }
+            // 创建新文件夹
+            const createRes = await fetch(`https://www.googleapis.com/drive/v3/files`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: 'TintPro_Photos', mimeType: 'application/vnd.google-apps.folder' })
+            });
+            const folderJson = await createRes.json();
+            return folderJson.id;
+        }
+
         async function syncToCloud(showAlert = false) {
             if (!accessToken) { handleGoogleAuth(); return; }
             try {
+                const photosFolderId = await getOrCreatePhotosFolder();
+
+                // 1. 同步本地未上传的图片到 Google Drive 独立文件夹
+                const allPhotos = await dbGetAllPhotos();
+                for (let p of allPhotos) {
+                    if (p.isNew && p.blob) {
+                        const metadata = { name: p.id + '.jpg', parents: [photosFolderId] };
+                        const form = new FormData();
+                        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                        form.append('file', p.blob, p.id + '.jpg');
+
+                        await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                            method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}` }, body: form
+                        });
+                        p.isNew = false;
+                        await dbSavePhoto(p);
+                    }
+                }
+
+                // 2. 从云端同步 bayview-backup.json 文本与照片索引
                 const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='bayview-backup.json' and trashed=false`, {
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
@@ -720,9 +613,30 @@ Ref: [Invoice Number]</textarea>
                 const mergedClients = Array.from(clientMap.values());
                 const finalDeletedIds = Array.from(allDeletedIdsSet);
 
-                const existingLocalIds = new Set(localClients.map(c => c.id));
-                for (let c of mergedClients) { await dbSaveClient(c); existingLocalIds.delete(c.id); }
-                for (let delId of existingLocalIds) { await dbDeleteClient(delId); }
+                // 3. 检查云端是否有本地缺失的图片，自动下载并存入 IndexedDB
+                for (let c of mergedClients) {
+                    if (c.photosMeta) {
+                        for (let pMeta of c.photosMeta) {
+                            let existingP = await dbGetPhoto(pMeta.id);
+                            if (!existingP) {
+                                // 从 Google Drive 的 TintPro_Photos 文件夹中按名称寻找该图片
+                                const imgSearch = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${pMeta.id}.jpg' and '${photosFolderId}' in parents and trashed=false`, {
+                                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                                });
+                                const imgSearchJson = await imgSearch.json();
+                                if (imgSearchJson.files && imgSearchJson.files.length > 0) {
+                                    const imgId = imgSearchJson.files[0].id;
+                                    const imgBlobRes = await fetch(`https://www.googleapis.com/drive/v3/files/${imgId}?alt=media`, {
+                                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                                    });
+                                    const blob = await imgBlobRes.blob();
+                                    await dbSavePhoto({ id: pMeta.id, blob });
+                                }
+                            }
+                        }
+                    }
+                    await dbSaveClient(c);
+                }
 
                 localStorage.setItem('nz_deleted_ids', JSON.stringify(finalDeletedIds));
                 renderJobsList(); renderCalendar();
@@ -745,7 +659,7 @@ Ref: [Invoice Number]</textarea>
                         method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}` }, body: form
                     });
                 }
-                if (showAlert) alert('Cloud Sync Complete!');
+                if (showAlert) alert('Cloud Drive & Photos Sync Complete! / 云端照片与数据同步完成！');
             } catch (err) { console.error(err); if (showAlert) alert('Sync failed'); }
         }
 
@@ -807,6 +721,14 @@ Ref: [Invoice Number]</textarea>
             });
         }
 
+        function dbGetAllPhotos() {
+            return new Promise((resolve) => {
+                const tx = db.transaction('photos', 'readonly');
+                const req = tx.objectStore('photos').getAll();
+                req.onsuccess = () => resolve(req.result || []);
+            });
+        }
+
         function dbDeletePhoto(id) {
             return new Promise((resolve) => {
                 const tx = db.transaction('photos', 'readwrite');
@@ -861,7 +783,7 @@ Ref: [Invoice Number]</textarea>
 
             clients.filter(c => (c.name + c.suburb + c.address + c.phone).toLowerCase().includes(search)).forEach(c => {
                 const measureCount = (c.measures || []).reduce((acc, m) => acc + Number(m.qty || 1), 0);
-                const photoCount = (c.photosMeta || c.photoIds || []).length;
+                const photoCount = (c.photosMeta || []).length;
 
                 let statusBadgeClass = "bg-amber-500/20 text-amber-300 border border-amber-500/30";
                 if (c.status && c.status.includes('Completed')) statusBadgeClass = "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
@@ -879,7 +801,7 @@ Ref: [Invoice Number]</textarea>
                 top.appendChild(createSafeElement('span', `text-xs px-2.5 py-1 rounded-full font-semibold ${statusBadgeClass}`, c.status));
 
                 const scheduleInfo = createSafeElement('div', 'text-[11px] text-slate-400 flex flex-col gap-1 bg-slate-900/50 p-2 rounded-lg');
-                scheduleInfo.innerHTML = `<div>🔍 Measure: <span class="text-slate-200 font-mono">${formatNZDateTime(c.quoteDate)}</span></div><div>🛠️ Job: <span class="text-slate-200 font-mono">${formatNZDateTime(c.jobDate)}</span></div>`;
+                scheduleInfo.innerHTML = `<div>🔍 Measure: <span class="text-slate-200 font-mono">${c.quoteDate ? c.quoteDate.replace('T',' ') : 'TBD'}</span></div><div>🛠️ Job: <span class="text-slate-200 font-mono">${c.jobDate ? c.jobDate.replace('T',' ') : 'TBD'}</span></div>`;
 
                 const mid = createSafeElement('div', 'flex justify-between text-xs pt-2 border-t border-slate-700/80 text-slate-300');
                 mid.appendChild(createSafeElement('span', '', `📞 ${c.phone || 'N/A'}`));
@@ -904,12 +826,11 @@ Ref: [Invoice Number]</textarea>
             const weekHeaderEl = document.getElementById('cal-week-header');
             if (!gridEl || !titleEl || !weekHeaderEl) return;
 
-            const langData = i18nText[currentLang];
             const monthNamesEN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             titleEl.textContent = currentLang === 'ZH' ? `${currentYear}年 ${currentMonth + 1}月预约日历` : `${monthNamesEN[currentMonth]} ${currentYear} Schedule Calendar`;
 
             weekHeaderEl.innerHTML = '';
-            langData.weeks.forEach(w => weekHeaderEl.appendChild(createSafeElement('div', '', w)));
+            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(w => weekHeaderEl.appendChild(createSafeElement('div', '', w)));
             gridEl.innerHTML = '';
 
             const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
@@ -937,14 +858,27 @@ Ref: [Invoice Number]</textarea>
                 cell.appendChild(numHeader);
 
                 dayEvents.forEach(ev => {
-                    const tagText = ev.type === 'quote' ? 'Measure' : 'Job';
-                    const evDiv = createSafeElement('div', `cal-event ${ev.type}`, `[${tagText} ${ev.time}] ${ev.name}`);
+                    const evDiv = createSafeElement('div', `cal-event ${ev.type}`, `[${ev.type === 'quote' ? 'Measure' : 'Job'} ${ev.time}] ${ev.name}`);
                     evDiv.onclick = (e) => { e.stopPropagation(); openClientModal(ev.id); };
                     cell.appendChild(evDiv);
                 });
 
                 gridEl.appendChild(cell);
             }
+        }
+
+        function changeMonth(dir) {
+            currentMonth += dir;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            renderCalendar();
+        }
+
+        function goToday() {
+            const now = new Date();
+            currentYear = now.getFullYear();
+            currentMonth = now.getMonth();
+            renderCalendar();
         }
 
         async function openClientModal(id = null) {
@@ -965,6 +899,15 @@ Ref: [Invoice Number]</textarea>
                     document.getElementById('custJobDate').value = client.jobDate || '';
                     document.getElementById('custStatus').value = client.status || 'Quote 报价中';
                     document.getElementById('custPrice').value = client.price || 0;
+
+                    if (client.photosMeta) {
+                        for (let pMeta of client.photosMeta) {
+                            const pObj = await dbGetPhoto(pMeta.id);
+                            if (pObj && pObj.blob) {
+                                currentPhotos.push({ id: pObj.id, blob: pObj.blob, url: URL.createObjectURL(pObj.blob), createdAt: pMeta.createdAt || Date.now(), isProtected: pMeta.isProtected || false });
+                            }
+                        }
+                    }
                     (client.measures || []).forEach(m => addModalMeasureRow(m.label, m.w, m.h, m.qty));
                 }
             } else {
@@ -976,10 +919,67 @@ Ref: [Invoice Number]</textarea>
                 document.getElementById('custPrice').value = '';
                 addModalMeasureRow('Living Room', 1200, 1500, 2);
             }
+            renderPhotoPreviews();
             document.getElementById('clientModal').classList.remove('hidden');
         }
 
-        function closeClientModal() { document.getElementById('clientModal').classList.add('hidden'); }
+        function closeClientModal() {
+            document.getElementById('clientModal').classList.add('hidden');
+            currentPhotos.forEach(p => { if (p.url) URL.revokeObjectURL(p.url); });
+            currentPhotos = [];
+        }
+
+        function handlePhotoUpload(e) {
+            const files = e.target.files;
+            if (!files) return;
+            for (let file of files) {
+                const img = new Image();
+                const tempUrl = URL.createObjectURL(file);
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX = 1200;
+                    let w = img.width, h = img.height;
+                    if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
+                    else { if (h > MAX) { w *= MAX / h; h = MAX; } }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(async (blob) => {
+                        const photoId = 'photo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+                        const photoObj = { id: photoId, blob, createdAt: Date.now(), isProtected: false, isNew: true };
+                        await dbSavePhoto(photoObj);
+                        currentPhotos.push({ id: photoId, blob, url: URL.createObjectURL(blob), createdAt: photoObj.createdAt, isProtected: false });
+                        renderPhotoPreviews();
+                        URL.revokeObjectURL(tempUrl);
+                    }, 'image/jpeg', 0.82);
+                };
+                img.src = tempUrl;
+            }
+        }
+
+        function renderPhotoPreviews() {
+            const container = document.getElementById('photoPreviewContainer');
+            container.innerHTML = '';
+            if (currentPhotos.length === 0) {
+                container.appendChild(createSafeElement('span', 'text-slate-400 text-[11px]', 'No photos added.'));
+                return;
+            }
+            currentPhotos.forEach((pObj, idx) => {
+                const wrap = createSafeElement('div', 'relative w-20 h-20 rounded-lg overflow-hidden border border-slate-600 cursor-pointer shadow flex flex-col justify-end bg-slate-900');
+                const img = document.createElement('img');
+                img.src = pObj.url; img.className = 'absolute inset-0 w-full h-full object-cover';
+                wrap.appendChild(img);
+
+                const delBtn = createSafeElement('button', 'absolute top-0.5 right-0.5 z-20 bg-rose-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-[10px]', '×');
+                delBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    await dbDeletePhoto(pObj.id);
+                    currentPhotos.splice(idx, 1);
+                    renderPhotoPreviews();
+                };
+                wrap.appendChild(delBtn);
+                container.appendChild(wrap);
+            });
+        }
 
         function addModalMeasureRow(label = '', w = '', h = '', qty = 1) {
             const tbody = document.getElementById('modalMeasureTbody');
@@ -999,6 +999,7 @@ Ref: [Invoice Number]</textarea>
             if (!name) { alert('Please enter client name'); return; }
             const editingId = Number(document.getElementById('editingClientId').value);
 
+            const photosMeta = currentPhotos.map(p => ({ id: p.id, createdAt: p.createdAt, isProtected: p.isProtected }));
             const measures = [];
             document.querySelectorAll('#modalMeasureTbody tr').forEach(tr => {
                 const inputs = tr.querySelectorAll('input');
@@ -1018,6 +1019,7 @@ Ref: [Invoice Number]</textarea>
                 status: document.getElementById('custStatus').value,
                 price: parseFloat(document.getElementById('custPrice').value) || 0,
                 updatedAt: Date.now(),
+                photosMeta,
                 measures
             };
 
@@ -1026,6 +1028,7 @@ Ref: [Invoice Number]</textarea>
             renderJobsList();
             renderCalendar();
             populateInvoiceClientSelect();
+            if (accessToken) syncToCloud(false);
         }
 
         async function sendClientToOptimizer() {
@@ -1173,7 +1176,6 @@ Ref: [Invoice Number]</textarea>
 
         function sendOptimizerToCalc() { runQuickCalc(); switchTab('calculator'); }
 
-        /* --- 🧾 Tax Invoice 发票业务逻辑 --- */
         async function populateInvoiceClientSelect() {
             const select = document.getElementById('invClientSelect');
             if (!select) return;
