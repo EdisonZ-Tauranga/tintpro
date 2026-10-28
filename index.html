@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TintPro Manager v12.9 Pro - Light & Salt / Bayview Edition</title>
+    <title>TintPro Manager v12.10 Pro - Light & Salt / Bayview Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -62,7 +62,7 @@
                     </div>
                     <div>
                         <h1 class="text-base font-bold text-white flex items-center gap-2">
-                            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">v12.9 Pro</span>
+                            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono">v12.10 Pro</span>
                         </h1>
                         <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
                     </div>
@@ -227,11 +227,11 @@
                             </div>
                         </div>
 
-                        <!-- 行项目：支持一口价与面积单价双模式 -->
+                        <!-- 行项目：默认空白，支持自由编辑排版 -->
                         <div class="space-y-2">
                             <div class="flex justify-between items-center">
                                 <span class="font-bold text-slate-300">Line Items (15% GST)</span>
-                                <button onclick="addInvoiceItemRow('Residential Window Tinting Application', 'fixed', 1, 0, 0, 207)" class="text-sky-400 hover:underline">+ Add Line Item</button>
+                                <button onclick="addInvoiceItemRow('', 'fixed', 1, 0, 0, 0)" class="text-sky-400 hover:underline">+ Add Line Item</button>
                             </div>
                             <div id="invoiceItemsContainer" class="space-y-3"></div>
                         </div>
@@ -260,7 +260,7 @@
                         </div>
                     </div>
 
-                    <!-- 🖨️ A4 打印预览容器 (无 Service Details，Payment Due 移至右上角且日期为 DD/MM/YYYY) -->
+                    <!-- 🖨️ A4 打印预览容器 -->
                     <div id="printableInvoice" class="bg-white text-slate-900 p-8 rounded-xl shadow-2xl space-y-6 hidden border border-slate-200">
                         <div class="flex justify-between items-start border-b-2 border-slate-900 pb-6">
                             <div>
@@ -295,21 +295,20 @@
                             <div class="text-right space-y-1">
                                 <h1 class="text-2xl font-black text-slate-900 tracking-wider">TAX INVOICE</h1>
                                 <p class="text-sm font-mono font-bold text-sky-600" id="pInvNum">INV-2026-001</p>
-                                <p class="text-xs text-slate-600">Date: <span id="pInvDate">28/10/2026</span></p>
+                                <p class="text-xs text-slate-600">Date: <span id="pInvDate">29/10/2026</span></p>
                                 <p class="text-xs font-bold text-slate-900 pt-1">Payment Due: Within 7 Days</p>
                             </div>
                         </div>
 
-                        <!-- 纯客户端名称区域 -->
+                        <!-- 客户名称 -->
                         <div class="text-xs bg-slate-50 p-4 rounded-lg border border-slate-200">
                             <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">BILLED TO:</span>
-                            <p class="font-bold text-base text-slate-900" id="pClientName">Glynis Diamond</p>
+                            <p class="font-bold text-base text-slate-900" id="pClientName">Client Name</p>
                         </div>
 
+                        <!-- 表格列名根据计费模式动态渲染 -->
                         <table class="w-full text-left text-xs divide-y divide-slate-200">
-                            <thead>
-                                <tr class="text-slate-700 font-bold bg-slate-100"><th class="p-2.5 w-3/5">Item Description</th><th class="p-2.5 text-center">Qty</th><th class="p-2.5 text-right">Rate / Total</th><th class="p-2.5 text-right">Amount (NZD)</th></tr>
-                            </thead>
+                            <thead id="pInvoiceThead"></thead>
                             <tbody id="pInvoiceTbody" class="divide-y divide-slate-100"></tbody>
                         </table>
 
@@ -397,7 +396,7 @@
                             </optgroup>
                         </select>
                     </div>
-                    <div><label class="text-slate-400 block mb-1">Address / 详细地址</label><input type="text" id="custAddress" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white" placeholder="310B"></div>
+                    <div><label class="text-slate-400 block mb-1">Address / 详细地址</label><input type="text" id="custAddress" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-3 bg-slate-900/60 p-3 rounded-xl border border-sky-500/20">
                     <div><label class="text-slate-300 block mb-1 font-semibold">🔍 测量预约 (Quote Date)</label><input type="datetime-local" id="custQuoteDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"></div>
@@ -405,7 +404,7 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="text-slate-400 block mb-1">Project Status / 项目状态</label><select id="custStatus" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white"><option value="Quote 报价中">Quote 报价中</option><option value="Scheduled 待施工">Scheduled 待施工</option><option value="Completed 已完工">Completed 已完工</option><option value="Warranty 售后/争议中">Warranty 售后/争议中</option></select></div>
-                    <div><label class="text-slate-400 block mb-1">Total Price ($ incl. GST) / 包干一口价</label><input type="number" id="custPrice" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-emerald-400 font-bold font-mono" placeholder="如 207"></div>
+                    <div><label class="text-slate-400 block mb-1">Total Price ($ incl. GST) / 包干一口价</label><input type="number" id="custPrice" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-emerald-400 font-bold font-mono"></div>
                 </div>
 
                 <div class="pt-3 border-t border-slate-700 space-y-2">
@@ -553,7 +552,7 @@
 
                 renderJobsList();
 
-                const backupData = { version: 'v12.9', updatedAt: new Date().toISOString(), clients: mergedClients };
+                const backupData = { version: 'v12.10', updatedAt: new Date().toISOString(), clients: mergedClients };
                 const fileContent = JSON.stringify(backupData, null, 2);
 
                 if (fileId) {
@@ -933,11 +932,9 @@
             const container = document.getElementById('invoiceItemsContainer');
             container.innerHTML = '';
 
-            let desc = `Residential Window Tinting Application`;
-            if (savedClient.address) desc += ` (${savedClient.address})`;
-
-            const lumpSum = savedClient.price || 207;
-            addInvoiceItemRow(desc, 'fixed', 1, 0, 0, lumpSum);
+            const price = savedClient.price || 0;
+            // 从客户弹窗生成时，留空文本，传入实际价格
+            addInvoiceItemRow('', 'fixed', 1, 0, 0, price);
             recalcInvoiceTotals();
         }
 
@@ -1082,7 +1079,7 @@
             updateBankRefAuto();
             const container = document.getElementById('invoiceItemsContainer');
             container.innerHTML = '';
-            addInvoiceItemRow('Residential Window Tinting Application', 'fixed', 1, 0, 0, 207);
+            addInvoiceItemRow('', 'fixed', 1, 0, 0, 0);
             recalcInvoiceTotals();
         }
 
@@ -1091,10 +1088,11 @@
             openNewInvoiceBuilder();
             const container = document.getElementById('invoiceItemsContainer');
             container.innerHTML = '';
-            addInvoiceItemRow('Solar Control Film Application (MaxRects Optimized)', 'fixed', 1, 0, 0, 350);
+            addInvoiceItemRow('', 'fixed', 1, 0, 0, 0);
             recalcInvoiceTotals();
         }
 
+        // 核心动态生成行项目函数：完全支持空白预填与清爽的单金额行
         function addInvoiceItemRow(desc = '', mode = 'fixed', qty = 1, area = 0, rate = 0, price = 0) {
             const container = document.getElementById('invoiceItemsContainer');
             const rowId = 'item_row_' + Date.now() + Math.random().toString(36).substr(2, 5);
@@ -1116,23 +1114,23 @@
                 
                 <div>
                     <label class="text-[10px] text-slate-400 block mb-0.5">Item Description (自由排版多行备注与玻璃明细):</label>
-                    <textarea rows="3" oninput="recalcInvoiceTotals()" class="item-desc w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-xs custom-scroll">${desc}</textarea>
+                    <textarea rows="3" placeholder="在此直接打字输入项目内容与玻璃备注..." oninput="recalcInvoiceTotals()" class="item-desc w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-xs custom-scroll">${desc}</textarea>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 items-center">
                     <div class="mode-fixed-fields ${mode==='fixed'?'':'hidden'}">
-                        <label class="text-[10px] text-slate-400 block">Total Price ($ incl. GST)</label>
-                        <input type="number" step="0.01" value="${price}" oninput="recalcInvoiceTotals()" class="item-price w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-white font-mono text-xs text-emerald-400 font-bold">
+                        <label class="text-[10px] text-slate-400 block">Total Amount ($ incl. GST)</label>
+                        <input type="number" step="0.01" value="${price || ''}" placeholder="如 207" oninput="recalcInvoiceTotals()" class="item-price w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-white font-mono text-xs text-emerald-400 font-bold">
                     </div>
                     
                     <div class="mode-area-fields ${mode==='area'?'grid grid-cols-3 gap-1 col-span-3':'hidden'}">
                         <div>
                             <label class="text-[10px] text-slate-400 block">Area (m²)</label>
-                            <input type="number" step="0.01" value="${area}" oninput="recalcInvoiceTotals()" class="item-area w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-white font-mono text-xs text-center">
+                            <input type="number" step="0.01" value="${area || ''}" oninput="recalcInvoiceTotals()" class="item-area w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-white font-mono text-xs text-center">
                         </div>
                         <div>
                             <label class="text-[10px] text-slate-400 block">Rate ($/m²)</label>
-                            <input type="number" step="0.01" value="${rate}" oninput="recalcInvoiceTotals()" class="item-rate w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-white font-mono text-xs text-right">
+                            <input type="number" step="0.01" value="${rate || ''}" oninput="recalcInvoiceTotals()" class="item-rate w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-white font-mono text-xs text-right">
                         </div>
                         <div>
                             <label class="text-[10px] text-slate-400 block">Qty</label>
@@ -1214,34 +1212,71 @@
             document.getElementById('pInvDate').textContent = formatDateNZ(rawDate);
             document.getElementById('pBankRefText').textContent = invNum;
 
+            const pThead = document.getElementById('pInvoiceThead');
             const pTbody = document.getElementById('pInvoiceTbody');
             pTbody.innerHTML = '';
 
+            const rows = document.querySelectorAll('#invoiceItemsContainer > div');
+            let hasAreaMode = false;
+            rows.forEach(r => {
+                if (r.querySelector('.item-mode').value === 'area') hasAreaMode = true;
+            });
+
+            // 如果全部为一口价，隐藏 Qty 及 Rate/Total 列，只显示 Item Description 及 Amount
+            if (hasAreaMode) {
+                pThead.innerHTML = `
+                    <tr class="text-slate-700 font-bold bg-slate-100">
+                        <th class="p-2.5 w-3/5">Item Description</th>
+                        <th class="p-2.5 text-center">Qty</th>
+                        <th class="p-2.5 text-right">Rate / Detail</th>
+                        <th class="p-2.5 text-right">Amount (NZD)</th>
+                    </tr>
+                `;
+            } else {
+                pThead.innerHTML = `
+                    <tr class="text-slate-700 font-bold bg-slate-100">
+                        <th class="p-2.5 w-4/5">Item Description</th>
+                        <th class="p-2.5 text-right">Amount (NZD)</th>
+                    </tr>
+                `;
+            }
+
             let grandTotal = 0;
-            document.querySelectorAll('#invoiceItemsContainer > div').forEach(row => {
+            rows.forEach(row => {
                 const mode = row.querySelector('.item-mode').value;
                 const desc = row.querySelector('.item-desc').value;
-                let amt = 0, rateOrDetail = '';
+                let amt = 0;
+
+                const ptr = document.createElement('tr');
 
                 if (mode === 'fixed') {
                     amt = parseFloat(row.querySelector('.item-price').value) || 0;
-                    rateOrDetail = `Fixed Price`;
+                    if (hasAreaMode) {
+                        ptr.innerHTML = `
+                            <td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${desc}</td>
+                            <td class="p-2.5 text-center font-mono">-</td>
+                            <td class="p-2.5 text-right font-mono">-</td>
+                            <td class="p-2.5 text-right font-mono font-bold">$${amt.toFixed(2)}</td>
+                        `;
+                    } else {
+                        ptr.innerHTML = `
+                            <td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${desc}</td>
+                            <td class="p-2.5 text-right font-mono font-bold">$${amt.toFixed(2)}</td>
+                        `;
+                    }
                 } else {
                     const area = parseFloat(row.querySelector('.item-area').value) || 0;
                     const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
                     const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
                     amt = area * rate * qty;
-                    rateOrDetail = `${area}m² @ $${rate}/m²`;
+                    ptr.innerHTML = `
+                        <td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${desc}</td>
+                        <td class="p-2.5 text-center font-mono">${qty}</td>
+                        <td class="p-2.5 text-right font-mono">${area}m² @ $${rate}/m²</td>
+                        <td class="p-2.5 text-right font-mono font-bold">$${amt.toFixed(2)}</td>
+                    `;
                 }
                 grandTotal += amt;
-
-                const ptr = document.createElement('tr');
-                ptr.innerHTML = `
-                    <td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${desc}</td>
-                    <td class="p-2.5 text-center font-mono">1</td>
-                    <td class="p-2.5 text-right font-mono">${rateOrDetail}</td>
-                    <td class="p-2.5 text-right font-mono font-bold">$${amt.toFixed(2)}</td>
-                `;
                 pTbody.appendChild(ptr);
             });
 
@@ -1269,7 +1304,7 @@
 
         async function exportDataJSON() {
             const clients = await dbGetAllClients();
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: 'v12.9', clients }, null, 2));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: 'v12.10', clients }, null, 2));
             const dl = document.createElement('a');
             dl.setAttribute("href", dataStr);
             dl.setAttribute("download", `TintPro_Manager_Backup_${new Date().toISOString().slice(0,10)}.json`);
