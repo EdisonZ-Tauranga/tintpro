@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v12.26 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v12.27 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -46,7 +46,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-white flex items-center gap-2">
-            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.26 Pro</span>
+            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.27 Pro</span>
           </h1>
           <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
         </div>
@@ -315,6 +315,7 @@
           </div>
 
           <div class="no-print flex justify-end gap-2 pt-4">
+            <button onclick="showInvoiceEditor()" class="px-5 py-2.5 bg-slate-600 hover:bg-slate-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition">✏️ 编辑发票</button>
             <button onclick="window.print()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition">
               <i data-lucide="printer" class="w-4 h-4"></i> Send to Printer / Save PDF
             </button>
@@ -362,11 +363,15 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="text-slate-400 block mb-1 text-xs">Suburb / 区域选择</label>
-          <select id="custSuburb" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white">
+          <select id="custSuburb" onchange="toggleSuburbOther()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white">
             <optgroup label="Tauranga 地区">
-              <option value="Bellevue">Bellevue</option><option value="Bethlehem">Bethlehem</option><option value="Matua">Matua</option><option value="Mount Maunganui">Mount Maunganui</option><option value="Papamoa">Papamoa</option><option value="Pyes Pa">Pyes Pa</option><option value="Tauranga Central">Tauranga Central</option><option value="Welcome Bay">Welcome Bay</option>
+              <option value="Arataki">Arataki</option><option value="Bayfair">Bayfair</option><option value="Bellevue">Bellevue</option><option value="Bethlehem">Bethlehem</option><option value="Brookfield">Brookfield</option><option value="Gate Pa">Gate Pa</option><option value="Greerton">Greerton</option><option value="Hairini">Hairini</option><option value="Judea">Judea</option><option value="Matapihi">Matapihi</option><option value="Matua">Matua</option><option value="Maungatapu">Maungatapu</option><option value="Merivale">Merivale</option><option value="Mount Maunganui">Mount Maunganui</option><option value="Ohauiti">Ohauiti</option><option value="Omanu">Omanu</option><option value="Oropi">Oropi</option><option value="Otumoetai">Otumoetai</option><option value="Papamoa">Papamoa</option><option value="Papamoa Beach">Papamoa Beach</option><option value="Parkvale">Parkvale</option><option value="Pyes Pa">Pyes Pa</option><option value="Tauranga Central">Tauranga Central</option><option value="Tauriko">Tauriko</option><option value="The Avenues">The Avenues</option><option value="The Lakes">The Lakes</option><option value="Wairakei">Wairakei</option><option value="Welcome Bay">Welcome Bay</option>
+            </optgroup>
+            <optgroup label="其他城市 (Outside Tauranga)">
+              <option value="Rotorua">Rotorua</option><option value="Te Puke">Te Puke</option><option value="Others">Others</option>
             </optgroup>
           </select>
+          <input type="text" id="custSuburbOther" placeholder="具体城镇名（可选），例如 Katikati" class="hidden mt-2 w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white">
         </div>
         <div><label class="text-slate-400 block mb-1 text-xs">Address / 详细地址</label><input type="text" id="custAddress" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white" placeholder="例如：17 Veda Place"></div>
       </div>
@@ -413,7 +418,8 @@ let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth();
 let currentPhotos = [];
 let currentClientJobs = [];
-let activeInvoiceJobId = null;   // 发票模块当前对应的工作 ID
+let activeInvoiceJobId = null;
+let autoFillSeq = 0;   // 防止连续触发时旧的载入覆盖新的   // 发票模块当前对应的工作 ID
 
 const i18n = {
   ZH: { menuClients: "Clients & Projects / 客户项目", menuCalendar: "Schedule Calendar / 预约日历", menuOptimizer: "Cutting Optimizer / 裁膜引擎", menuInvoices: "Tax Invoices / 发票管理", menuEstimator: "Job Estimator / 报价计算", newClientBtn: "+ New Client / 新建客户档案", cloudSync: "Cloud Sync", export: "Export", import: "Import" },
@@ -457,6 +463,7 @@ function initGoogleAuth() {
           accessToken = resp.access_token;
           const authBtn = document.getElementById('authBtnText');
           if (authBtn) authBtn.textContent = 'Google Connected';
+          syncToCloud(true);   // 连接成功后立即与云端合并同步
         },
       });
     }
@@ -568,38 +575,145 @@ function dbDeleteClient(id) {
   });
 }
 
+const TOMB_KEY = 'tintpro_deleted_v1';
+const TOMB_KEEP_MS = 180 * 24 * 3600 * 1000;
+function loadTombstones() {
+  try { return JSON.parse(localStorage.getItem(TOMB_KEY) || '{}') || {}; } catch(e) { return {}; }
+}
+function saveTombstones(t) {
+  try { localStorage.setItem(TOMB_KEY, JSON.stringify(t)); } catch(e) {}
+}
+function addTombstone(id) {
+  const t = loadTombstones();
+  t[String(id)] = Date.now();
+  saveTombstones(t);
+}
+
+// 合并本地与云端：同一客户取"最后修改"的那份；被删除的客户靠"删除记录"同步
+function mergeClientSets(localList, localDel, cloudList, cloudDel) {
+  const now = Date.now();
+  const del = {};
+  [localDel, cloudDel].forEach(src => Object.keys(src || {}).forEach(k => {
+    const ts = Number(src[k]) || 0;
+    if (now - ts < TOMB_KEEP_MS && ts > (del[k] || 0)) del[k] = ts;
+  }));
+  const L = new Map(localList.map(c => [String(c.id), c]));
+  const C = new Map(cloudList.map(c => [String(c.id), c]));
+  const ids = new Set([...L.keys(), ...C.keys()]);
+  const merged = [];
+  let toLocal = 0, toCloud = 0, removedLocal = 0, removedCloud = 0;
+  ids.forEach(id => {
+    const l = L.get(id), c = C.get(id);
+    let win, from;
+    if (l && c) {
+      const lt = l.updatedAt || 0, ct = c.updatedAt || 0;
+      if (ct > lt) { win = c; from = 'cloud'; } else if (lt > ct) { win = l; from = 'local'; } else { win = l; from = 'same'; }
+    } else if (l) { win = l; from = 'local'; } else { win = c; from = 'cloud'; }
+    if (del[id] !== undefined) {
+      if ((win.updatedAt || 0) > del[id]) { delete del[id]; }          // 删除之后又被修改过：保留
+      else { if (l) removedLocal++; if (c) removedCloud++; return; }
+    }
+    merged.push(win);
+    if (from === 'cloud') toLocal++;
+    if (from === 'local') toCloud++;
+  });
+  const cloudDelKeys = Object.keys(cloudDel || {});
+  const delKeys = Object.keys(del);
+  const tombDiff = delKeys.length !== cloudDelKeys.length || delKeys.some(k => !(k in (cloudDel || {})));
+  return { merged, del, toLocal, toCloud, removedLocal, removedCloud,
+           localChanged: toLocal > 0 || removedLocal > 0,
+           cloudChanged: toCloud > 0 || removedCloud > 0 || tombDiff };
+}
+
+function dbReplaceAll(list) {
+  return new Promise((resolve) => {
+    if (!db) { resolve(false); return; }
+    try {
+      const tx = db.transaction('clients', 'readwrite');
+      const st = tx.objectStore('clients');
+      st.clear();
+      list.forEach(c => st.put(c));
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+      tx.onabort = () => resolve(false);
+    } catch(e) { resolve(false); }
+  });
+}
+
+function handleTokenExpired() {
+  accessToken = null;
+  const b = document.getElementById('authBtnText');
+  if (b) b.textContent = 'Google Auth';
+  showToast('Google 授权已过期，请点右上角 Google Auth 重新连接（数据仍安全保存在本机）', true);
+}
+
+let syncRunning = false, syncAgain = false;
 async function syncToCloud(showAlert = false) {
   if (!accessToken) { handleGoogleAuth(); return; }
+  if (syncRunning) { syncAgain = true; return; }
+  syncRunning = true;
   try {
-    let localClients = await dbGetAllClients();
-    const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='bayview-backup.json' and trashed=false`, {
-      headers: { 'Authorization': `Bearer ${accessToken}` }
-    });
+    const auth = { 'Authorization': `Bearer ${accessToken}` };
+    const q = encodeURIComponent("name='bayview-backup.json' and trashed=false");
+    const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=modifiedTime%20desc&fields=files(id,name,modifiedTime)`, { headers: auth });
+    if (searchRes.status === 401) { handleTokenExpired(); return; }
+    if (!searchRes.ok) throw new Error('search ' + searchRes.status);
     const searchJson = await searchRes.json();
-    let fileId = null;
-    if (searchJson.files && searchJson.files.length > 0) {
-      fileId = searchJson.files[0].id;
+    const fileId = (searchJson.files && searchJson.files.length > 0) ? searchJson.files[0].id : null;
+
+    const localClients = await dbGetAllClients();
+    const localDel = loadTombstones();
+    let cloudClients = [], cloudDel = {};
+    if (fileId) {
+      const dl = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, { headers: auth });
+      if (dl.status === 401) { handleTokenExpired(); return; }
+      if (!dl.ok) throw new Error('download ' + dl.status);
+      const parsed = JSON.parse(await dl.text());
+      cloudClients = Array.isArray(parsed) ? parsed : parsed.clients;
+      if (!Array.isArray(cloudClients)) throw new Error('云端文件格式不正确');
+      cloudDel = (!Array.isArray(parsed) && parsed.deleted) ? parsed.deleted : {};
     }
 
-    const backupData = { version: 'v12.26', updatedAt: new Date().toISOString(), clients: localClients };
-    const fileContent = JSON.stringify(backupData, null, 2);
-    if (fileId) {
-      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: fileContent
-      });
-    } else {
-      const metadata = { name: 'bayview-backup.json', mimeType: 'application/json' };
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-      form.append('file', new Blob([fileContent], { type: 'application/json' }));
-      await fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, {
-        method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}` }, body: form
-      });
+    const m = mergeClientSets(localClients, localDel, cloudClients, cloudDel);
+    if (m.localChanged) {
+      const ok = await dbReplaceAll(m.merged);
+      if (!ok) throw new Error('写入本机数据失败');
     }
-    if (showAlert) alert('Cloud Sync Complete! / 云端备份已成功更新！');
-  } catch (err) { console.error(err); if (showAlert) alert('Sync failed'); }
+    saveTombstones(m.del);
+
+    if (!fileId || m.cloudChanged) {
+      const fileContent = JSON.stringify({ version: 'v12.27', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del });
+      let up;
+      if (fileId) {
+        up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+          method: 'PATCH', headers: { ...auth, 'Content-Type': 'application/json' }, body: fileContent
+        });
+      } else {
+        const metadata = { name: 'bayview-backup.json', mimeType: 'application/json' };
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('file', new Blob([fileContent], { type: 'application/json' }));
+        up = await fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, { method: 'POST', headers: auth, body: form });
+      }
+      if (up.status === 401) { handleTokenExpired(); return; }
+      if (!up.ok) throw new Error('upload ' + up.status);
+    }
+
+    if (m.localChanged) {
+      renderJobsList(); renderCalendar();
+      const invTab = document.getElementById('tab-invoices');
+      if (invTab && invTab.classList.contains('hidden')) populateInvoiceClientSelect();
+    }
+    if (showAlert || m.localChanged) {
+      showToast(`☁️ 同步完成：从云端更新 ${m.toLocal} 位客户，上传 ${m.toCloud} 位客户` + (m.removedLocal ? `，移除 ${m.removedLocal} 位已删除客户` : ''));
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('云同步失败：' + (err && err.message ? err.message : err) + '（本机数据未受影响）', true);
+  } finally {
+    syncRunning = false;
+    if (syncAgain) { syncAgain = false; syncToCloud(false); }
+  }
 }
 
 async function cleanDuplicateClients() {
@@ -614,6 +728,8 @@ async function cleanDuplicateClients() {
       }
     });
     const uniqueClients = Array.from(map.values());
+    const keepSet = new Set(uniqueClients.map(c => String(c.id)));
+    clients.forEach(c => { if (c && !keepSet.has(String(c.id))) addTombstone(c.id); });
 
     const tx = db.transaction('clients', 'readwrite');
     const store = tx.objectStore('clients');
@@ -627,24 +743,7 @@ async function cleanDuplicateClients() {
     renderCalendar();
     populateInvoiceClientSelect();
 
-    if (accessToken) {
-      try {
-        const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='bayview-backup.json' and trashed=false`, {
-          headers: { 'Authorization': `Bearer ${accessToken}` }
-        });
-        const searchJson = await searchRes.json();
-        const backupData = { version: 'v12.26', updatedAt: new Date().toISOString(), clients: uniqueClients };
-        const fileContent = JSON.stringify(backupData, null, 2);
-        if (searchJson.files && searchJson.files.length > 0) {
-          const fileId = searchJson.files[0].id;
-          await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
-            method: 'PATCH',
-            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-            body: fileContent
-          });
-        }
-      } catch(e) { console.error("Cloud purge error:", e); }
-    }
+    if (accessToken) syncToCloud(false);
 
     alert(`数据清洗成功！当前共保留 ${uniqueClients.length} 位完全独立的有效客户。`);
   } catch(e) {
@@ -672,7 +771,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-function switchTab(tab) {
+function switchTab(tab, opts = {}) {
   try {
     ['jobs', 'calendar', 'optimizer', 'invoices', 'calculator'].forEach(t => {
       const el = document.getElementById('tab-' + t);
@@ -686,13 +785,54 @@ function switchTab(tab) {
     if (targetNav) targetNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-sky-600 text-white font-medium text-sm transition shadow-sm";
     if (tab === 'optimizer') optimizeRollLayout();
     if (tab === 'calendar') renderCalendar();
-    if (tab === 'invoices') {
-      populateInvoiceClientSelect();
-      generateNextInvoiceNumber();
+    if (tab === 'invoices' && !opts.keepInvoice) {
+      setInvoiceEditorVisible(true);
+      populateInvoiceClientSelect();   // 内部会载入所选客户的发票或生成新编号
     }
   } catch(e) {
     console.error("Switch tab error:", e);
   }
+}
+
+function toggleSuburbOther() {
+  const sel = document.getElementById('custSuburb'), inp = document.getElementById('custSuburbOther');
+  if (!sel || !inp) return;
+  inp.classList.toggle('hidden', sel.value !== 'Others');
+}
+function setSuburbFields(val) {
+  const sel = document.getElementById('custSuburb'), inp = document.getElementById('custSuburbOther');
+  if (!sel || !inp) return;
+  const known = [...sel.options].map(o => o.value).filter(v => v !== 'Others');
+  if (known.includes(val)) { sel.value = val; inp.value = ''; }
+  else { sel.value = 'Others'; inp.value = (val && val !== 'Others') ? val : ''; }
+  toggleSuburbOther();
+}
+function getSuburbValue() {
+  const sel = document.getElementById('custSuburb'), inp = document.getElementById('custSuburbOther');
+  if (sel.value === 'Others') return ((inp && inp.value) || '').trim() || 'Others';
+  return sel.value;
+}
+function autoGrowTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight + 2, 280) + 'px';
+}
+
+// 轻提示：不阻塞操作的小提示条
+function showToast(msg, isError = false) {
+  try {
+    let box = document.getElementById('toastBox');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'toastBox';
+      box.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;max-width:92vw;';
+      document.body.appendChild(box);
+    }
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;color:#fff;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.4);transition:opacity .4s;opacity:1;background:' + (isError ? '#be123c' : '#047857') + ';';
+    box.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 450); }, isError ? 6000 : 2600);
+  } catch(e) { console.log(msg); }
 }
 
 function escapeHtml(str) {
@@ -795,7 +935,7 @@ async function renderCalendar() {
       let dayEvents = [];
       clients.forEach(c => {
         (c.jobs || []).forEach(j => {
-          if (j.date === dateKey || j.jobDate === dateKey) dayEvents.push({ type: 'scheduled', title: `${c.name} (${j.title || 'Job'})`, clientId: c.id });
+          if (j.date === dateKey || j.jobDate === dateKey) dayEvents.push({ type: 'scheduled', title: `${c.name} (${String(j.title || 'Job').split('\n')[0]})`, clientId: c.id });
         });
         if (c.quoteDate && c.quoteDate.startsWith(dateKey)) dayEvents.push({ type: 'quote', title: `${c.name} (Quote)`, clientId: c.id });
       });
@@ -847,7 +987,7 @@ async function openClientModal(id = null) {
       if (client) {
         document.getElementById('custName').value = client.name || '';
         document.getElementById('custPhone').value = client.phone || '';
-        document.getElementById('custSuburb').value = client.suburb || 'Bethlehem';
+        setSuburbFields(client.suburb || 'Bethlehem');
         document.getElementById('custAddress').value = client.address || '';
         if (client.photos) currentPhotos = [...client.photos];
         currentClientJobs = client.jobs ? JSON.parse(JSON.stringify(client.jobs)) : [{
@@ -862,7 +1002,7 @@ async function openClientModal(id = null) {
     } else {
       document.getElementById('custName').value = '';
       document.getElementById('custPhone').value = '';
-      document.getElementById('custSuburb').value = 'Bethlehem';
+      setSuburbFields('Bethlehem');
       document.getElementById('custAddress').value = '';
       currentClientJobs = [{
         id: 'job_' + Date.now(),
@@ -902,19 +1042,26 @@ function renderClientJobsList() {
         <span class="text-xs font-bold text-sky-400">Job #${idx+1}</span>
         <button type="button" onclick="removeClientJob('${job.id}')" class="text-rose-400 hover:text-rose-300 text-xs">删除此工作</button>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
-        <div><label class="text-[10px] text-slate-400 block">Job Title / 项目名称</label><input type="text" placeholder="e.g. Living room windows" value="${job.title || ''}" oninput="updateJobField('${job.id}', 'title', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white"></div>
+      <div>
+        <label class="text-[10px] text-slate-400 block">Job Title / 项目名称（可多行，按 Enter 换行）</label>
+        <textarea rows="${Math.min(8, Math.max(2, String(job.title || '').split('\n').length))}" placeholder="e.g. Living room windows" oninput="updateJobField('${job.id}', 'title', this.value); autoGrowTextarea(this)" class="job-title-input w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white leading-relaxed resize-y whitespace-pre-wrap">${escapeHtml(job.title || '')}</textarea>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <div><label class="text-[10px] text-slate-400 block">Job Date / 施工日期</label><input type="date" value="${job.date || ''}" oninput="updateJobField('${job.id}', 'date', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white"></div>
         <div><label class="text-[10px] text-slate-400 block">Price ($ excl. GST)</label><input type="number" step="0.01" value="${job.price || ''}" oninput="updateJobField('${job.id}', 'price', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white font-mono"></div>
         <div><label class="text-[10px] text-slate-400 block">Status / 状态</label><select onchange="updateJobField('${job.id}', 'status', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white">${JOB_STATUSES.map(st => `<option value="${st}"${(job.status || 'Completed 已完工') === st ? ' selected' : ''}>${st}</option>`).join('')}</select></div>
       </div>
-      <div class="flex justify-between items-center pt-1">
-        <span class="text-[11px] text-emerald-400">${job.invoice ? '📄 已关联发票 (可直接去发票模块查看/编辑)' : 'ℹ️ 尚未生成发票'}</span>
-        <button type="button" onclick="jumpToInvoiceForJob('${job.id}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-lg font-semibold shadow">查看或编辑发票 ➔</button>
+      <div class="flex justify-between items-center gap-2 pt-1">
+        <span class="text-[11px] text-emerald-400">${job.invoice ? '📄 已关联发票' : 'ℹ️ 尚未生成发票'}</span>
+        <div class="flex gap-2">
+          ${job.invoice ? `<button type="button" onclick="viewInvoiceForJob('${job.id}')" class="px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white text-xs rounded-lg font-semibold shadow">🖨️ 查看/打印发票</button>` : ''}
+          <button type="button" onclick="jumpToInvoiceForJob('${job.id}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-lg font-semibold shadow">${job.invoice ? '✏️ 编辑发票' : '➕ 生成发票'}</button>
+        </div>
       </div>
     `;
     container.appendChild(div);
   });
+  container.querySelectorAll('textarea.job-title-input').forEach(autoGrowTextarea);
 }
 
 function addNewJobToCurrentClient() {
@@ -939,18 +1086,25 @@ function updateJobField(jobId, field, val) {
   if (job) job[field] = val;
 }
 
-function jumpToInvoiceForJob(jobId) {
+async function openInvoiceForJob(jobId, viewOnly) {
   const clientId = document.getElementById('editingClientId').value;
   closeClientModal();
-  switchTab('invoices');
-  populateInvoiceClientSelect().then(() => {
-    const select = document.getElementById('invClientSelect');
-    if (select) {
-      select.value = clientId;
-      autoFillInvoiceClient(jobId);
-    }
-  });
+  switchTab('invoices', { keepInvoice: true });
+  await populateInvoiceClientSelect();
+  const select = document.getElementById('invClientSelect');
+  if (!select) return;
+  select.value = clientId;
+  await autoFillInvoiceClient(jobId);
+  if (viewOnly) {
+    setInvoiceEditorVisible(false);
+    await renderPrintableInvoice({ noSave: true });   // 只查看：不保存、不弹窗
+    window.scrollTo({ top: 0 });
+  } else {
+    setInvoiceEditorVisible(true);
+  }
 }
+function jumpToInvoiceForJob(jobId) { return openInvoiceForJob(jobId, false); }
+function viewInvoiceForJob(jobId) { return openInvoiceForJob(jobId, true); }
 
 function handlePhotoUpload(e) {
   const files = e.target.files;
@@ -1024,7 +1178,7 @@ async function saveClientModal() {
       id: clientId,
       name,
       phone: document.getElementById('custPhone').value.trim(),
-      suburb: document.getElementById('custSuburb').value,
+      suburb: getSuburbValue(),
       address: document.getElementById('custAddress').value.trim(),
       status: deriveClientStatus(currentClientJobs),
       updatedAt: Date.now(),
@@ -1052,6 +1206,7 @@ async function saveClientModal() {
 async function deleteClient(id) {
   if (confirm('确认删除此客户档案？')) {
     await dbDeleteClient(id);
+    addTombstone(id);
     renderJobsList(); 
     renderCalendar();
     populateInvoiceClientSelect();
@@ -1208,9 +1363,13 @@ async function autoFillInvoiceClient(targetJobId = null) {
   try {
     const select = document.getElementById('invClientSelect');
     if (!select || !select.value) return;
+    const token = ++autoFillSeq;
     const clients = await dbGetAllClients();
+    if (token !== autoFillSeq) return;
     const client = clients.find(c => String(c.id) === String(select.value));
     if (client) {
+      const pv = document.getElementById('printableInvoice');
+      if (pv) pv.classList.add('hidden');   // 换了客户/工作，旧预览作废
       const pName = document.getElementById('pClientName');
       if (pName) pName.textContent = client.name;
       const container = document.getElementById('invoiceItemsContainer');
@@ -1241,6 +1400,7 @@ async function autoFillInvoiceClient(targetJobId = null) {
         if (jobAddrEl) jobAddrEl.value = job.invoice.jobAddress || '';
       } else {
         await generateNextInvoiceNumber();
+        if (token !== autoFillSeq) return;
         const invDate = document.getElementById('invDate');
         if (invDate) invDate.value = new Date().toISOString().slice(0, 10);
         const defaultPrice = job ? (job.price || 0) : (client.price || 0);
@@ -1248,6 +1408,7 @@ async function autoFillInvoiceClient(targetJobId = null) {
         addInvoiceItemRow(defaultDesc, 'fixed', 1, 0, 0, defaultPrice);
       }
       recalcInvoiceTotals();
+      updateBankRefAuto();   // 保证下方 Ref 与发票编号一致
     }
   } catch(e) {
     console.error("Auto fill invoice client error:", e);
@@ -1263,7 +1424,20 @@ function updateBankRefAuto() {
   if (pRefText) pRefText.textContent = num;
 }
 
+function setInvoiceEditorVisible(show) {
+  const box = document.getElementById('invoiceBuilderBox');
+  if (box) box.classList.toggle('hidden', !show);
+}
+function showInvoiceEditor() {
+  setInvoiceEditorVisible(true);
+  const box = document.getElementById('invoiceBuilderBox');
+  if (box) box.scrollIntoView({ behavior: 'smooth' });
+}
+
 async function openNewInvoiceBuilder() {
+  setInvoiceEditorVisible(true);
+  const pv = document.getElementById('printableInvoice');
+  if (pv) pv.classList.add('hidden');
   await generateNextInvoiceNumber();
   const invDate = document.getElementById('invDate');
   if (invDate) invDate.value = new Date().toISOString().slice(0, 10);
@@ -1376,7 +1550,12 @@ function formatDateNZ(dateStr) {
   return dateStr;
 }
 
-async function saveInvoiceToSystem() {
+function invoiceSignature(inv) {
+  return JSON.stringify([inv.invNumber, inv.invDate, inv.jobAddress || '',
+    (inv.items || []).map(i => [i.desc, i.mode, Number(i.price) || 0, Number(i.area) || 0, Number(i.rate) || 0, Number(i.qty) || 1])]);
+}
+
+async function saveInvoiceToSystem(opts = {}) {
   try {
     const clientSelect = document.getElementById('invClientSelect');
     if (!clientSelect || !clientSelect.value) { alert('请先选择客户！'); return false; }
@@ -1423,13 +1602,7 @@ async function saveInvoiceToSystem() {
       }
       // 写入正确的工作：优先用当前打开的那条，找不到才用第一条
       const targetJob = client.jobs.find(j => j.id === activeInvoiceJobId) || client.jobs[0];
-      // 发票号查重：同一个编号不能出现在别的工作上
-      let dupOwner = null;
-      clients.forEach(c => (c.jobs || []).forEach(j => {
-        if (j !== targetJob && j.invoice && j.invoice.invNumber === invNumber && !(String(c.id) === String(client.id) && j.id === targetJob.id)) dupOwner = c.name;
-      }));
-      if (dupOwner && !confirm(`发票号 ${invNumber} 已经用在客户 [${dupOwner}] 的发票上了。\n同一个发票号不能重复使用，确定仍要保存吗？`)) return false;
-      targetJob.invoice = {
+      const newInvoice = {
         invNumber,
         invDate: rawDate,
         desc: firstRowDesc,
@@ -1440,11 +1613,20 @@ async function saveInvoiceToSystem() {
         subtotal,
         grandTotal: subtotal * 1.15
       };
+      // 已保存且没有任何改动：不重复保存
+      if (opts.onlyIfChanged && targetJob.invoice && invoiceSignature(targetJob.invoice) === invoiceSignature(newInvoice)) return true;
+      // 发票号查重：同一个编号不能出现在别的工作上
+      let dupOwner = null;
+      clients.forEach(c => (c.jobs || []).forEach(j => {
+        if (j !== targetJob && j.invoice && j.invoice.invNumber === invNumber && !(String(c.id) === String(client.id) && j.id === targetJob.id)) dupOwner = c.name;
+      }));
+      if (dupOwner && !confirm(`发票号 ${invNumber} 已经用在客户 [${dupOwner}] 的发票上了。\n同一个发票号不能重复使用，确定仍要保存吗？`)) return false;
+      targetJob.invoice = newInvoice;
       client.updatedAt = Date.now();
       const savedOk = await dbSaveClient(client);
       if (!savedOk) { alert('发票保存失败！数据没有写入浏览器，请先点 Export 备份数据再试。'); return false; }
       if (accessToken) syncToCloud(false);
-      alert(`发票 ${invNumber} 已成功保存到客户 [${client.name}] 档案中！`);
+      showToast(opts.auto ? `✅ 发票 ${invNumber} 已自动保存` : `✅ 发票 ${invNumber} 已保存到客户 [${client.name}] 档案`);
       return true;
     }
     return false;
@@ -1455,9 +1637,12 @@ async function saveInvoiceToSystem() {
   }
 }
 
-async function renderPrintableInvoice() {
-  const savedOk = await saveInvoiceToSystem();
-  if (!savedOk) return;   // 保存未成功（如取消、查重不通过）时不生成预览
+async function renderPrintableInvoice(opts = {}) {
+  if (!opts.noSave) {
+    // 已保存且没改动 → 不保存；新发票或改过 → 自动保存（轻提示，不弹窗）
+    const savedOk = await saveInvoiceToSystem({ onlyIfChanged: true, auto: true });
+    if (!savedOk) return;   // 保存未成功（如取消、查重不通过）时不生成预览
+  }
   const printable = document.getElementById('printableInvoice');
   printable.classList.remove('hidden');
   const invNum = document.getElementById('invNumber').value;
@@ -1560,16 +1745,21 @@ async function importDataJSON(e) {
       const imported = JSON.parse(evt.target.result);
       let clientList = Array.isArray(imported) ? imported : (imported.clients || []);
       if (confirm(`Import ${clientList.length} records?`)) {
+        const existing = await dbGetAllClients();
+        const keepIds = new Set(clientList.map(c => String(c.id)));
+        existing.forEach(c => { if (!keepIds.has(String(c.id))) addTombstone(c.id); });
+        const tombs = loadTombstones(); keepIds.forEach(k => { delete tombs[k]; }); saveTombstones(tombs);
         const tx = db.transaction('clients', 'readwrite');
         const store = tx.objectStore('clients');
         store.clear();
         clientList.forEach((c, idx) => {
           let item = JSON.parse(JSON.stringify(c));
           if (!item.id) item.id = Date.now() + idx;
+          item.updatedAt = Date.now();
           store.put(item);
         });
         await new Promise(resolve => tx.oncomplete = resolve);
-        renderJobsList(); renderCalendar(); alert('Import successful!');
+        renderJobsList(); renderCalendar(); populateInvoiceClientSelect(); showToast('✅ 导入成功'); if (accessToken) syncToCloud(false);
       }
     } catch(err) { alert('Import failed.'); }
   };
