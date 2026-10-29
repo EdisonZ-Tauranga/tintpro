@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v12.24 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v12.25 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -46,7 +46,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-white flex items-center gap-2">
-            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.24 Pro</span>
+            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.25 Pro</span>
           </h1>
           <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
         </div>
@@ -399,6 +399,7 @@ let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth();
 let currentPhotos = [];
 let currentClientJobs = [];
+let activeInvoiceJobId = null;   // 发票模块当前对应的工作 ID
 
 const i18n = {
   ZH: { menuClients: "Clients & Projects / 客户项目", menuCalendar: "Schedule Calendar / 预约日历", menuOptimizer: "Cutting Optimizer / 裁膜引擎", menuInvoices: "Tax Invoices / 发票管理", menuEstimator: "Job Estimator / 报价计算", newClientBtn: "+ New Client / 新建客户档案", cloudSync: "Cloud Sync", export: "Export", import: "Import" },
@@ -506,18 +507,37 @@ async function dbGetAllClients() {
   });
 }
 
+// 返回 true = 真的写入成功；返回 false = 失败（如浏览器存储已满）
 function dbSaveClient(client) {
   return new Promise((resolve) => {
-    if (!db) { resolve(); return; }
+    if (!db) { resolve(false); return; }
     try {
       const tx = db.transaction('clients', 'readwrite');
       tx.objectStore('clients').put(client);
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => resolve();
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => { console.error('DB save error:', tx.error); resolve(false); };
+      tx.onabort = () => { console.error('DB save aborted:', tx.error); resolve(false); };
     } catch(e) {
-      resolve();
+      console.error('DB save exception:', e);
+      resolve(false);
     }
   });
+}
+
+// ---- 客户状态：由工作记录决定（取日期最新的一条工作的状态）----
+const JOB_STATUSES = ['Quote 报价中', 'Scheduled 已预约', 'Completed 已完工', 'Warranty 售后/争议中'];
+function deriveClientStatus(jobs) {
+  if (!jobs || jobs.length === 0) return 'Quote 报价中';
+  let best = jobs[0];
+  jobs.forEach(j => { if ((j.date || '') >= (best.date || '')) best = j; });
+  return best.status || 'Completed 已完工';
+}
+function statusBadgeClass(status) {
+  const base = 'text-xs px-2.5 py-1 rounded-full border font-medium ';
+  if ((status || '').startsWith('Quote')) return base + 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+  if ((status || '').startsWith('Scheduled')) return base + 'bg-sky-500/20 text-sky-300 border-sky-500/30';
+  if ((status || '').startsWith('Warranty')) return base + 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+  return base + 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
 }
 
 function dbDeleteClient(id) {
@@ -547,7 +567,7 @@ async function syncToCloud(showAlert = false) {
       fileId = searchJson.files[0].id;
     }
 
-    const backupData = { version: 'v12.24', updatedAt: new Date().toISOString(), clients: localClients };
+    const backupData = { version: 'v12.25', updatedAt: new Date().toISOString(), clients: localClients };
     const fileContent = JSON.stringify(backupData, null, 2);
     if (fileId) {
       await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -599,7 +619,7 @@ async function cleanDuplicateClients() {
           headers: { 'Authorization': `Bearer ${accessToken}` }
         });
         const searchJson = await searchRes.json();
-        const backupData = { version: 'v12.24', updatedAt: new Date().toISOString(), clients: uniqueClients };
+        const backupData = { version: 'v12.25', updatedAt: new Date().toISOString(), clients: uniqueClients };
         const fileContent = JSON.stringify(backupData, null, 2);
         if (searchJson.files && searchJson.files.length > 0) {
           const fileId = searchJson.files[0].id;
@@ -622,6 +642,10 @@ async function cleanDuplicateClients() {
 window.addEventListener('DOMContentLoaded', async () => {
   try {
     await initDB();
+    // 请求浏览器"持久存储"，降低空间紧张时数据被自动清理的风险
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(() => {});
+    }
   } catch(e) {
     console.error("DB init error:", e);
   }
@@ -692,7 +716,7 @@ async function renderJobsList() {
       left.appendChild(createSafeElement('h3', 'font-bold text-white text-base mt-1', c.name));
       left.appendChild(createSafeElement('p', 'text-xs text-slate-400', `📍 ${c.address || 'Address TBD'}`));
       top.appendChild(left);
-      top.appendChild(createSafeElement('span', 'text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium', c.status || 'Active'));
+      top.appendChild(createSafeElement('span', statusBadgeClass(c.status), c.status || 'Active'));
 
       const mid = createSafeElement('div', 'flex justify-between text-xs pt-2 border-t border-slate-700/60 text-slate-300');
       mid.appendChild(createSafeElement('span', '', `📞 ${c.phone || 'N/A'}`));
@@ -812,10 +836,10 @@ async function openClientModal(id = null) {
       document.getElementById('custAddress').value = '';
       currentClientJobs = [{
         id: 'job_' + Date.now(),
-        title: 'Front Door Sidelights Privacy Film',
+        title: '',
         date: new Date().toISOString().split('T')[0],
-        price: 180,
-        status: 'Completed 已完工',
+        price: 0,
+        status: 'Quote 报价中',
         invoice: null
       }];
     }
@@ -848,10 +872,11 @@ function renderClientJobsList() {
         <span class="text-xs font-bold text-sky-400">Job #${idx+1}</span>
         <button type="button" onclick="removeClientJob('${job.id}')" class="text-rose-400 hover:text-rose-300 text-xs">删除此工作</button>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-        <div><label class="text-[10px] text-slate-400 block">Job Title / 项目名称</label><input type="text" value="${job.title || ''}" oninput="updateJobField('${job.id}', 'title', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+        <div><label class="text-[10px] text-slate-400 block">Job Title / 项目名称</label><input type="text" placeholder="e.g. Living room windows" value="${job.title || ''}" oninput="updateJobField('${job.id}', 'title', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white"></div>
         <div><label class="text-[10px] text-slate-400 block">Job Date / 施工日期</label><input type="date" value="${job.date || ''}" oninput="updateJobField('${job.id}', 'date', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white"></div>
         <div><label class="text-[10px] text-slate-400 block">Price ($ excl. GST)</label><input type="number" step="0.01" value="${job.price || ''}" oninput="updateJobField('${job.id}', 'price', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white font-mono"></div>
+        <div><label class="text-[10px] text-slate-400 block">Status / 状态</label><select onchange="updateJobField('${job.id}', 'status', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white">${JOB_STATUSES.map(st => `<option value="${st}"${(job.status || 'Completed 已完工') === st ? ' selected' : ''}>${st}</option>`).join('')}</select></div>
       </div>
       <div class="flex justify-between items-center pt-1">
         <span class="text-[11px] text-emerald-400">${job.invoice ? '📄 已关联发票 (可直接去发票模块查看/编辑)' : 'ℹ️ 尚未生成发票'}</span>
@@ -865,10 +890,10 @@ function renderClientJobsList() {
 function addNewJobToCurrentClient() {
   currentClientJobs.push({
     id: 'job_' + Date.now(),
-    title: 'New Window Tinting Project',
+    title: '',
     date: new Date().toISOString().split('T')[0],
     price: 0,
-    status: 'Completed 已完工',
+    status: 'Quote 报价中',
     invoice: null
   });
   renderClientJobsList();
@@ -971,12 +996,16 @@ async function saveClientModal() {
       phone: document.getElementById('custPhone').value.trim(),
       suburb: document.getElementById('custSuburb').value,
       address: document.getElementById('custAddress').value.trim(),
-      status: 'Completed 已完工',
+      status: deriveClientStatus(currentClientJobs),
       updatedAt: Date.now(),
       photos: [...currentPhotos],
       jobs: currentClientJobs
     };
-    await dbSaveClient(clientData);
+    const saved = await dbSaveClient(clientData);
+    if (!saved) {
+      alert('保存失败！数据没有写入浏览器（可能是存储空间已满）。请先点 Export 备份数据，并减少照片后再试。');
+      return;
+    }
     
     closeClientModal();
     renderJobsList();
@@ -1123,9 +1152,11 @@ async function generateNextInvoiceNumber() {
   try {
     const clients = await dbGetAllClients();
     let maxNum = 0;
+    const invYear = new Date().getFullYear();   // 用真实年份，不受日历翻页影响
+    const prefix = `INV-${invYear}-`;
     clients.forEach(c => {
       (c.jobs || []).forEach(j => {
-        if (j.invoice && j.invoice.invNumber) {
+        if (j.invoice && j.invoice.invNumber && j.invoice.invNumber.startsWith(prefix)) {
           const match = j.invoice.invNumber.match(/(\d+)$/);
           if (match) {
             const n = parseInt(match[1], 10);
@@ -1134,7 +1165,7 @@ async function generateNextInvoiceNumber() {
         }
       });
     });
-    const nextNumStr = `INV-${currentYear}-${String(maxNum + 1).padStart(3, '0')}`;
+    const nextNumStr = `${prefix}${String(maxNum + 1).padStart(3, '0')}`;
     const invNumEl = document.getElementById('invNumber');
     if (invNumEl) invNumEl.value = nextNumStr;
     updateBankRefAuto();
@@ -1162,6 +1193,7 @@ async function autoFillInvoiceClient(targetJobId = null) {
         job = client.jobs[0];
       }
 
+      activeInvoiceJobId = job ? job.id : null;
       if (job && job.invoice) {
         const invNum = document.getElementById('invNumber');
         const invDate = document.getElementById('invDate');
@@ -1334,9 +1366,17 @@ async function saveInvoiceToSystem() {
     const client = clients.find(c => String(c.id) === String(clientId));
     if (client) {
       if (!client.jobs || client.jobs.length === 0) {
-        client.jobs = [{ id: 'job_' + Date.now(), title: 'Window Tinting', date: rawDate, price: subtotal }];
+        client.jobs = [{ id: 'job_' + Date.now(), title: 'Window Tinting', date: rawDate, price: subtotal, status: 'Completed 已完工' }];
       }
-      client.jobs[0].invoice = {
+      // 写入正确的工作：优先用当前打开的那条，找不到才用第一条
+      const targetJob = client.jobs.find(j => j.id === activeInvoiceJobId) || client.jobs[0];
+      // 发票号查重：同一个编号不能出现在别的工作上
+      let dupOwner = null;
+      clients.forEach(c => (c.jobs || []).forEach(j => {
+        if (j !== targetJob && j.invoice && j.invoice.invNumber === invNumber && !(String(c.id) === String(client.id) && j.id === targetJob.id)) dupOwner = c.name;
+      }));
+      if (dupOwner && !confirm(`发票号 ${invNumber} 已经用在客户 [${dupOwner}] 的发票上了。\n同一个发票号不能重复使用，确定仍要保存吗？`)) return;
+      targetJob.invoice = {
         invNumber,
         invDate: rawDate,
         desc: firstRowDesc,
@@ -1346,7 +1386,8 @@ async function saveInvoiceToSystem() {
         grandTotal: subtotal * 1.15
       };
       client.updatedAt = Date.now();
-      await dbSaveClient(client);
+      const savedOk = await dbSaveClient(client);
+      if (!savedOk) { alert('发票保存失败！数据没有写入浏览器，请先点 Export 备份数据再试。'); return; }
       if (accessToken) syncToCloud(false);
       alert(`发票 ${invNumber} 已成功保存到客户 [${client.name}] 档案中！`);
     }
