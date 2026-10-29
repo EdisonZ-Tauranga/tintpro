@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v12.25 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v12.26 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -46,7 +46,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-white flex items-center gap-2">
-            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.25 Pro</span>
+            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.26 Pro</span>
           </h1>
           <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
         </div>
@@ -211,6 +211,16 @@
             </div>
           </div>
 
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="sm:col-span-2">
+              <label class="text-slate-400 block mb-1 text-xs">Job Site Address / 施工地址（仅在与客户地址不同时填写）</label>
+              <input type="text" id="invJobAddress" placeholder="例如：12 Example Street, Mount Maunganui" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+            </div>
+            <label class="flex items-end gap-2 pb-2 text-xs text-slate-300 cursor-pointer">
+              <input type="checkbox" id="invIsCopy" class="w-4 h-4 accent-rose-500"> 标记为 COPY 副本（重新打印、补发已发出的发票时勾选）
+            </label>
+          </div>
+
           <!-- 行项目区域 -->
           <div class="space-y-2">
             <div class="flex justify-between items-center">
@@ -263,7 +273,8 @@
               <h1 class="text-2xl font-black text-slate-900 tracking-wider">TAX INVOICE</h1>
               <p class="text-sm font-mono font-bold text-sky-600" id="pInvNum">INV-2026-001</p>
               <p class="text-xs text-slate-600">Date: <span id="pInvDate">--/--/----</span></p>
-              <p class="text-xs font-bold text-slate-900 pt-1">Payment Due: Within 7 Days</p>
+              <p class="text-xs font-bold text-slate-900 pt-1">Payment Due: <span id="pDueDate">Within 7 Days</span></p>
+              <p id="pCopyBadge" class="hidden text-xs font-black text-rose-600 border-2 border-rose-600 rounded px-2 py-0.5 inline-block tracking-widest mt-1">COPY ONLY</p>
             </div>
           </div>
 
@@ -271,6 +282,9 @@
           <div class="text-xs bg-slate-50 p-4 rounded-lg border border-slate-200">
             <span class="font-bold text-slate-500 uppercase tracking-wider block mb-1">Billed To:</span>
             <p class="font-bold text-base text-slate-900" id="pClientName">Client Name</p>
+            <p id="pClientAddress" class="hidden text-slate-600 mt-1"></p>
+            <p id="pClientPhone" class="hidden text-slate-600"></p>
+            <p id="pJobSite" class="hidden text-slate-600 mt-1"></p>
           </div>
 
           <!-- 表格 -->
@@ -567,7 +581,7 @@ async function syncToCloud(showAlert = false) {
       fileId = searchJson.files[0].id;
     }
 
-    const backupData = { version: 'v12.25', updatedAt: new Date().toISOString(), clients: localClients };
+    const backupData = { version: 'v12.26', updatedAt: new Date().toISOString(), clients: localClients };
     const fileContent = JSON.stringify(backupData, null, 2);
     if (fileId) {
       await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -619,7 +633,7 @@ async function cleanDuplicateClients() {
           headers: { 'Authorization': `Bearer ${accessToken}` }
         });
         const searchJson = await searchRes.json();
-        const backupData = { version: 'v12.25', updatedAt: new Date().toISOString(), clients: uniqueClients };
+        const backupData = { version: 'v12.26', updatedAt: new Date().toISOString(), clients: uniqueClients };
         const fileContent = JSON.stringify(backupData, null, 2);
         if (searchJson.files && searchJson.files.length > 0) {
           const fileId = searchJson.files[0].id;
@@ -679,6 +693,22 @@ function switchTab(tab) {
   } catch(e) {
     console.error("Switch tab error:", e);
   }
+}
+
+function escapeHtml(str) {
+  return String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function addDaysNZ(dateStr, days) {
+  const p = (dateStr || '').split('-').map(Number);
+  if (p.length !== 3 || p.some(isNaN)) return '';
+  const d = new Date(p[0], p[1] - 1, p[2] + days);
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
+function setPrintLine(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text || '';
+  el.classList.toggle('hidden', !text);
 }
 
 function createSafeElement(tag, className, textContent) {
@@ -1194,12 +1224,21 @@ async function autoFillInvoiceClient(targetJobId = null) {
       }
 
       activeInvoiceJobId = job ? job.id : null;
+      const jobAddrEl = document.getElementById('invJobAddress');
+      const copyEl = document.getElementById('invIsCopy');
+      if (jobAddrEl) jobAddrEl.value = '';
+      if (copyEl) copyEl.checked = false;
       if (job && job.invoice) {
         const invNum = document.getElementById('invNumber');
         const invDate = document.getElementById('invDate');
         if (invNum) invNum.value = job.invoice.invNumber || 'INV-2026-001';
         if (invDate) invDate.value = job.invoice.invDate || new Date().toISOString().slice(0, 10);
-        addInvoiceItemRow(job.invoice.desc || '', job.invoice.mode || 'fixed', job.invoice.qty || 1, job.invoice.area || 0, job.invoice.rate || 0, job.invoice.price || job.price || 0);
+        if (Array.isArray(job.invoice.items) && job.invoice.items.length > 0) {
+          job.invoice.items.forEach(it => addInvoiceItemRow(it.desc || '', it.mode || 'fixed', it.qty || 1, it.area || 0, it.rate || 0, it.price || 0));
+        } else {
+          addInvoiceItemRow(job.invoice.desc || '', job.invoice.mode || 'fixed', job.invoice.qty || 1, job.invoice.area || 0, job.invoice.rate || 0, job.invoice.price || job.price || 0);
+        }
+        if (jobAddrEl) jobAddrEl.value = job.invoice.jobAddress || '';
       } else {
         await generateNextInvoiceNumber();
         const invDate = document.getElementById('invDate');
@@ -1230,6 +1269,8 @@ async function openNewInvoiceBuilder() {
   if (invDate) invDate.value = new Date().toISOString().slice(0, 10);
   const container = document.getElementById('invoiceItemsContainer');
   if (container) container.innerHTML = '';
+  const ja = document.getElementById('invJobAddress'); if (ja) ja.value = '';
+  const ic = document.getElementById('invIsCopy'); if (ic) ic.checked = false;
   addInvoiceItemRow('', 'fixed', 1, 0, 0, 0);
   recalcInvoiceTotals();
 }
@@ -1259,7 +1300,7 @@ function addInvoiceItemRow(desc = '', mode = 'fixed', qty = 1, area = 0, rate = 
     </div>
     <div>
       <label class="text-[10px] text-slate-400 block mb-0.5">Item Description (可自由换行排版)</label>
-      <textarea rows="3" placeholder="例如：Supply and Installation of Frosted Privacy Film..." class="item-desc w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-sky-500 whitespace-pre-line">${desc}</textarea>
+      <textarea rows="3" placeholder="例如：Supply and Installation of Frosted Privacy Film..." class="item-desc w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-sky-500 whitespace-pre-line">${escapeHtml(desc)}</textarea>
     </div>
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 items-center">
       <div class="mode-fixed-fields ${mode==='fixed'?'':'hidden'}">
@@ -1338,13 +1379,13 @@ function formatDateNZ(dateStr) {
 async function saveInvoiceToSystem() {
   try {
     const clientSelect = document.getElementById('invClientSelect');
-    if (!clientSelect || !clientSelect.value) { alert('请先选择客户！'); return; }
+    if (!clientSelect || !clientSelect.value) { alert('请先选择客户！'); return false; }
     const clientId = clientSelect.value;
     
     const invNumber = document.getElementById('invNumber').value.trim();
     const rawDate = document.getElementById('invDate').value;
     const firstRow = document.querySelector('#invoiceItemsContainer > div');
-    if (!firstRow) { alert('请至少添加一行发票项目！'); return; }
+    if (!firstRow) { alert('请至少添加一行发票项目！'); return false; }
     
     const firstRowDesc = firstRow.querySelector('.item-desc').value;
     const firstRowMode = firstRow.querySelector('.item-mode').value;
@@ -1362,6 +1403,18 @@ async function saveInvoiceToSystem() {
       }
     });
 
+    // 完整保存每一行发票项目，方便以后重新打开/重印
+    const items = [];
+    document.querySelectorAll('#invoiceItemsContainer > div').forEach(r => {
+      items.push({
+        desc: r.querySelector('.item-desc').value,
+        mode: r.querySelector('.item-mode').value,
+        price: parseFloat(r.querySelector('.item-price').value) || 0,
+        area: parseFloat(r.querySelector('.item-area').value) || 0,
+        rate: parseFloat(r.querySelector('.item-rate').value) || 0,
+        qty: parseFloat(r.querySelector('.item-qty').value) || 1
+      });
+    });
     const clients = await dbGetAllClients();
     const client = clients.find(c => String(c.id) === String(clientId));
     if (client) {
@@ -1375,30 +1428,36 @@ async function saveInvoiceToSystem() {
       clients.forEach(c => (c.jobs || []).forEach(j => {
         if (j !== targetJob && j.invoice && j.invoice.invNumber === invNumber && !(String(c.id) === String(client.id) && j.id === targetJob.id)) dupOwner = c.name;
       }));
-      if (dupOwner && !confirm(`发票号 ${invNumber} 已经用在客户 [${dupOwner}] 的发票上了。\n同一个发票号不能重复使用，确定仍要保存吗？`)) return;
+      if (dupOwner && !confirm(`发票号 ${invNumber} 已经用在客户 [${dupOwner}] 的发票上了。\n同一个发票号不能重复使用，确定仍要保存吗？`)) return false;
       targetJob.invoice = {
         invNumber,
         invDate: rawDate,
         desc: firstRowDesc,
         mode: firstRowMode,
         price: firstRowPrice,
+        items,
+        jobAddress: (document.getElementById('invJobAddress').value || '').trim(),
         subtotal,
         grandTotal: subtotal * 1.15
       };
       client.updatedAt = Date.now();
       const savedOk = await dbSaveClient(client);
-      if (!savedOk) { alert('发票保存失败！数据没有写入浏览器，请先点 Export 备份数据再试。'); return; }
+      if (!savedOk) { alert('发票保存失败！数据没有写入浏览器，请先点 Export 备份数据再试。'); return false; }
       if (accessToken) syncToCloud(false);
       alert(`发票 ${invNumber} 已成功保存到客户 [${client.name}] 档案中！`);
+      return true;
     }
+    return false;
   } catch(e) {
     console.error("Save invoice error:", e);
     alert('Save invoice failed');
+    return false;
   }
 }
 
 async function renderPrintableInvoice() {
-  await saveInvoiceToSystem();
+  const savedOk = await saveInvoiceToSystem();
+  if (!savedOk) return;   // 保存未成功（如取消、查重不通过）时不生成预览
   const printable = document.getElementById('printableInvoice');
   printable.classList.remove('hidden');
   const invNum = document.getElementById('invNumber').value;
@@ -1406,6 +1465,22 @@ async function renderPrintableInvoice() {
   document.getElementById('pInvNum').textContent = invNum;
   document.getElementById('pInvDate').textContent = formatDateNZ(rawDate);
   document.getElementById('pBankRefText').textContent = invNum;
+
+  // 客户信息：姓名 + 地址 + 电话；施工地址（如有）；到期日；副本标记
+  const selId = document.getElementById('invClientSelect').value;
+  const allClients = await dbGetAllClients();
+  const cl = allClients.find(c => String(c.id) === String(selId));
+  document.getElementById('pClientName').textContent = cl ? cl.name : '';
+  const addrParts = [];
+  if (cl && cl.address && !/^address tbd$/i.test(cl.address.trim())) addrParts.push(cl.address.trim());
+  if (cl && cl.suburb) addrParts.push(cl.suburb);
+  setPrintLine('pClientAddress', addrParts.join(', '));
+  setPrintLine('pClientPhone', cl && cl.phone ? 'Phone: ' + cl.phone : '');
+  const jobAddr = (document.getElementById('invJobAddress').value || '').trim();
+  setPrintLine('pJobSite', jobAddr ? 'Job site: ' + jobAddr : '');
+  const due = addDaysNZ(rawDate, 7);
+  document.getElementById('pDueDate').textContent = due ? `${due} (within 7 days)` : 'Within 7 Days';
+  document.getElementById('pCopyBadge').classList.toggle('hidden', !document.getElementById('invIsCopy').checked);
   const pThead = document.getElementById('pInvoiceThead');
   const pTbody = document.getElementById('pInvoiceTbody');
   pTbody.innerHTML = '';
@@ -1425,7 +1500,7 @@ async function renderPrintableInvoice() {
   let subtotal = 0;
   rows.forEach(row => {
     const mode = row.querySelector('.item-mode').value;
-    const desc = row.querySelector('.item-desc').value;
+    const desc = escapeHtml(row.querySelector('.item-desc').value);
     let amt = 0;
     const ptr = document.createElement('tr');
     if (mode === 'fixed') {
