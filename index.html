@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v12.28 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v12.29 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -32,6 +32,9 @@
   }
   .no-print { display: none !important; }
 }
+#emPreview p { margin: 0 0 12px 0; }
+#emPreview ul { margin: 0 0 12px 22px; list-style: disc; }
+#emPreview li { margin: 0 0 4px 0; }
 </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
@@ -46,7 +49,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-white flex items-center gap-2">
-            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.28 Pro</span>
+            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.29 Pro</span>
           </h1>
           <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
         </div>
@@ -316,6 +319,7 @@
 
           <div class="no-print flex justify-end gap-2 pt-4">
             <button onclick="showInvoiceEditor()" class="px-5 py-2.5 bg-slate-600 hover:bg-slate-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition">✏️ 编辑发票</button>
+            <button onclick="openEmailFromInvoice()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition">📧 生成邮件</button>
             <button onclick="printInvoice()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition">
               <i data-lucide="printer" class="w-4 h-4"></i> Send to Printer / Save PDF
             </button>
@@ -359,6 +363,10 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div><label class="text-slate-400 block mb-1 text-xs">Client Name / 客户姓名*</label><input type="text" id="custName" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white"></div>
         <div><label class="text-slate-400 block mb-1 text-xs">Phone / 电话</label><input type="text" id="custPhone" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white"></div>
+      </div>
+      <div>
+        <label class="text-slate-400 block mb-1 text-xs">Email / 邮箱（可选，用于生成邮件时自动填收件人）</label>
+        <input type="email" id="custEmail" placeholder="例如：client@example.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white">
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
@@ -406,6 +414,50 @@
 <div id="imageLightbox" class="fixed inset-0 bg-black/95 z-50 flex flex-col items-center justify-center hidden" onclick="closeLightbox()">
   <button class="absolute top-4 right-4 text-white bg-slate-800/80 p-2 rounded-full">✕</button>
   <img id="lightboxImg" class="max-w-full max-h-[85vh] object-contain rounded-lg">
+</div>
+
+<!-- 📧 邮件生成器 -->
+<div id="emailModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-start sm:items-center justify-center p-3 overflow-y-auto" style="z-index:70;">
+  <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl shadow-2xl my-4">
+    <div class="px-5 py-3 border-b border-slate-700 flex justify-between items-center bg-slate-900/50 rounded-t-2xl">
+      <h3 class="text-base font-bold text-white">📧 邮件生成器 / Email Builder</h3>
+      <button type="button" onclick="closeEmailModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+    </div>
+    <div class="p-4 sm:p-5 space-y-3">
+      <div>
+        <label class="text-slate-400 block mb-1 text-xs">邮件类型</label>
+        <select id="emTemplate" onchange="onEmailTemplateChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white">
+          <option value="invoice">发票邮件 / Invoice</option>
+          <option value="quote">报价邮件 / Quote</option>
+          <option value="reminder">付款提醒 / Payment reminder</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div data-for="invoice quote reminder"><label class="text-[10px] text-slate-400 block">称呼 (Hi ___)</label><input type="text" id="emName" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"></div>
+        <div data-for="invoice quote reminder"><label class="text-[10px] text-slate-400 block">收件邮箱</label><input type="text" id="emTo" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"></div>
+        <div data-for="invoice quote" class="col-span-2"><label class="text-[10px] text-slate-400 block">工作描述（用于句子 "…the recent ___ at your property"）</label><input type="text" id="emWork" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"></div>
+        <div data-for="invoice reminder"><label class="text-[10px] text-slate-400 block">发票编号</label><input type="text" id="emInv" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
+        <div data-for="invoice quote reminder"><label class="text-[10px] text-slate-400 block">金额 (含 GST)</label><input type="text" id="emTotal" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
+        <div data-for="invoice reminder"><label class="text-[10px] text-slate-400 block">付款到期日</label><input type="text" id="emDue" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
+        <div data-for="quote"><label class="text-[10px] text-slate-400 block">报价有效期（天）</label><input type="number" id="emValid" value="30" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
+      </div>
+      <div>
+        <label class="text-[10px] text-slate-400 block">邮件标题 Subject</label>
+        <input type="text" id="emSubject" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white">
+      </div>
+      <div>
+        <label class="text-[10px] text-slate-400 block mb-1">邮件正文（可直接在下面修改文字；如果再改上面的栏位，正文会重新生成）</label>
+        <div id="emPreview" contenteditable="true" class="bg-white text-slate-900 rounded-xl p-4 text-sm leading-relaxed max-h-[45vh] overflow-y-auto focus:outline-none"></div>
+      </div>
+      <div class="flex flex-wrap gap-2 pt-1">
+        <button type="button" onclick="copyEmailBody()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow">📋 复制正文（带格式）</button>
+        <button type="button" onclick="copyEmailSubject()" class="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-xl text-xs font-bold shadow">复制标题</button>
+        <button type="button" onclick="openEmailInGmail()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold shadow">在 Gmail 中打开</button>
+        <button type="button" onclick="openEmailInMailApp()" class="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-xl text-xs font-bold shadow">用邮件 App 打开</button>
+      </div>
+      <p class="text-[11px] text-slate-400">提示：PDF 附件需要你自己在邮件里添加。"在 Gmail / 邮件 App 中打开"只带入纯文字（没有加粗和列表）；要保留格式，请用"复制正文"再粘贴到邮件里。</p>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -682,7 +734,7 @@ async function syncToCloud(showAlert = false) {
     saveTombstones(m.del);
 
     if (!fileId || m.cloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v12.28', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del });
+      const fileContent = JSON.stringify({ version: 'v12.29', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -849,6 +901,198 @@ window.addEventListener('beforeprint', setPrintTitle);
 window.addEventListener('afterprint', restoreDocTitle);
 function printInvoice() { setPrintTitle(); window.print(); }
 
+
+// ================= 邮件生成器 =================
+const EMAIL_BIZ = { sender: 'Edison', biz: 'Bayview Window Tinting (Light and Salt Ltd)', phone: '027 448 4555',
+                    bank: 'ANZ NZ', accName: 'Light and Salt Ltd', accNo: '01-0414-0842902-00' };
+let emailCtx = null;
+
+function emMoney(v) {
+  const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.]/g, ''));
+  return isNaN(n) ? '' : '$' + n.toFixed(2);
+}
+function emFirstName(full) { return String(full || '').trim().split(/\s+/)[0] || ''; }
+
+function emFillDefaults(tpl) {
+  const el = id => document.getElementById(id);
+  const job = (emailCtx && emailCtx.job) || null;
+  const inv = job && job.invoice;
+  if (tpl === 'quote') {
+    el('emTotal').value = job && job.price ? (parseFloat(job.price) * 1.15).toFixed(2) : '';
+    el('emInv').value = '';
+    el('emDue').value = '';
+  } else {
+    el('emInv').value = inv ? (inv.invNumber || '') : '';
+    el('emTotal').value = inv && inv.grandTotal ? Number(inv.grandTotal).toFixed(2) : '';
+    el('emDue').value = inv && inv.invDate ? addDaysNZ(inv.invDate, 7) : '';
+  }
+}
+function updateEmailFieldVisibility(tpl) {
+  document.querySelectorAll('#emailModal [data-for]').forEach(w => {
+    w.classList.toggle('hidden', !w.dataset.for.split(' ').includes(tpl));
+  });
+}
+function onEmailTemplateChange() {
+  const tpl = document.getElementById('emTemplate').value;
+  emFillDefaults(tpl);
+  updateEmailFieldVisibility(tpl);
+  renderEmailPreview();
+}
+function openEmailModal(ctx) {
+  emailCtx = ctx;
+  const el = id => document.getElementById(id);
+  el('emName').value = emFirstName(ctx.name);
+  el('emTo').value = ctx.email || '';
+  el('emWork').value = 'window tinting application';
+  el('emValid').value = 30;
+  const tpl = ctx.template || (ctx.job && ctx.job.invoice ? 'invoice' : 'quote');
+  el('emTemplate').value = tpl;
+  emFillDefaults(tpl);
+  updateEmailFieldVisibility(tpl);
+  renderEmailPreview();
+  el('emailModal').classList.remove('hidden');
+}
+function closeEmailModal() { document.getElementById('emailModal').classList.add('hidden'); }
+
+function openEmailForJob(jobId) {
+  const job = currentClientJobs.find(j => j.id === jobId);
+  openEmailModal({
+    name: document.getElementById('custName').value,
+    email: (document.getElementById('custEmail').value || '').trim(),
+    job: job ? JSON.parse(JSON.stringify(job)) : null,
+    template: job && job.invoice ? 'invoice' : 'quote'
+  });
+}
+async function openEmailFromInvoice() {
+  const clientId = document.getElementById('invClientSelect').value;
+  const clients = await dbGetAllClients();
+  const client = clients.find(c => String(c.id) === String(clientId));
+  if (!client) return;
+  const job = (client.jobs || []).find(j => j.id === activeInvoiceJobId) || (client.jobs || [])[0] || null;
+  openEmailModal({ name: client.name, email: client.email || '', job: job, template: 'invoice' });
+}
+
+function renderEmailPreview() {
+  const v = id => (document.getElementById(id).value || '').trim();
+  const tpl = v('emTemplate');
+  const B = EMAIL_BIZ;
+  const name = escapeHtml(v('emName') || '[Client name]');
+  const work = escapeHtml(v('emWork') || 'window tinting application');
+  const inv = escapeHtml(v('emInv') || '[Invoice no.]');
+  const totalRaw = v('emTotal');
+  const total = emMoney(totalRaw) || '[$ amount]';
+  const due = escapeHtml(v('emDue') || '[due date]');
+  const bankItems = `<li><b>Bank Name:</b> ${B.bank}</li>
+<li><b>Account Name:</b> ${B.accName}</li>
+<li><b>Account Number:</b> ${B.accNo}</li>
+<li><b>Reference:</b> ${inv}</li>`;
+  const sig = `<p>Kind regards,</p><p><b>${B.sender}</b><br>${B.biz}<br>📞 ${B.phone}</p>`;
+  let subject = '', body = '';
+  if (tpl === 'quote') {
+    const days = parseInt(v('emValid'), 10) || 30;
+    const valid = addDaysNZ(new Date().toISOString().slice(0, 10), days);
+    const totNum = parseFloat(String(totalRaw).replace(/[^0-9.]/g, ''));
+    const excl = isNaN(totNum) ? '' : emMoney(totNum / 1.15);
+    const gst = isNaN(totNum) ? '' : emMoney(totNum - totNum / 1.15);
+    const lines = String((emailCtx && emailCtx.job && emailCtx.job.title) || '').split('\n').map(x => x.trim()).filter(Boolean);
+    const scope = (lines.length ? lines : [v('emWork') || 'window tinting application']).map(x => `<li>${escapeHtml(x)}</li>`).join('');
+    subject = `Quote for ${v('emWork') || 'window tinting application'} - Bayview Window Tinting`;
+    body = `<p>Hi ${name},</p>
+<p>Thank you for the opportunity to quote for the ${work} at your property.</p>
+<p><b>Scope of Work:</b></p>
+<ul>${scope}</ul>
+<p><b>Quote Details:</b></p>
+<ul>
+<li><b>Total Price (Incl. GST):</b> ${total}${excl ? ` (${excl} excl. GST + ${gst} GST)` : ''}</li>
+<li><b>Quote Valid Until:</b> ${valid}</li>
+</ul>
+<p>If you're happy to go ahead, just reply to this email or give me a call and we'll arrange a time that suits you. Please don't hesitate to reach out if you have any questions.</p>
+${sig}`;
+  } else if (tpl === 'reminder') {
+    subject = `Friendly reminder: Invoice ${v('emInv') || ''} - Bayview Window Tinting`.replace('  ', ' ');
+    body = `<p>Hi ${name},</p>
+<p>I hope you're doing well. This is a friendly reminder that Tax Invoice <b>${inv}</b> for <b>${total}</b> was due on <b>${due}</b>, and our records show that it is still outstanding.</p>
+<p><b>Payment Details:</b></p>
+<ul>
+<li><b>Total Amount Due (Incl. GST):</b> ${total}</li>
+${bankItems}
+</ul>
+<p>If you've already made the payment, please disregard this message and thank you. If there is any issue with the invoice, or you have any questions, please let me know and I'll be happy to help.</p>
+${sig}`;
+  } else {
+    subject = `Tax Invoice ${v('emInv') || ''} - Bayview Window Tinting`.replace('  ', ' ');
+    body = `<p>Hi ${name},</p>
+<p>Hope you're doing well, and that you are enjoying your new window tinting!</p>
+<p>Please find attached the Tax Invoice <b>${inv}</b> for the recent ${work} at your property.</p>
+<p><b>Payment Details:</b></p>
+<ul>
+<li><b>Total Amount Due (Incl. GST):</b> ${total}</li>
+<li><b>Payment Due Date:</b> ${due} (within 7 days)</li>
+<li><b>Bank Name:</b> ${B.bank}</li>
+<li><b>Account Name:</b> ${B.accName}</li>
+<li><b>Account Number:</b> ${B.accNo}</li>
+<li><b>Reference:</b> ${inv}</li>
+</ul>
+<p>If you have any questions or if there's anything else you need, please don't hesitate to reach out. Thank you once again for choosing Bayview Window Tinting!</p>
+${sig}`;
+  }
+  document.getElementById('emSubject').value = subject;
+  document.getElementById('emPreview').innerHTML = body;
+}
+
+function emailBodyPlain() {
+  const clone = document.getElementById('emPreview').cloneNode(true);
+  clone.querySelectorAll('br').forEach(b => b.replaceWith('\n'));
+  const out = [];
+  clone.childNodes.forEach(n => {
+    if (n.nodeType === 3) { const t = n.textContent.trim(); if (t) out.push(t); }
+    else if (n.tagName === 'UL' || n.tagName === 'OL') {
+      out.push([...n.children].map(li => '- ' + li.textContent.trim()).join('\n'));
+    } else {
+      const t = n.textContent.trim(); if (t) out.push(t);
+    }
+  });
+  return out.join('\n\n');
+}
+async function copyEmailBody() {
+  const el = document.getElementById('emPreview');
+  const html = el.innerHTML, text = emailBodyPlain();
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([text], { type: 'text/plain' })
+      })]);
+      showToast('✅ 邮件正文已复制（带格式），可以粘贴到邮件里了');
+      return;
+    }
+  } catch(e) { console.warn('Clipboard API failed, fallback', e); }
+  try {
+    const range = document.createRange(); range.selectNodeContents(el);
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    const ok = document.execCommand('copy'); sel.removeAllRanges();
+    showToast(ok ? '✅ 邮件正文已复制，可以粘贴到邮件里了' : '复制失败，请手动全选正文后复制', !ok);
+  } catch(e) { showToast('复制失败，请手动全选正文后复制', true); }
+}
+async function copyEmailSubject() {
+  const text = document.getElementById('emSubject').value;
+  try { await navigator.clipboard.writeText(text); showToast('✅ 标题已复制'); }
+  catch(e) {
+    const inp = document.getElementById('emSubject'); inp.select();
+    const ok = document.execCommand('copy'); showToast(ok ? '✅ 标题已复制' : '复制失败，请手动复制', !ok);
+  }
+}
+function openEmailInGmail() {
+  const to = encodeURIComponent((document.getElementById('emTo').value || '').trim());
+  const su = encodeURIComponent(document.getElementById('emSubject').value);
+  const body = encodeURIComponent(emailBodyPlain());
+  window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${su}&body=${body}`, '_blank');
+}
+function openEmailInMailApp() {
+  const to = (document.getElementById('emTo').value || '').trim();
+  window.location.href = `mailto:${to}?subject=${encodeURIComponent(document.getElementById('emSubject').value)}&body=${encodeURIComponent(emailBodyPlain())}`;
+}
+
 function escapeHtml(str) {
   return String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -1001,6 +1245,7 @@ async function openClientModal(id = null) {
       if (client) {
         document.getElementById('custName').value = client.name || '';
         document.getElementById('custPhone').value = client.phone || '';
+        document.getElementById('custEmail').value = client.email || '';
         setSuburbFields(client.suburb || 'Bethlehem');
         document.getElementById('custAddress').value = client.address || '';
         if (client.photos) currentPhotos = [...client.photos];
@@ -1016,6 +1261,7 @@ async function openClientModal(id = null) {
     } else {
       document.getElementById('custName').value = '';
       document.getElementById('custPhone').value = '';
+      document.getElementById('custEmail').value = '';
       setSuburbFields('Bethlehem');
       document.getElementById('custAddress').value = '';
       currentClientJobs = [{
@@ -1068,6 +1314,7 @@ function renderClientJobsList() {
       <div class="flex justify-between items-center gap-2 pt-1">
         <span class="text-[11px] text-emerald-400">${job.invoice ? '📄 已关联发票' : 'ℹ️ 尚未生成发票'}</span>
         <div class="flex gap-2">
+          <button type="button" onclick="openEmailForJob('${job.id}')" class="px-3 py-1 bg-slate-600 hover:bg-slate-500 text-white text-xs rounded-lg font-semibold shadow">📧 邮件</button>
           ${job.invoice ? `<button type="button" onclick="viewInvoiceForJob('${job.id}')" class="px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white text-xs rounded-lg font-semibold shadow">🖨️ 查看/打印发票</button>` : ''}
           <button type="button" onclick="jumpToInvoiceForJob('${job.id}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-lg font-semibold shadow">${job.invoice ? '✏️ 编辑发票' : '➕ 生成发票'}</button>
         </div>
@@ -1193,6 +1440,7 @@ async function saveClientModal() {
       name,
       phone: document.getElementById('custPhone').value.trim(),
       suburb: getSuburbValue(),
+      email: (document.getElementById('custEmail').value || '').trim(),
       address: document.getElementById('custAddress').value.trim(),
       status: deriveClientStatus(currentClientJobs),
       updatedAt: Date.now(),
