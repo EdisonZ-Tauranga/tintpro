@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v12.14 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v12.15 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -88,7 +88,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-white flex items-center gap-2">
-            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.14 Pro</span>
+            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.15 Pro</span>
           </h1>
           <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
         </div>
@@ -244,7 +244,7 @@
               <select id="invClientSelect" onchange="autoFillInvoiceClient()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"></select>
             </div>
             <div>
-              <label class="text-slate-400 block mb-1 text-xs">Invoice Number / 发票编号</label>
+              <label class="text-slate-400 block mb-1 text-xs">Invoice Number / 发票编号 (自动递增)</label>
               <input type="text" id="invNumber" value="INV-2026-001" oninput="updateBankRefAuto()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono">
             </div>
             <div>
@@ -390,7 +390,7 @@
   </main>
 </div>
 
-<!-- 客户档案 Modal (支持主子目录多工作管理) -->
+<!-- 客户档案 Modal -->
 <div id="clientModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
   <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
     <div class="px-5 py-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/50">
@@ -399,7 +399,6 @@
     </div>
     <div class="p-5 space-y-5 overflow-y-auto flex-1 custom-scroll">
       <input type="hidden" id="editingClientId">
-      <!-- 客户基本信息 -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div><label class="text-slate-400 block mb-1 text-xs">Client Name / 客户姓名*</label><input type="text" id="custName" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white"></div>
         <div><label class="text-slate-400 block mb-1 text-xs">Phone / 电话</label><input type="text" id="custPhone" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white"></div>
@@ -416,18 +415,14 @@
         <div><label class="text-slate-400 block mb-1 text-xs">Address / 详细地址</label><input type="text" id="custAddress" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white" placeholder="例如：17 Veda Place"></div>
       </div>
 
-      <!-- 📁 客户子目录：历史工作 / 订单列表 (Jobs / Projects Sub-Directory) -->
       <div class="pt-3 border-t border-slate-700 space-y-3">
         <div class="flex justify-between items-center">
           <h4 class="font-bold text-sky-400 text-xs flex items-center gap-1.5"><i data-lucide="folder-kanban" class="w-4 h-4"></i> 客户服务记录与工作子目录 (Jobs List)</h4>
           <button type="button" onclick="addNewJobToCurrentClient()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs rounded-xl font-semibold shadow transition">+ 添加新工作 / Job</button>
         </div>
-        <div id="clientJobsContainer" class="space-y-3">
-          <!-- 动态渲染该客户名下的多个 Job 子目录卡片 -->
-        </div>
+        <div id="clientJobsContainer" class="space-y-3"></div>
       </div>
 
-      <!-- 现场照片上传 -->
       <div class="pt-3 border-t border-slate-700 space-y-2">
         <div class="flex justify-between items-center">
           <h4 class="font-bold text-sky-400 text-xs flex items-center gap-1.5"><i data-lucide="image" class="w-4 h-4"></i> 现场照片记录 (Site Photos)</h4>
@@ -461,7 +456,7 @@ let currentLang = localStorage.getItem('nz_lang') || 'ZH';
 let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth();
 let currentPhotos = [];
-let currentClientJobs = []; // 当前编辑客户的 Job 子目录列表
+let currentClientJobs = [];
 
 const i18n = {
   ZH: { menuClients: "Clients & Projects / 客户项目", menuCalendar: "Schedule Calendar / 预约日历", menuOptimizer: "Cutting Optimizer / 裁膜引擎", menuInvoices: "Tax Invoices / 发票管理", menuEstimator: "Job Estimator / 报价计算", newClientBtn: "+ New Client / 新建客户档案", cloudSync: "Cloud Sync", export: "Export", import: "Import" },
@@ -506,7 +501,6 @@ function handleGoogleAuth() {
   if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
-// 🛡️ 强力去重逻辑：按标准化的姓名+地址作为唯一主键合并
 function deduplicateClientsList(clients) {
   const map = new Map();
   (clients || []).forEach(c => {
@@ -529,7 +523,6 @@ function deduplicateClientsList(clients) {
   return Array.from(map.values());
 }
 
-// 严谨去重与云端同步
 async function syncToCloud(showAlert = false) {
   if (!accessToken) { handleGoogleAuth(); return; }
   try {
@@ -571,7 +564,7 @@ async function syncToCloud(showAlert = false) {
     renderJobsList();
     populateInvoiceClientSelect();
 
-    const backupData = { version: 'v12.14', updatedAt: new Date().toISOString(), clients: mergedClients };
+    const backupData = { version: 'v12.15', updatedAt: new Date().toISOString(), clients: mergedClients };
     const fileContent = JSON.stringify(backupData, null, 2);
     if (fileId) {
       await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -679,7 +672,10 @@ function switchTab(tab) {
   if (targetNav) targetNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-sky-600 text-white font-medium text-sm transition shadow-sm";
   if (tab === 'optimizer') optimizeRollLayout();
   if (tab === 'calendar') renderCalendar();
-  if (tab === 'invoices') populateInvoiceClientSelect();
+  if (tab === 'invoices') {
+    populateInvoiceClientSelect();
+    generateNextInvoiceNumber();
+  }
 }
 
 function createSafeElement(tag, className, textContent) {
@@ -1085,6 +1081,26 @@ async function populateInvoiceClientSelect() {
   autoFillInvoiceClient();
 }
 
+// 自动计算并生成下一个连续的发票编号 (如 INV-2026-002)
+async function generateNextInvoiceNumber() {
+  const clients = await dbGetAllClients();
+  let maxNum = 0;
+  clients.forEach(c => {
+    (c.jobs || []).forEach(j => {
+      if (j.invoice && j.invoice.invNumber) {
+        const match = j.invoice.invNumber.match(/(\d+)$/);
+        if (match) {
+          const n = parseInt(match[1], 10);
+          if (n > maxNum) maxNum = n;
+        }
+      }
+    });
+  });
+  const nextNumStr = `INV-${currentYear}-${String(maxNum + 1).padStart(3, '0')}`;
+  document.getElementById('invNumber').value = nextNumStr;
+  updateBankRefAuto();
+}
+
 async function autoFillInvoiceClient(targetJobId = null) {
   const select = document.getElementById('invClientSelect');
   if (!select || !select.value) return;
@@ -1107,7 +1123,9 @@ async function autoFillInvoiceClient(targetJobId = null) {
       document.getElementById('invDate').value = job.invoice.invDate || new Date().toISOString().slice(0, 10);
       addInvoiceItemRow(job.invoice.desc || '', job.invoice.mode || 'fixed', job.invoice.qty || 1, job.invoice.area || 0, job.invoice.rate || 0, job.invoice.price || job.price || 0);
     } else {
-      updateBankRefAuto();
+      // 如果是新开票，自动计算下一个发票号
+      await generateNextInvoiceNumber();
+      document.getElementById('invDate').value = new Date().toISOString().slice(0, 10);
       const defaultPrice = job ? (job.price || 0) : (client.price || 0);
       const defaultDesc = job ? (job.title === 'Residential Window Tinting' ? '' : job.title) : '';
       addInvoiceItemRow(defaultDesc, 'fixed', 1, 0, 0, defaultPrice);
@@ -1122,9 +1140,9 @@ function updateBankRefAuto() {
   document.getElementById('pBankRefText').textContent = num;
 }
 
-function openNewInvoiceBuilder() {
+async function openNewInvoiceBuilder() {
+  await generateNextInvoiceNumber();
   document.getElementById('invDate').value = new Date().toISOString().slice(0, 10);
-  updateBankRefAuto();
   const container = document.getElementById('invoiceItemsContainer');
   container.innerHTML = '';
   addInvoiceItemRow('', 'fixed', 1, 0, 0, 0);
@@ -1225,7 +1243,6 @@ function formatDateNZ(dateStr) {
   return dateStr;
 }
 
-// 💾 将发票数据保存到软件内部的客户数据库中
 async function saveInvoiceToSystem() {
   const clientId = Number(document.getElementById('invClientSelect').value);
   if (!clientId) { alert('请先选择客户！'); return; }
@@ -1273,7 +1290,6 @@ async function saveInvoiceToSystem() {
   }
 }
 
-// 🖨️ 预览打印，并自动同步保存
 async function renderPrintableInvoice() {
   await saveInvoiceToSystem();
   const printable = document.getElementById('printableInvoice');
