@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v12.17 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v12.18 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -62,7 +62,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-white flex items-center gap-2">
-            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.17 Pro</span>
+            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.18 Pro</span>
           </h1>
           <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
         </div>
@@ -474,7 +474,7 @@ function initGoogleAuth() {
           accessToken = resp.access_token;
           const authBtn = document.getElementById('authBtnText');
           if (authBtn) authBtn.textContent = 'Google Connected';
-          syncToCloud(true);
+          // ⚡ 注意：这里不再自动全量下载覆盖本地，改为仅静默建立连接
         },
       });
     }
@@ -526,38 +526,12 @@ async function syncToCloud(showAlert = false) {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
     const searchJson = await searchRes.json();
-    let remoteClients = [], fileId = null;
+    let fileId = null;
     if (searchJson.files && searchJson.files.length > 0) {
       fileId = searchJson.files[0].id;
-      const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-        headers: { 'Authorization': `Bearer ${accessToken}` }
-      });
-      const remoteData = await fileRes.json();
-      remoteClients = deduplicateClientsList(remoteData.clients || []);
     }
 
-    const clientMap = new Map();
-    remoteClients.forEach(c => {
-      const key = `${c.name.trim().toLowerCase()}_${(c.address||'').trim().toLowerCase()}`;
-      clientMap.set(key, c);
-    });
-    localClients.forEach(c => {
-      const key = `${c.name.trim().toLowerCase()}_${(c.address||'').trim().toLowerCase()}`;
-      if (!clientMap.has(key) || (c.updatedAt || 0) >= (clientMap.get(key).updatedAt || 0)) {
-        clientMap.set(key, c);
-      }
-    });
-
-    const mergedClients = Array.from(clientMap.values());
-    const txClear = db.transaction('clients', 'readwrite');
-    txClear.objectStore('clients').clear();
-    await new Promise(resolve => txClear.oncomplete = resolve);
-    for (let c of mergedClients) await dbSaveClient(c);
-    
-    renderJobsList();
-    populateInvoiceClientSelect();
-
-    const backupData = { version: 'v12.17', updatedAt: new Date().toISOString(), clients: mergedClients };
+    const backupData = { version: 'v12.18', updatedAt: new Date().toISOString(), clients: localClients };
     const fileContent = JSON.stringify(backupData, null, 2);
     if (fileId) {
       await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -574,7 +548,7 @@ async function syncToCloud(showAlert = false) {
         method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}` }, body: form
       });
     }
-    if (showAlert) alert('Cloud Sync & Deduplication Complete! / 云端去重与同步成功！');
+    if (showAlert) alert('Cloud Sync Complete! / 云端备份已成功更新！');
   } catch (err) { console.error(err); if (showAlert) alert('Sync failed'); }
 }
 
@@ -587,15 +561,17 @@ async function cleanDuplicateClients() {
     await new Promise(resolve => tx.oncomplete = resolve);
     for (let c of uniqueClients) { await dbSaveClient(c); }
     renderJobsList();
+    renderCalendar();
     populateInvoiceClientSelect();
     
+    // ⚡ 核心修复：点击去除重复时，强制将本地清洗干净的名单直接覆盖上传到云端，从根源上抹除云端老重复数据！
     if (accessToken) {
       try {
         const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='bayview-backup.json' and trashed=false`, {
           headers: { 'Authorization': `Bearer ${accessToken}` }
         });
         const searchJson = await searchRes.json();
-        const backupData = { version: 'v12.17', updatedAt: new Date().toISOString(), clients: uniqueClients };
+        const backupData = { version: 'v12.18', updatedAt: new Date().toISOString(), clients: uniqueClients };
         const fileContent = JSON.stringify(backupData, null, 2);
         if (searchJson.files && searchJson.files.length > 0) {
           const fileId = searchJson.files[0].id;
@@ -608,7 +584,7 @@ async function cleanDuplicateClients() {
       } catch(e) { console.error("Cloud purge error:", e); }
     }
 
-    alert(`已深度清理重复档案并更新云端备份！当前共精简保留 ${uniqueClients.length} 位有效客户。`);
+    alert(`已深度清理重复档案并同步更新云端！当前共精简保留 ${uniqueClients.length} 位有效客户。`);
   } catch(e) {
     console.error(e);
     alert('Clean duplicate error');
