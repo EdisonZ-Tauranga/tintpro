@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v12.18 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v12.19 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -62,7 +62,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-white flex items-center gap-2">
-            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.18 Pro</span>
+            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.19 Pro</span>
           </h1>
           <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
         </div>
@@ -474,7 +474,6 @@ function initGoogleAuth() {
           accessToken = resp.access_token;
           const authBtn = document.getElementById('authBtnText');
           if (authBtn) authBtn.textContent = 'Google Connected';
-          // ⚡ 注意：这里不再自动全量下载覆盖本地，改为仅静默建立连接
         },
       });
     }
@@ -493,27 +492,24 @@ function handleGoogleAuth() {
   }
 }
 
+// ⚡ 核心修复：为所有记录赋予独立主键 ID，彻底防止“同名同 ID 联动删除”
 function deduplicateClientsList(clients) {
   if (!Array.isArray(clients)) return [];
-  const map = new Map();
-  clients.forEach(c => {
+  const validList = [];
+  const seenIds = new Set();
+
+  clients.forEach((c, index) => {
     if (!c || !c.name) return;
-    const cleanName = String(c.name).trim().toLowerCase();
-    const cleanAddr = String(c.address || '').trim().toLowerCase();
-    const key = `${cleanName}_${cleanAddr}`;
+    let newClient = JSON.parse(JSON.stringify(c));
     
-    if (!map.has(key)) {
-      map.set(key, c);
-    } else {
-      const existing = map.get(key);
-      const existingTime = existing.updatedAt || 0;
-      const currTime = c.updatedAt || 0;
-      if (currTime >= existingTime) {
-        map.set(key, c);
-      }
+    // 如果没有 ID 或者 ID 重复了，给它生成一个绝对独立的新时间戳 ID
+    if (!newClient.id || seenIds.has(newClient.id)) {
+      newClient.id = Date.now() + index + Math.floor(Math.random() * 1000);
     }
+    seenIds.add(newClient.id);
+    validList.push(newClient);
   });
-  return Array.from(map.values());
+  return validList;
 }
 
 async function syncToCloud(showAlert = false) {
@@ -531,7 +527,7 @@ async function syncToCloud(showAlert = false) {
       fileId = searchJson.files[0].id;
     }
 
-    const backupData = { version: 'v12.18', updatedAt: new Date().toISOString(), clients: localClients };
+    const backupData = { version: 'v12.19', updatedAt: new Date().toISOString(), clients: localClients };
     const fileContent = JSON.stringify(backupData, null, 2);
     if (fileId) {
       await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -554,24 +550,34 @@ async function syncToCloud(showAlert = false) {
 
 async function cleanDuplicateClients() {
   try {
-    const clients = await dbGetAllClients();
-    const uniqueClients = deduplicateClientsList(clients);
+    let clients = await dbGetAllClients();
+    // 自动去重算法：完全相同的名称和地址只保留最新的一条
+    const map = new Map();
+    clients.forEach(c => {
+      if (!c || !c.name) return;
+      const key = `${c.name.trim().toLowerCase()}_${(c.address || '').trim().toLowerCase()}`;
+      if (!map.has(key) || (c.updatedAt || 0) >= (map.get(key).updatedAt || 0)) {
+        map.set(key, c);
+      }
+    });
+    const uniqueClients = Array.from(map.values());
+
     const tx = db.transaction('clients', 'readwrite');
     tx.objectStore('clients').clear();
     await new Promise(resolve => tx.oncomplete = resolve);
     for (let c of uniqueClients) { await dbSaveClient(c); }
+    
     renderJobsList();
     renderCalendar();
     populateInvoiceClientSelect();
     
-    // ⚡ 核心修复：点击去除重复时，强制将本地清洗干净的名单直接覆盖上传到云端，从根源上抹除云端老重复数据！
     if (accessToken) {
       try {
         const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='bayview-backup.json' and trashed=false`, {
           headers: { 'Authorization': `Bearer ${accessToken}` }
         });
         const searchJson = await searchRes.json();
-        const backupData = { version: 'v12.18', updatedAt: new Date().toISOString(), clients: uniqueClients };
+        const backupData = { version: 'v12.19', updatedAt: new Date().toISOString(), clients: uniqueClients };
         const fileContent = JSON.stringify(backupData, null, 2);
         if (searchJson.files && searchJson.files.length > 0) {
           const fileId = searchJson.files[0].id;
@@ -584,7 +590,7 @@ async function cleanDuplicateClients() {
       } catch(e) { console.error("Cloud purge error:", e); }
     }
 
-    alert(`已深度清理重复档案并同步更新云端！当前共精简保留 ${uniqueClients.length} 位有效客户。`);
+    alert(`智能去重完成！当前共保留 ${uniqueClients.length} 位独立客户。`);
   } catch(e) {
     console.error(e);
     alert('Clean duplicate error');
@@ -656,11 +662,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     await initDB();
     const clients = await dbGetAllClients();
     const cleanList = deduplicateClientsList(clients);
-    if (cleanList.length !== clients.length) {
-      const tx = db.transaction('clients', 'readwrite');
-      tx.objectStore('clients').clear();
-      for (let c of cleanList) tx.objectStore('clients').put(c);
-    }
+    const tx = db.transaction('clients', 'readwrite');
+    tx.objectStore('clients').clear();
+    for (let c of cleanList) tx.objectStore('clients').put(c);
   } catch(e) {
     console.error("DB init error:", e);
   }
@@ -1013,12 +1017,6 @@ async function saveClientModal() {
     };
     await dbSaveClient(clientData);
     
-    const allClients = await dbGetAllClients();
-    const uniqueList = deduplicateClientsList(allClients);
-    const tx = db.transaction('clients', 'readwrite');
-    tx.objectStore('clients').clear();
-    for (let c of uniqueList) tx.objectStore('clients').put(c);
-
     closeClientModal();
     renderJobsList();
     renderCalendar();
@@ -1032,9 +1030,11 @@ async function saveClientModal() {
 }
 
 async function deleteClient(id) {
-  if (confirm('Delete this client?')) {
+  if (confirm('确认删除此客户档案？')) {
     await dbDeleteClient(id);
-    renderJobsList(); renderCalendar();
+    renderJobsList(); 
+    renderCalendar();
+    populateInvoiceClientSelect();
     if (accessToken) syncToCloud(false);
   }
 }
@@ -1186,7 +1186,7 @@ async function autoFillInvoiceClient(targetJobId = null) {
     const select = document.getElementById('invClientSelect');
     if (!select || !select.value) return;
     const clients = await dbGetAllClients();
-    const client = clients.find(c => c.id === Number(select.value));
+    const client = clients.find(c => String(c.id) === String(select.value));
     if (client) {
       const pName = document.getElementById('pClientName');
       if (pName) pName.textContent = client.name;
@@ -1345,7 +1345,7 @@ async function saveInvoiceToSystem() {
   try {
     const clientSelect = document.getElementById('invClientSelect');
     if (!clientSelect || !clientSelect.value) { alert('请先选择客户！'); return; }
-    const clientId = Number(clientSelect.value);
+    const clientId = clientSelect.value;
     
     const invNumber = document.getElementById('invNumber').value.trim();
     const rawDate = document.getElementById('invDate').value;
@@ -1369,7 +1369,7 @@ async function saveInvoiceToSystem() {
     });
 
     const clients = await dbGetAllClients();
-    const client = clients.find(c => c.id === clientId);
+    const client = clients.find(c => String(c.id) === String(clientId));
     if (client) {
       if (!client.jobs || client.jobs.length === 0) {
         client.jobs = [{ id: 'job_' + Date.now(), title: 'Window Tinting', date: rawDate, price: subtotal }];
@@ -1482,7 +1482,7 @@ async function importDataJSON(e) {
       const imported = JSON.parse(evt.target.result);
       let clientList = Array.isArray(imported) ? imported : (imported.clients || []);
       if (confirm(`Import ${clientList.length} records?`)) {
-        for (let c of clientList) if (c.id && c.name) await dbSaveClient(c);
+        for (let c of clientList) await dbSaveClient(c);
         renderJobsList(); renderCalendar(); alert('Import successful!');
       }
     } catch(err) { alert('Import failed.'); }
