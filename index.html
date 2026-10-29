@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v12.13 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v12.14 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -88,7 +88,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-white flex items-center gap-2">
-            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.13 Pro</span>
+            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.14 Pro</span>
           </h1>
           <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
         </div>
@@ -280,7 +280,10 @@
           </div>
 
           <div class="flex justify-end gap-2 pt-2 border-t border-slate-700">
-            <button onclick="renderPrintableInvoice()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">
+            <button onclick="saveInvoiceToSystem()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">
+              <i data-lucide="save" class="w-4 h-4"></i> 💾 Save Invoice / 保存发票到软件
+            </button>
+            <button onclick="renderPrintableInvoice()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">
               <i data-lucide="printer" class="w-4 h-4"></i> Preview & Print A4 PDF / 预览打印
             </button>
           </div>
@@ -503,11 +506,36 @@ function handleGoogleAuth() {
   if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
+// 🛡️ 强力去重逻辑：按标准化的姓名+地址作为唯一主键合并
+function deduplicateClientsList(clients) {
+  const map = new Map();
+  (clients || []).forEach(c => {
+    if (!c || !c.name) return;
+    const cleanName = c.name.trim().toLowerCase();
+    const cleanAddr = (c.address || '').trim().toLowerCase();
+    const key = `${cleanName}_${cleanAddr}`;
+    
+    if (!map.has(key)) {
+      map.set(key, c);
+    } else {
+      const existing = map.get(key);
+      const existingTime = existing.updatedAt || 0;
+      const currTime = c.updatedAt || 0;
+      if (currTime >= existingTime) {
+        map.set(key, c);
+      }
+    }
+  });
+  return Array.from(map.values());
+}
+
 // 严谨去重与云端同步
 async function syncToCloud(showAlert = false) {
   if (!accessToken) { handleGoogleAuth(); return; }
   try {
-    const localClients = await dbGetAllClients();
+    let localClients = await dbGetAllClients();
+    localClients = deduplicateClientsList(localClients);
+
     const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='bayview-backup.json' and trashed=false`, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
@@ -519,26 +547,31 @@ async function syncToCloud(showAlert = false) {
         headers: { 'Authorization': `Bearer ${accessToken}` }
       });
       const remoteData = await fileRes.json();
-      remoteClients = remoteData.clients || [];
+      remoteClients = deduplicateClientsList(remoteData.clients || []);
     }
+
     const clientMap = new Map();
-    remoteClients.forEach(c => { if (c && c.id) clientMap.set(c.id, c); });
+    remoteClients.forEach(c => {
+      const key = `${c.name.trim().toLowerCase()}_${(c.address||'').trim().toLowerCase()}`;
+      clientMap.set(key, c);
+    });
     localClients.forEach(c => {
-      if (c && c.id) {
-        if (!clientMap.has(c.id) || (c.updatedAt || 0) >= (clientMap.get(c.id).updatedAt || 0)) {
-          clientMap.set(c.id, c);
-        }
+      const key = `${c.name.trim().toLowerCase()}_${(c.address||'').trim().toLowerCase()}`;
+      if (!clientMap.has(key) || (c.updatedAt || 0) >= (clientMap.get(key).updatedAt || 0)) {
+        clientMap.set(key, c);
       }
     });
+
     const mergedClients = Array.from(clientMap.values());
     const txClear = db.transaction('clients', 'readwrite');
     txClear.objectStore('clients').clear();
     await new Promise(resolve => txClear.oncomplete = resolve);
     for (let c of mergedClients) await dbSaveClient(c);
+    
     renderJobsList();
     populateInvoiceClientSelect();
 
-    const backupData = { version: 'v12.13', updatedAt: new Date().toISOString(), clients: mergedClients };
+    const backupData = { version: 'v12.14', updatedAt: new Date().toISOString(), clients: mergedClients };
     const fileContent = JSON.stringify(backupData, null, 2);
     if (fileId) {
       await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -561,21 +594,14 @@ async function syncToCloud(showAlert = false) {
 
 async function cleanDuplicateClients() {
   const clients = await dbGetAllClients();
-  const map = new Map();
-  clients.forEach(c => {
-    const key = c.id || c.name.trim().toLowerCase();
-    if (!map.has(key) || (c.updatedAt || 0) > (map.get(key).updatedAt || 0)) {
-      map.set(key, c);
-    }
-  });
-  const uniqueClients = Array.from(map.values());
+  const uniqueClients = deduplicateClientsList(clients);
   const tx = db.transaction('clients', 'readwrite');
   tx.objectStore('clients').clear();
   await new Promise(resolve => tx.oncomplete = resolve);
   for (let c of uniqueClients) { await dbSaveClient(c); }
   renderJobsList();
   populateInvoiceClientSelect();
-  alert(`已清理重复档案，当前共 ${uniqueClients.length} 位有效客户。`);
+  alert(`已深度清理重复档案，当前共精简保留 ${uniqueClients.length} 位有效客户。`);
   if (accessToken) syncToCloud(false);
 }
 
@@ -594,11 +620,14 @@ function initDB() {
   });
 }
 
-function dbGetAllClients() {
+async function dbGetAllClients() {
   return new Promise((resolve) => {
     const tx = db.transaction('clients', 'readonly');
     const req = tx.objectStore('clients').getAll();
-    req.onsuccess = () => resolve(req.result || []);
+    req.onsuccess = () => {
+      const list = req.result || [];
+      resolve(deduplicateClientsList(list));
+    };
   });
 }
 
@@ -621,6 +650,14 @@ function dbDeleteClient(id) {
 let lastCalcResult = { totalLenM: 0, totalGlassArea: 0, filmArea: 0, cost: 0 };
 window.addEventListener('DOMContentLoaded', async () => {
   await initDB();
+  const clients = await dbGetAllClients();
+  const cleanList = deduplicateClientsList(clients);
+  if (cleanList.length !== clients.length) {
+    const tx = db.transaction('clients', 'readwrite');
+    tx.objectStore('clients').clear();
+    for (let c of cleanList) tx.objectStore('clients').put(c);
+  }
+
   setTimeout(initGoogleAuth, 1000);
   updateLanguageUI();
   renderJobsList();
@@ -657,7 +694,8 @@ async function renderJobsList() {
   if (!container) return;
   container.innerHTML = '';
   const search = (document.getElementById('jobSearchInput').value || '').toLowerCase();
-  const clients = await dbGetAllClients();
+  let clients = await dbGetAllClients();
+  clients = deduplicateClientsList(clients);
   const filtered = clients.filter(c => (c.name + (c.suburb||'') + (c.address||'') + (c.phone||'')).toLowerCase().includes(search));
   
   filtered.forEach(c => {
@@ -703,7 +741,8 @@ async function renderCalendar() {
   const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
   const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
   const todayStr = new Date().toISOString().split('T')[0];
-  const clients = await dbGetAllClients();
+  let clients = await dbGetAllClients();
+  clients = deduplicateClientsList(clients);
 
   for (let i = 0; i < firstDayIndex; i++) gridEl.appendChild(createSafeElement('div', 'cal-day-cell opacity-30'));
   for (let day = 1; day <= totalDays; day++) {
@@ -745,14 +784,14 @@ function goToday() {
   renderCalendar();
 }
 
-// 📂 打开客户档案 (渲染主子目录 Jobs List)
 async function openClientModal(id = null) {
   document.getElementById('editingClientId').value = id || '';
   currentPhotos = [];
   currentClientJobs = [];
 
   if (id) {
-    const clients = await dbGetAllClients();
+    let clients = await dbGetAllClients();
+    clients = deduplicateClientsList(clients);
     const client = clients.find(c => c.id === id);
     if (client) {
       document.getElementById('custName').value = client.name || '';
@@ -760,14 +799,13 @@ async function openClientModal(id = null) {
       document.getElementById('custSuburb').value = client.suburb || 'Bethlehem';
       document.getElementById('custAddress').value = client.address || '';
       if (client.photos) currentPhotos = [...client.photos];
-      // 加载子目录 Jobs
       currentClientJobs = client.jobs ? JSON.parse(JSON.stringify(client.jobs)) : [{
         id: 'job_' + Date.now(),
         title: 'Residential Window Tinting',
         date: new Date().toISOString().split('T')[0],
         price: client.price || 0,
         status: client.status || 'Completed 已完工',
-        invoice: client.invoice || null // 唯一绑定的发票对象
+        invoice: client.invoice || null
       }];
     }
   } else {
@@ -795,7 +833,6 @@ function closeClientModal() {
   currentClientJobs = [];
 }
 
-// 渲染子目录 Jobs 列表 UI
 function renderClientJobsList() {
   const container = document.getElementById('clientJobsContainer');
   container.innerHTML = '';
@@ -846,7 +883,6 @@ function updateJobField(jobId, field, val) {
   if (job) job[field] = val;
 }
 
-// 从客户档案一键跳转到发票页面，并绑定/加载该 Job 的唯一 Invoice
 function jumpToInvoiceForJob(jobId) {
   const clientId = document.getElementById('editingClientId').value;
   closeClientModal();
@@ -921,9 +957,16 @@ async function saveClientModal() {
     status: 'Completed 已完工',
     updatedAt: Date.now(),
     photos: [...currentPhotos],
-    jobs: currentClientJobs // 完整保存子目录
+    jobs: currentClientJobs
   };
   await dbSaveClient(clientData);
+  
+  const allClients = await dbGetAllClients();
+  const uniqueList = deduplicateClientsList(allClients);
+  const tx = db.transaction('clients', 'readwrite');
+  tx.objectStore('clients').clear();
+  for (let c of uniqueList) tx.objectStore('clients').put(c);
+
   closeClientModal();
   renderJobsList();
   renderCalendar();
@@ -955,6 +998,7 @@ function addOptimizerPanelRow(label = '', w = '', h = '', qty = 1) {
 
 function resetZoom() { if (currentRenderData) drawOptimizerCanvas(currentRenderData); }
 
+let currentRenderData = null;
 function optimizeRollLayout() {
   const rollW = parseFloat(document.getElementById('optRollWidth').value) || 1524;
   let items = [], totalGlassArea = 0;
@@ -1041,7 +1085,6 @@ async function populateInvoiceClientSelect() {
   autoFillInvoiceClient();
 }
 
-// 智能加载客户及其绑定的唯一 Invoice（支持 Edit 修改）
 async function autoFillInvoiceClient(targetJobId = null) {
   const select = document.getElementById('invClientSelect');
   if (!select || !select.value) return;
@@ -1052,7 +1095,6 @@ async function autoFillInvoiceClient(targetJobId = null) {
     const container = document.getElementById('invoiceItemsContainer');
     container.innerHTML = '';
     
-    // 获取对应的 Job
     let job = null;
     if (targetJobId && client.jobs) {
       job = client.jobs.find(j => j.id === targetJobId);
@@ -1061,12 +1103,10 @@ async function autoFillInvoiceClient(targetJobId = null) {
     }
 
     if (job && job.invoice) {
-      // 如果该工作已经保存过发票，则直接加载（Edit 模式）
       document.getElementById('invNumber').value = job.invoice.invNumber || 'INV-2026-001';
       document.getElementById('invDate').value = job.invoice.invDate || new Date().toISOString().slice(0, 10);
       addInvoiceItemRow(job.invoice.desc || '', job.invoice.mode || 'fixed', job.invoice.qty || 1, job.invoice.area || 0, job.invoice.rate || 0, job.invoice.price || job.price || 0);
     } else {
-      // 首次开票：加载默认空白或 Job 的价格
       updateBankRefAuto();
       const defaultPrice = job ? (job.price || 0) : (client.price || 0);
       const defaultDesc = job ? (job.title === 'Residential Window Tinting' ? '' : job.title) : '';
@@ -1185,8 +1225,57 @@ function formatDateNZ(dateStr) {
   return dateStr;
 }
 
-// 🖨️ 预览打印，并自动将该发票持久化保存/覆盖更新到当前客户的唯一 Job 中
+// 💾 将发票数据保存到软件内部的客户数据库中
+async function saveInvoiceToSystem() {
+  const clientId = Number(document.getElementById('invClientSelect').value);
+  if (!clientId) { alert('请先选择客户！'); return; }
+  
+  const invNumber = document.getElementById('invNumber').value.trim();
+  const rawDate = document.getElementById('invDate').value;
+  const firstRow = document.querySelector('#invoiceItemsContainer > div');
+  if (!firstRow) { alert('请至少添加一行发票项目！'); return; }
+  
+  const firstRowDesc = firstRow.querySelector('.item-desc').value;
+  const firstRowMode = firstRow.querySelector('.item-mode').value;
+  const firstRowPrice = firstRowMode === 'fixed' ? (parseFloat(firstRow.querySelector('.item-price').value) || 0) : 0;
+  
+  let subtotal = 0;
+  document.querySelectorAll('#invoiceItemsContainer > div').forEach(r => {
+    const mode = r.querySelector('.item-mode').value;
+    if (mode === 'fixed') { subtotal += parseFloat(r.querySelector('.item-price').value) || 0; }
+    else {
+      const a = parseFloat(r.querySelector('.item-area').value) || 0;
+      const rt = parseFloat(r.querySelector('.item-rate').value) || 0;
+      const q = parseFloat(r.querySelector('.item-qty').value) || 1;
+      subtotal += a * rt * q;
+    }
+  });
+
+  const clients = await dbGetAllClients();
+  const client = clients.find(c => c.id === clientId);
+  if (client) {
+    if (!client.jobs || client.jobs.length === 0) {
+      client.jobs = [{ id: 'job_' + Date.now(), title: 'Window Tinting', date: rawDate, price: subtotal }];
+    }
+    client.jobs[0].invoice = {
+      invNumber,
+      invDate: rawDate,
+      desc: firstRowDesc,
+      mode: firstRowMode,
+      price: firstRowPrice,
+      subtotal,
+      grandTotal: subtotal * 1.15
+    };
+    client.updatedAt = Date.now();
+    await dbSaveClient(client);
+    if (accessToken) syncToCloud(false);
+    alert(`发票 ${invNumber} 已成功保存到客户 [${client.name}] 档案中！`);
+  }
+}
+
+// 🖨️ 预览打印，并自动同步保存
 async function renderPrintableInvoice() {
+  await saveInvoiceToSystem();
   const printable = document.getElementById('printableInvoice');
   printable.classList.remove('hidden');
   const invNum = document.getElementById('invNumber').value;
@@ -1199,17 +1288,9 @@ async function renderPrintableInvoice() {
   pTbody.innerHTML = '';
   const rows = document.querySelectorAll('#invoiceItemsContainer > div');
   let hasAreaMode = false;
-  let firstRowDesc = '';
-  let firstRowPrice = 0;
-  let firstRowMode = 'fixed';
 
-  rows.forEach((r, idx) => {
+  rows.forEach((r) => {
     if (r.querySelector('.item-mode').value === 'area') hasAreaMode = true;
-    if (idx === 0) {
-      firstRowDesc = r.querySelector('.item-desc').value;
-      firstRowMode = r.querySelector('.item-mode').value;
-      firstRowPrice = firstRowMode === 'fixed' ? (parseFloat(r.querySelector('.item-price').value) || 0) : 0;
-    }
   });
 
   if (hasAreaMode) {
@@ -1247,28 +1328,6 @@ async function renderPrintableInvoice() {
   document.getElementById('pSubtotal').textContent = `$${subtotal.toFixed(2)}`;
   document.getElementById('pGst').textContent = `$${gst.toFixed(2)}`;
   document.getElementById('pTotal').textContent = `$${grandTotal.toFixed(2)}`;
-
-  // 💾 自动持久化保存到客户的唯一 Job 发票中（覆盖更新，不产生冗余文档）
-  const clientId = Number(document.getElementById('invClientSelect').value);
-  if (clientId) {
-    const clients = await dbGetAllClients();
-    const client = clients.find(c => c.id === clientId);
-    if (client && client.jobs && client.jobs.length > 0) {
-      // 默认更新当前客户第一个 Job 的发票（或最新 Job）
-      client.jobs[0].invoice = {
-        invNumber,
-        invDate: rawDate,
-        desc: firstRowDesc,
-        mode: firstRowMode,
-        price: firstRowPrice,
-        subtotal,
-        grandTotal
-      };
-      client.updatedAt = Date.now();
-      await dbSaveClient(client);
-      if (accessToken) syncToCloud(false);
-    }
-  }
 
   printable.scrollIntoView({ behavior: 'smooth' });
 }
