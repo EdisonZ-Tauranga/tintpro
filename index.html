@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v12.15 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v12.17 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
 .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-.cal-day-cell { background: #0b0f19; border: 1px solid #1f2937; border-radius: 8px; }
+.cal-day-cell { background: #0b0f19; border: 1px solid #1f2937; border-radius: 8px; min-height: 80px; padding: 6px; }
 @media (max-width: 640px) {
   .cal-day-cell { min-height: 58px; padding: 3px; }
 }
@@ -20,43 +20,17 @@
 .cal-event.scheduled { background: rgba(0, 139, 234, 0.2); color: #93c5fd; border: 1px solid rgba(0, 139, 234, 0.3); }
 #optimizerCanvasContainer { touch-action: none; }
 
-/* 完美 A4 单页打印排版样式 */
-@page {
-  size: A4 portrait;
-  margin: 12mm 15mm;
-}
+@page { size: A4 portrait; margin: 12mm 15mm; }
 @media print {
-  html, body {
-    background: #ffffff !important;
-    color: #000000 !important;
-    height: 100%;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-  }
-  body * {
-    visibility: hidden;
-  }
-  #printableInvoice, #printableInvoice * {
-    visibility: visible;
-  }
+  html, body { background: #ffffff !important; color: #000000 !important; height: 100%; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
+  body * { visibility: hidden; }
+  #printableInvoice, #printableInvoice * { visibility: visible; }
   #printableInvoice {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    border: none !important;
-    background: #ffffff !important;
-    page-break-inside: avoid;
-    page-break-after: avoid;
+    position: absolute; left: 0; top: 0; width: 100% !important; max-width: 100% !important;
+    margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important;
+    background: #ffffff !important; page-break-inside: avoid; page-break-after: avoid;
   }
-  .no-print {
-    display: none !important;
-  }
+  .no-print { display: none !important; }
 }
 </style>
 </head>
@@ -88,14 +62,14 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-white flex items-center gap-2">
-            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.15 Pro</span>
+            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.17 Pro</span>
           </h1>
           <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
         </div>
       </div>
     </div>
     <div class="flex items-center flex-wrap gap-2">
-      <button onclick="toggleLanguage()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-semibold text-slate-200 transition">
+      <button onclick="safeToggleLanguage()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-semibold text-slate-200 transition">
         <i data-lucide="languages" class="w-4 h-4"></i> <span id="langBtnText">中文 / EN</span>
       </button>
       <button id="googleAuthBtn" onclick="handleGoogleAuth()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-semibold text-slate-200 transition">
@@ -463,50 +437,69 @@ const i18n = {
   EN: { menuClients: "Clients & Projects", menuCalendar: "Schedule Calendar", menuOptimizer: "Cutting Optimizer", menuInvoices: "Tax Invoices", menuEstimator: "Job Estimator", newClientBtn: "+ New Client", cloudSync: "Cloud Sync", export: "Export", import: "Import" }
 };
 
-function toggleLanguage() {
-  currentLang = currentLang === 'ZH' ? 'EN' : 'ZH';
-  localStorage.setItem('nz_lang', currentLang);
-  updateLanguageUI();
+function safeToggleLanguage() {
+  try {
+    currentLang = currentLang === 'ZH' ? 'EN' : 'ZH';
+    localStorage.setItem('nz_lang', currentLang);
+    updateLanguageUI();
+  } catch(e) {
+    console.error("Toggle language error:", e);
+  }
 }
 
 function updateLanguageUI() {
-  const langBtnText = document.getElementById('langBtnText');
-  if (langBtnText) langBtnText.textContent = currentLang === 'ZH' ? '中文 / EN' : 'EN / 中文';
-  const dict = i18n[currentLang] || i18n.EN;
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (dict[key]) el.textContent = dict[key];
-  });
-  renderJobsList();
-  renderCalendar();
+  try {
+    const langBtnText = document.getElementById('langBtnText');
+    if (langBtnText) langBtnText.textContent = currentLang === 'ZH' ? '中文 / EN' : 'EN / 中文';
+    const dict = i18n[currentLang] || i18n.EN;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (dict[key]) el.textContent = dict[key];
+    });
+    renderJobsList();
+    renderCalendar();
+  } catch(e) {
+    console.error("Update language UI error:", e);
+  }
 }
 
 function initGoogleAuth() {
-  if (typeof google !== 'undefined' && google.accounts) {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: (resp) => {
-        if (resp.error !== undefined) { alert('Google Authorization Failed'); return; }
-        accessToken = resp.access_token;
-        document.getElementById('authBtnText').textContent = 'Google Connected';
-        syncToCloud(true);
-      },
-    });
+  try {
+    if (typeof google !== 'undefined' && google.accounts) {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: (resp) => {
+          if (resp.error !== undefined) { alert('Google Authorization Failed'); return; }
+          accessToken = resp.access_token;
+          const authBtn = document.getElementById('authBtnText');
+          if (authBtn) authBtn.textContent = 'Google Connected';
+          syncToCloud(true);
+        },
+      });
+    }
+  } catch(e) {
+    console.error("Init Google Auth error:", e);
   }
 }
 
 function handleGoogleAuth() {
-  if (!tokenClient) initGoogleAuth();
-  if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' });
+  try {
+    if (!tokenClient) initGoogleAuth();
+    if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' });
+  } catch(e) {
+    alert('Google Auth error, please check console.');
+    console.error(e);
+  }
 }
 
 function deduplicateClientsList(clients) {
+  if (!Array.isArray(clients)) return [];
   const map = new Map();
-  (clients || []).forEach(c => {
+  clients.forEach(c => {
     if (!c || !c.name) return;
-    const cleanName = c.name.trim().toLowerCase();
-    const cleanAddr = (c.address || '').trim().toLowerCase();
+    const cleanName = String(c.name).trim().toLowerCase();
+    const cleanAddr = String(c.address || '').trim().toLowerCase();
     const key = `${cleanName}_${cleanAddr}`;
     
     if (!map.has(key)) {
@@ -564,7 +557,7 @@ async function syncToCloud(showAlert = false) {
     renderJobsList();
     populateInvoiceClientSelect();
 
-    const backupData = { version: 'v12.15', updatedAt: new Date().toISOString(), clients: mergedClients };
+    const backupData = { version: 'v12.17', updatedAt: new Date().toISOString(), clients: mergedClients };
     const fileContent = JSON.stringify(backupData, null, 2);
     if (fileId) {
       await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -586,16 +579,40 @@ async function syncToCloud(showAlert = false) {
 }
 
 async function cleanDuplicateClients() {
-  const clients = await dbGetAllClients();
-  const uniqueClients = deduplicateClientsList(clients);
-  const tx = db.transaction('clients', 'readwrite');
-  tx.objectStore('clients').clear();
-  await new Promise(resolve => tx.oncomplete = resolve);
-  for (let c of uniqueClients) { await dbSaveClient(c); }
-  renderJobsList();
-  populateInvoiceClientSelect();
-  alert(`已深度清理重复档案，当前共精简保留 ${uniqueClients.length} 位有效客户。`);
-  if (accessToken) syncToCloud(false);
+  try {
+    const clients = await dbGetAllClients();
+    const uniqueClients = deduplicateClientsList(clients);
+    const tx = db.transaction('clients', 'readwrite');
+    tx.objectStore('clients').clear();
+    await new Promise(resolve => tx.oncomplete = resolve);
+    for (let c of uniqueClients) { await dbSaveClient(c); }
+    renderJobsList();
+    populateInvoiceClientSelect();
+    
+    if (accessToken) {
+      try {
+        const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='bayview-backup.json' and trashed=false`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        const searchJson = await searchRes.json();
+        const backupData = { version: 'v12.17', updatedAt: new Date().toISOString(), clients: uniqueClients };
+        const fileContent = JSON.stringify(backupData, null, 2);
+        if (searchJson.files && searchJson.files.length > 0) {
+          const fileId = searchJson.files[0].id;
+          await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: fileContent
+          });
+        }
+      } catch(e) { console.error("Cloud purge error:", e); }
+    }
+
+    alert(`已深度清理重复档案并更新云端备份！当前共精简保留 ${uniqueClients.length} 位有效客户。`);
+  } catch(e) {
+    console.error(e);
+    alert('Clean duplicate error');
+  }
 }
 
 const DB_NAME = 'NZTintDB_v12';
@@ -614,41 +631,62 @@ function initDB() {
 }
 
 async function dbGetAllClients() {
+  if (!db) return [];
   return new Promise((resolve) => {
-    const tx = db.transaction('clients', 'readonly');
-    const req = tx.objectStore('clients').getAll();
-    req.onsuccess = () => {
-      const list = req.result || [];
-      resolve(deduplicateClientsList(list));
-    };
+    try {
+      const tx = db.transaction('clients', 'readonly');
+      const req = tx.objectStore('clients').getAll();
+      req.onsuccess = () => {
+        const list = req.result || [];
+        resolve(deduplicateClientsList(list));
+      };
+      req.onerror = () => resolve([]);
+    } catch(e) {
+      resolve([]);
+    }
   });
 }
 
 function dbSaveClient(client) {
   return new Promise((resolve) => {
-    const tx = db.transaction('clients', 'readwrite');
-    tx.objectStore('clients').put(client);
-    tx.oncomplete = () => resolve();
+    if (!db) { resolve(); return; }
+    try {
+      const tx = db.transaction('clients', 'readwrite');
+      tx.objectStore('clients').put(client);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    } catch(e) {
+      resolve();
+    }
   });
 }
 
 function dbDeleteClient(id) {
   return new Promise((resolve) => {
-    const tx = db.transaction('clients', 'readwrite');
-    tx.objectStore('clients').delete(id);
-    tx.oncomplete = () => resolve();
+    if (!db) { resolve(); return; }
+    try {
+      const tx = db.transaction('clients', 'readwrite');
+      tx.objectStore('clients').delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    } catch(e) {
+      resolve();
+    }
   });
 }
 
-let lastCalcResult = { totalLenM: 0, totalGlassArea: 0, filmArea: 0, cost: 0 };
 window.addEventListener('DOMContentLoaded', async () => {
-  await initDB();
-  const clients = await dbGetAllClients();
-  const cleanList = deduplicateClientsList(clients);
-  if (cleanList.length !== clients.length) {
-    const tx = db.transaction('clients', 'readwrite');
-    tx.objectStore('clients').clear();
-    for (let c of cleanList) tx.objectStore('clients').put(c);
+  try {
+    await initDB();
+    const clients = await dbGetAllClients();
+    const cleanList = deduplicateClientsList(clients);
+    if (cleanList.length !== clients.length) {
+      const tx = db.transaction('clients', 'readwrite');
+      tx.objectStore('clients').clear();
+      for (let c of cleanList) tx.objectStore('clients').put(c);
+    }
+  } catch(e) {
+    console.error("DB init error:", e);
   }
 
   setTimeout(initGoogleAuth, 1000);
@@ -656,25 +694,29 @@ window.addEventListener('DOMContentLoaded', async () => {
   renderJobsList();
   renderCalendar();
   populateInvoiceClientSelect();
-  lucide.createIcons();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 });
 
 function switchTab(tab) {
-  ['jobs', 'calendar', 'optimizer', 'invoices', 'calculator'].forEach(t => {
-    const el = document.getElementById('tab-' + t);
-    const nav = document.getElementById('nav-' + t);
-    if (el) el.classList.add('hidden');
-    if (nav) nav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/60 font-medium text-sm transition";
-  });
-  const targetTab = document.getElementById('tab-' + tab);
-  const targetNav = document.getElementById('nav-' + tab);
-  if (targetTab) targetTab.classList.remove('hidden');
-  if (targetNav) targetNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-sky-600 text-white font-medium text-sm transition shadow-sm";
-  if (tab === 'optimizer') optimizeRollLayout();
-  if (tab === 'calendar') renderCalendar();
-  if (tab === 'invoices') {
-    populateInvoiceClientSelect();
-    generateNextInvoiceNumber();
+  try {
+    ['jobs', 'calendar', 'optimizer', 'invoices', 'calculator'].forEach(t => {
+      const el = document.getElementById('tab-' + t);
+      const nav = document.getElementById('nav-' + t);
+      if (el) el.classList.add('hidden');
+      if (nav) nav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/60 font-medium text-sm transition";
+    });
+    const targetTab = document.getElementById('tab-' + tab);
+    const targetNav = document.getElementById('nav-' + tab);
+    if (targetTab) targetTab.classList.remove('hidden');
+    if (targetNav) targetNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-sky-600 text-white font-medium text-sm transition shadow-sm";
+    if (tab === 'optimizer') optimizeRollLayout();
+    if (tab === 'calendar') renderCalendar();
+    if (tab === 'invoices') {
+      populateInvoiceClientSelect();
+      generateNextInvoiceNumber();
+    }
+  } catch(e) {
+    console.error("Switch tab error:", e);
   }
 }
 
@@ -686,83 +728,102 @@ function createSafeElement(tag, className, textContent) {
 }
 
 async function renderJobsList() {
-  const container = document.getElementById('jobsListContainer');
-  if (!container) return;
-  container.innerHTML = '';
-  const search = (document.getElementById('jobSearchInput').value || '').toLowerCase();
-  let clients = await dbGetAllClients();
-  clients = deduplicateClientsList(clients);
-  const filtered = clients.filter(c => (c.name + (c.suburb||'') + (c.address||'') + (c.phone||'')).toLowerCase().includes(search));
-  
-  filtered.forEach(c => {
-    const jobsCount = (c.jobs || []).length || (c.price ? 1 : 0);
-    const photoCount = (c.photos || []).length;
-    const card = createSafeElement('div', 'bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-lg hover:border-sky-500/50 transition cursor-pointer flex flex-col justify-between space-y-3');
-    card.onclick = () => openClientModal(c.id);
+  try {
+    const container = document.getElementById('jobsListContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    const searchInput = document.getElementById('jobSearchInput');
+    const search = searchInput ? searchInput.value.toLowerCase() : '';
+    let clients = await dbGetAllClients();
+    clients = deduplicateClientsList(clients);
+    const filtered = clients.filter(c => (c.name + (c.suburb||'') + (c.address||'') + (c.phone||'')).toLowerCase().includes(search));
+    
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="col-span-2 text-center py-10 text-slate-400 text-xs italic">暂无客户档案，请点击右上角 [+ New Client] 添加，或使用 [Import] 导入备份。</div>';
+      return;
+    }
 
-    const top = createSafeElement('div', 'flex justify-between items-start');
-    const left = createSafeElement('div');
-    left.appendChild(createSafeElement('span', 'text-[11px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-semibold', c.suburb || 'Tauranga'));
-    left.appendChild(createSafeElement('h3', 'font-bold text-white text-base mt-1', c.name));
-    left.appendChild(createSafeElement('p', 'text-xs text-slate-400', `📍 ${c.address || 'Address TBD'}`));
-    top.appendChild(left);
-    top.appendChild(createSafeElement('span', 'text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium', c.status || 'Active'));
+    filtered.forEach(c => {
+      const jobsCount = (c.jobs || []).length || (c.price ? 1 : 0);
+      const photoCount = (c.photos || []).length;
+      const card = createSafeElement('div', 'bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-lg hover:border-sky-500/50 transition cursor-pointer flex flex-col justify-between space-y-3');
+      card.onclick = () => openClientModal(c.id);
 
-    const mid = createSafeElement('div', 'flex justify-between text-xs pt-2 border-t border-slate-700/60 text-slate-300');
-    mid.appendChild(createSafeElement('span', '', `📞 ${c.phone || 'N/A'}`));
-    mid.appendChild(createSafeElement('span', '', `📁 Jobs: ${jobsCount} | 🖼️ Photos: ${photoCount}`));
+      const top = createSafeElement('div', 'flex justify-between items-start');
+      const left = createSafeElement('div');
+      left.appendChild(createSafeElement('span', 'text-[11px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-semibold', c.suburb || 'Tauranga'));
+      left.appendChild(createSafeElement('h3', 'font-bold text-white text-base mt-1', c.name));
+      left.appendChild(createSafeElement('p', 'text-xs text-slate-400', `📍 ${c.address || 'Address TBD'}`));
+      top.appendChild(left);
+      top.appendChild(createSafeElement('span', 'text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium', c.status || 'Active'));
 
-    const btm = createSafeElement('div', 'flex justify-between items-center pt-1');
-    btm.appendChild(createSafeElement('span', 'text-sky-400 text-xs font-medium hover:underline', 'Edit Profile & Jobs ➔'));
-    const delBtn = createSafeElement('button', 'px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-lg transition', 'Delete');
-    delBtn.onclick = (e) => { e.stopPropagation(); deleteClient(c.id); };
-    btm.appendChild(delBtn);
+      const mid = createSafeElement('div', 'flex justify-between text-xs pt-2 border-t border-slate-700/60 text-slate-300');
+      mid.appendChild(createSafeElement('span', '', `📞 ${c.phone || 'N/A'}`));
+      mid.appendChild(createSafeElement('span', '', `📁 Jobs: ${jobsCount} | 🖼️ Photos: ${photoCount}`));
 
-    card.appendChild(top); card.appendChild(mid); card.appendChild(btm);
-    container.appendChild(card);
-  });
-  lucide.createIcons();
+      const btm = createSafeElement('div', 'flex justify-between items-center pt-1');
+      btm.appendChild(createSafeElement('span', 'text-sky-400 text-xs font-medium hover:underline', 'Edit Profile & Jobs ➔'));
+      const delBtn = createSafeElement('button', 'px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-lg transition', 'Delete');
+      delBtn.onclick = (e) => { e.stopPropagation(); deleteClient(c.id); };
+      btm.appendChild(delBtn);
+
+      card.appendChild(top); card.appendChild(mid); card.appendChild(btm);
+      container.appendChild(card);
+    });
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  } catch(e) {
+    console.error("Render jobs list error:", e);
+  }
 }
 
 async function renderCalendar() {
-  const gridEl = document.getElementById('cal-grid');
-  const titleEl = document.getElementById('cal-month-title');
-  const weekHeaderEl = document.getElementById('cal-week-header');
-  if (!gridEl || !titleEl || !weekHeaderEl) return;
-  const monthNamesEN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  titleEl.textContent = `${monthNamesEN[currentMonth]} ${currentYear} Schedule Calendar`;
-  weekHeaderEl.innerHTML = '';
-  ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(w => weekHeaderEl.appendChild(createSafeElement('div', '', w)));
-  gridEl.innerHTML = '';
-  const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
-  const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
-  const todayStr = new Date().toISOString().split('T')[0];
-  let clients = await dbGetAllClients();
-  clients = deduplicateClientsList(clients);
+  try {
+    const gridEl = document.getElementById('cal-grid');
+    const titleEl = document.getElementById('cal-month-title');
+    const weekHeaderEl = document.getElementById('cal-week-header');
+    if (!gridEl || !titleEl || !weekHeaderEl) return;
+    const monthNamesEN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    titleEl.textContent = `${monthNamesEN[currentMonth]} ${currentYear} Schedule Calendar`;
+    weekHeaderEl.innerHTML = '';
+    ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(w => weekHeaderEl.appendChild(createSafeElement('div', '', w)));
+    gridEl.innerHTML = '';
+    const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+    const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const todayStr = new Date().toISOString().split('T')[0];
+    let clients = await dbGetAllClients();
+    clients = deduplicateClientsList(clients);
 
-  for (let i = 0; i < firstDayIndex; i++) gridEl.appendChild(createSafeElement('div', 'cal-day-cell opacity-30'));
-  for (let day = 1; day <= totalDays; day++) {
-    const monthStr = String(currentMonth + 1).padStart(2, '0');
-    const dayStr = String(day).padStart(2, '0');
-    const dateKey = `${currentYear}-${monthStr}-${dayStr}`;
-    const isToday = (dateKey === todayStr);
-    let dayEvents = [];
-    clients.forEach(c => {
-      (c.jobs || []).forEach(j => {
-        if (j.jobDate === dateKey) dayEvents.push({ type: 'scheduled', title: `${c.name} (${j.title || 'Job'})`, clientId: c.id });
+    for (let i = 0; i < firstDayIndex; i++) gridEl.appendChild(createSafeElement('div', 'cal-day-cell opacity-30'));
+    for (let day = 1; day <= totalDays; day++) {
+      const monthStr = String(currentMonth + 1).padStart(2, '0');
+      const dayStr = String(day).padStart(2, '0');
+      const dateKey = `${currentYear}-${monthStr}-${dayStr}`;
+      const isToday = (dateKey === todayStr);
+      let dayEvents = [];
+      clients.forEach(c => {
+        (c.jobs || []).forEach(j => {
+          if (j.date === dateKey || j.jobDate === dateKey) dayEvents.push({ type: 'scheduled', title: `${c.name} (${j.title || 'Job'})`, clientId: c.id });
+        });
+        if (c.quoteDate && c.quoteDate.startsWith(dateKey)) dayEvents.push({ type: 'quote', title: `${c.name} (Quote)`, clientId: c.id });
       });
-      if (c.quoteDate && c.quoteDate.startsWith(dateKey)) dayEvents.push({ type: 'quote', title: `${c.name} (Quote)`, clientId: c.id });
-    });
 
-    const cell = createSafeElement('div', `cal-day-cell ${isToday ? 'today' : ''} flex flex-col`);
-    const numHeader = createSafeElement('div', 'font-bold text-slate-400 text-xs mb-1 flex justify-between', `<span>${day}</span>${isToday ? '<span class="text-sky-400 text-[10px]">Today</span>' : ''}`);
-    cell.appendChild(numHeader);
-    dayEvents.forEach(ev => {
-      const evDiv = createSafeElement('div', `cal-event ${ev.type}`, ev.title);
-      evDiv.onclick = (e) => { e.stopPropagation(); openClientModal(ev.clientId); };
-      cell.appendChild(evDiv);
-    });
-    gridEl.appendChild(cell);
+      const cell = createSafeElement('div', `cal-day-cell ${isToday ? 'today' : ''} flex flex-col`);
+      const numHeader = createSafeElement('div', 'font-bold text-slate-400 text-xs mb-1 flex justify-between');
+      numHeader.appendChild(createSafeElement('span', '', String(day)));
+      if (isToday) {
+        numHeader.appendChild(createSafeElement('span', 'text-sky-400 text-[10px]', 'Today'));
+      }
+      cell.appendChild(numHeader);
+
+      dayEvents.forEach(ev => {
+        const evDiv = createSafeElement('div', `cal-event ${ev.type}`, ev.title);
+        evDiv.onclick = (e) => { e.stopPropagation(); openClientModal(ev.clientId); };
+        cell.appendChild(evDiv);
+      });
+      gridEl.appendChild(cell);
+    }
+  } catch(e) {
+    console.error("Render calendar error:", e);
   }
 }
 
@@ -781,46 +842,50 @@ function goToday() {
 }
 
 async function openClientModal(id = null) {
-  document.getElementById('editingClientId').value = id || '';
-  currentPhotos = [];
-  currentClientJobs = [];
+  try {
+    document.getElementById('editingClientId').value = id || '';
+    currentPhotos = [];
+    currentClientJobs = [];
 
-  if (id) {
-    let clients = await dbGetAllClients();
-    clients = deduplicateClientsList(clients);
-    const client = clients.find(c => c.id === id);
-    if (client) {
-      document.getElementById('custName').value = client.name || '';
-      document.getElementById('custPhone').value = client.phone || '';
-      document.getElementById('custSuburb').value = client.suburb || 'Bethlehem';
-      document.getElementById('custAddress').value = client.address || '';
-      if (client.photos) currentPhotos = [...client.photos];
-      currentClientJobs = client.jobs ? JSON.parse(JSON.stringify(client.jobs)) : [{
+    if (id) {
+      let clients = await dbGetAllClients();
+      clients = deduplicateClientsList(clients);
+      const client = clients.find(c => c.id === id);
+      if (client) {
+        document.getElementById('custName').value = client.name || '';
+        document.getElementById('custPhone').value = client.phone || '';
+        document.getElementById('custSuburb').value = client.suburb || 'Bethlehem';
+        document.getElementById('custAddress').value = client.address || '';
+        if (client.photos) currentPhotos = [...client.photos];
+        currentClientJobs = client.jobs ? JSON.parse(JSON.stringify(client.jobs)) : [{
+          id: 'job_' + Date.now(),
+          title: 'Residential Window Tinting',
+          date: new Date().toISOString().split('T')[0],
+          price: client.price || 0,
+          status: client.status || 'Completed 已完工',
+          invoice: client.invoice || null
+        }];
+      }
+    } else {
+      document.getElementById('custName').value = '';
+      document.getElementById('custPhone').value = '';
+      document.getElementById('custSuburb').value = 'Bethlehem';
+      document.getElementById('custAddress').value = '';
+      currentClientJobs = [{
         id: 'job_' + Date.now(),
-        title: 'Residential Window Tinting',
+        title: 'Front Door Sidelights Privacy Film',
         date: new Date().toISOString().split('T')[0],
-        price: client.price || 0,
-        status: client.status || 'Completed 已完工',
-        invoice: client.invoice || null
+        price: 180,
+        status: 'Completed 已完工',
+        invoice: null
       }];
     }
-  } else {
-    document.getElementById('custName').value = '';
-    document.getElementById('custPhone').value = '';
-    document.getElementById('custSuburb').value = 'Bethlehem';
-    document.getElementById('custAddress').value = '';
-    currentClientJobs = [{
-      id: 'job_' + Date.now(),
-      title: 'Front Door Sidelights Privacy Film',
-      date: new Date().toISOString().split('T')[0],
-      price: 180,
-      status: 'Completed 已完工',
-      invoice: null
-    }];
+    renderClientJobsList();
+    renderPhotoPreviews();
+    document.getElementById('clientModal').classList.remove('hidden');
+  } catch(e) {
+    console.error("Open client modal error:", e);
   }
-  renderClientJobsList();
-  renderPhotoPreviews();
-  document.getElementById('clientModal').classList.remove('hidden');
 }
 
 function closeClientModal() {
@@ -831,6 +896,7 @@ function closeClientModal() {
 
 function renderClientJobsList() {
   const container = document.getElementById('clientJobsContainer');
+  if (!container) return;
   container.innerHTML = '';
   if (currentClientJobs.length === 0) {
     container.appendChild(createSafeElement('p', 'text-xs text-slate-400 italic', '暂无服务工作记录，点击上方按钮添加。'));
@@ -885,8 +951,10 @@ function jumpToInvoiceForJob(jobId) {
   switchTab('invoices');
   populateInvoiceClientSelect().then(() => {
     const select = document.getElementById('invClientSelect');
-    select.value = clientId;
-    autoFillInvoiceClient(jobId);
+    if (select) {
+      select.value = clientId;
+      autoFillInvoiceClient(jobId);
+    }
   });
 }
 
@@ -916,6 +984,7 @@ function handlePhotoUpload(e) {
 
 function renderPhotoPreviews() {
   const container = document.getElementById('photoPreviewContainer');
+  if (!container) return;
   container.innerHTML = '';
   if (currentPhotos.length === 0) {
     container.appendChild(createSafeElement('span', 'text-slate-400 text-xs italic', '暂无现场照片'));
@@ -935,40 +1004,55 @@ function renderPhotoPreviews() {
 }
 
 function openLightbox(src) {
-  document.getElementById('lightboxImg').src = src;
-  document.getElementById('imageLightbox').classList.remove('hidden');
+  const box = document.getElementById('imageLightbox');
+  const img = document.getElementById('lightboxImg');
+  if (box && img) {
+    img.src = src;
+    box.classList.remove('hidden');
+  }
+}
+
+function closeLightbox() {
+  const box = document.getElementById('imageLightbox');
+  if (box) box.classList.add('hidden');
 }
 
 async function saveClientModal() {
-  const name = document.getElementById('custName').value.trim();
-  if (!name) { alert('Please enter client name'); return; }
-  const editingId = Number(document.getElementById('editingClientId').value);
-  
-  const clientData = {
-    id: editingId || Date.now(),
-    name,
-    phone: document.getElementById('custPhone').value.trim(),
-    suburb: document.getElementById('custSuburb').value,
-    address: document.getElementById('custAddress').value.trim(),
-    status: 'Completed 已完工',
-    updatedAt: Date.now(),
-    photos: [...currentPhotos],
-    jobs: currentClientJobs
-  };
-  await dbSaveClient(clientData);
-  
-  const allClients = await dbGetAllClients();
-  const uniqueList = deduplicateClientsList(allClients);
-  const tx = db.transaction('clients', 'readwrite');
-  tx.objectStore('clients').clear();
-  for (let c of uniqueList) tx.objectStore('clients').put(c);
+  try {
+    const nameEl = document.getElementById('custName');
+    const name = nameEl ? nameEl.value.trim() : '';
+    if (!name) { alert('Please enter client name'); return; }
+    const editingId = Number(document.getElementById('editingClientId').value);
+    
+    const clientData = {
+      id: editingId || Date.now(),
+      name,
+      phone: document.getElementById('custPhone').value.trim(),
+      suburb: document.getElementById('custSuburb').value,
+      address: document.getElementById('custAddress').value.trim(),
+      status: 'Completed 已完工',
+      updatedAt: Date.now(),
+      photos: [...currentPhotos],
+      jobs: currentClientJobs
+    };
+    await dbSaveClient(clientData);
+    
+    const allClients = await dbGetAllClients();
+    const uniqueList = deduplicateClientsList(allClients);
+    const tx = db.transaction('clients', 'readwrite');
+    tx.objectStore('clients').clear();
+    for (let c of uniqueList) tx.objectStore('clients').put(c);
 
-  closeClientModal();
-  renderJobsList();
-  renderCalendar();
-  populateInvoiceClientSelect();
-  if (accessToken) syncToCloud(false);
-  alert('客户档案与子目录保存成功！');
+    closeClientModal();
+    renderJobsList();
+    renderCalendar();
+    populateInvoiceClientSelect();
+    if (accessToken) syncToCloud(false);
+    alert('客户档案与子目录保存成功！');
+  } catch(e) {
+    console.error("Save client modal error:", e);
+    alert('Save failed');
+  }
 }
 
 async function deleteClient(id) {
@@ -981,6 +1065,7 @@ async function deleteClient(id) {
 
 function addOptimizerPanelRow(label = '', w = '', h = '', qty = 1) {
   const tbody = document.getElementById('optimizerPanelsTbody');
+  if (!tbody) return;
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td class="p-1"><input type="text" value="${label}" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-xs text-white"></td>
@@ -996,155 +1081,185 @@ function resetZoom() { if (currentRenderData) drawOptimizerCanvas(currentRenderD
 
 let currentRenderData = null;
 function optimizeRollLayout() {
-  const rollW = parseFloat(document.getElementById('optRollWidth').value) || 1524;
-  let items = [], totalGlassArea = 0;
-  document.querySelectorAll('#optimizerPanelsTbody tr').forEach((tr, idx) => {
-    const inputs = tr.querySelectorAll('input');
-    const label = inputs[0].value.trim() || `P${idx+1}`;
-    const origW = Number(inputs[1].value) || 0;
-    const origH = Number(inputs[2].value) || 0;
-    const qty = Number(inputs[3].value) || 1;
-    totalGlassArea += (origW * origH * qty) / 1000000;
-    for (let i = 0; i < qty; i++) items.push({ label, w: origW, h: origH });
-  });
-  items.sort((a, b) => (b.w * b.h) - (a.w * a.h));
-  let freeSpaces = [{ x: 0, y: 0, w: rollW, h: 999999 }];
-  let placed = [];
-  items.forEach((r, seq) => {
-    let bestIdx = -1, bestRotated = false, minY = 999999;
-    for (let i = 0; i < freeSpaces.length; i++) {
-      let sp = freeSpaces[i];
-      if (r.w <= sp.w && r.h <= sp.h && sp.y < minY) { minY = sp.y; bestIdx = i; bestRotated = false; }
-      if (r.h <= sp.w && r.w <= sp.h && sp.y < minY) { minY = sp.y; bestIdx = i; bestRotated = true; }
-    }
-    if (bestIdx !== -1) {
-      let sp = freeSpaces[bestIdx];
-      let pw = bestRotated ? r.h : r.w, ph = bestRotated ? r.w : r.h;
-      placed.push({ seq: seq + 1, x: sp.x, y: sp.y, w: pw, h: ph, label: r.label });
-      freeSpaces.splice(bestIdx, 1);
-      if (sp.w - pw > 0) freeSpaces.push({ x: sp.x + pw, y: sp.y, w: sp.w - pw, h: ph });
-      if (sp.h - ph > 0) freeSpaces.push({ x: sp.x, y: sp.y + ph, w: sp.w, h: sp.h - ph });
-    }
-  });
-  let maxY = 0;
-  placed.forEach(p => { if (p.y + p.h > maxY) maxY = p.y + p.h; });
-  let canvasH = Math.max(maxY, 300);
-  let totalLenM = canvasH / 1000;
-  let filmArea = totalLenM * (rollW / 1000);
-  let wastePct = filmArea > 0 ? ((filmArea - totalGlassArea) / filmArea) * 100 : 0;
-  let totalCost = totalLenM * (parseFloat(document.getElementById('optCostPerM').value) || 25);
-  
-  document.getElementById('resTotalLength').textContent = `${totalLenM.toFixed(2)}m`;
-  document.getElementById('resWastePct').textContent = `${Math.max(0, wastePct).toFixed(1)}%`;
-  document.getElementById('resUsedArea').textContent = `${totalGlassArea.toFixed(2)}m²`;
-  document.getElementById('resEstCost').textContent = `$${totalCost.toFixed(2)}`;
-  currentRenderData = { rollW, canvasH, placed, freeSpaces };
-  drawOptimizerCanvas(currentRenderData);
-  runQuickCalc();
+  try {
+    const rollW = parseFloat(document.getElementById('optRollWidth').value) || 1524;
+    let items = [], totalGlassArea = 0;
+    document.querySelectorAll('#optimizerPanelsTbody tr').forEach((tr) => {
+      const inputs = tr.querySelectorAll('input');
+      if (inputs.length >= 4) {
+        const label = inputs[0].value.trim() || `P`;
+        const origW = Number(inputs[1].value) || 0;
+        const origH = Number(inputs[2].value) || 0;
+        const qty = Number(inputs[3].value) || 1;
+        totalGlassArea += (origW * origH * qty) / 1000000;
+        for (let i = 0; i < qty; i++) items.push({ label, w: origW, h: origH });
+      }
+    });
+    items.sort((a, b) => (b.w * b.h) - (a.w * a.h));
+    let freeSpaces = [{ x: 0, y: 0, w: rollW, h: 999999 }];
+    let placed = [];
+    items.forEach((r, seq) => {
+      let bestIdx = -1, bestRotated = false, minY = 999999;
+      for (let i = 0; i < freeSpaces.length; i++) {
+        let sp = freeSpaces[i];
+        if (r.w <= sp.w && r.h <= sp.h && sp.y < minY) { minY = sp.y; bestIdx = i; bestRotated = false; }
+        if (r.h <= sp.w && r.w <= sp.h && sp.y < minY) { minY = sp.y; bestIdx = i; bestRotated = true; }
+      }
+      if (bestIdx !== -1) {
+        let sp = freeSpaces[bestIdx];
+        let pw = bestRotated ? r.h : r.w, ph = bestRotated ? r.w : r.h;
+        placed.push({ seq: seq + 1, x: sp.x, y: sp.y, w: pw, h: ph, label: r.label });
+        freeSpaces.splice(bestIdx, 1);
+        if (sp.w - pw > 0) freeSpaces.push({ x: sp.x + pw, y: sp.y, w: sp.w - pw, h: ph });
+        if (sp.h - ph > 0) freeSpaces.push({ x: sp.x, y: sp.y + ph, w: sp.w, h: sp.h - ph });
+      }
+    });
+    let maxY = 0;
+    placed.forEach(p => { if (p.y + p.h > maxY) maxY = p.y + p.h; });
+    let canvasH = Math.max(maxY, 300);
+    let totalLenM = canvasH / 1000;
+    let filmArea = totalLenM * (rollW / 1000);
+    let wastePct = filmArea > 0 ? ((filmArea - totalGlassArea) / filmArea) * 100 : 0;
+    let totalCost = totalLenM * (parseFloat(document.getElementById('optCostPerM').value) || 25);
+    
+    document.getElementById('resTotalLength').textContent = `${totalLenM.toFixed(2)}m`;
+    document.getElementById('resWastePct').textContent = `${Math.max(0, wastePct).toFixed(1)}%`;
+    document.getElementById('resUsedArea').textContent = `${totalGlassArea.toFixed(2)}m²`;
+    document.getElementById('resEstCost').textContent = `$${totalCost.toFixed(2)}`;
+    currentRenderData = { rollW, canvasH, placed, freeSpaces };
+    drawOptimizerCanvas(currentRenderData);
+    runQuickCalc();
+  } catch(e) {
+    console.error("Optimizer error:", e);
+  }
 }
 
 function drawOptimizerCanvas(data) {
-  const { rollW, canvasH, placed } = data;
-  const canvas = document.getElementById('optimizerCanvas');
-  const ctx = canvas.getContext('2d');
-  const containerW = canvas.parentElement.clientWidth || 360;
-  const containerH = canvas.parentElement.clientHeight || 380;
-  const scale = Math.min((containerW - 40) / rollW, (containerH - 40) / canvasH);
-  canvas.width = containerW; canvas.height = containerH;
-  ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  ctx.translate((containerW - rollW * scale) / 2, (containerH - canvasH * scale) / 2);
-  ctx.strokeStyle = "#475569"; ctx.strokeRect(0, 0, rollW * scale, canvasH * scale);
-  placed.forEach(p => {
-    let rx = p.x * scale, ry = p.y * scale, rw = p.w * scale, rh = p.h * scale;
-    ctx.fillStyle = "#0284c7"; ctx.fillRect(rx, ry, rw, rh);
-    ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 1.5; ctx.strokeRect(rx, ry, rw, rh);
-    ctx.fillStyle = "#ffffff"; ctx.font = "bold 10px sans-serif";
-    ctx.fillText(`#${p.seq} ${p.label}`, rx + 4, ry + 12);
-  });
-  ctx.restore();
+  try {
+    const { rollW, canvasH, placed } = data;
+    const canvas = document.getElementById('optimizerCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const containerW = canvas.parentElement.clientWidth || 360;
+    const containerH = canvas.parentElement.clientHeight || 380;
+    const scale = Math.min((containerW - 40) / rollW, (containerH - 40) / canvasH);
+    canvas.width = containerW; canvas.height = containerH;
+    ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate((containerW - rollW * scale) / 2, (containerH - canvasH * scale) / 2);
+    ctx.strokeStyle = "#475569"; ctx.strokeRect(0, 0, rollW * scale, canvasH * scale);
+    placed.forEach(p => {
+      let rx = p.x * scale, ry = p.y * scale, rw = p.w * scale, rh = p.h * scale;
+      ctx.fillStyle = "#0284c7"; ctx.fillRect(rx, ry, rw, rh);
+      ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 1.5; ctx.strokeRect(rx, ry, rw, rh);
+      ctx.fillStyle = "#ffffff"; ctx.font = "bold 10px sans-serif";
+      ctx.fillText(`#${p.seq} ${p.label}`, rx + 4, ry + 12);
+    });
+    ctx.restore();
+  } catch(e) {
+    console.error("Canvas draw error:", e);
+  }
 }
 
 function sendOptimizerToCalc() { runQuickCalc(); switchTab('calculator'); }
 
 async function populateInvoiceClientSelect() {
-  const select = document.getElementById('invClientSelect');
-  if (!select) return;
-  select.innerHTML = '';
-  const clients = await dbGetAllClients();
-  clients.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c.id;
-    opt.textContent = `${c.name} (${c.suburb || 'Tauranga'})`;
-    select.appendChild(opt);
-  });
-  autoFillInvoiceClient();
+  try {
+    const select = document.getElementById('invClientSelect');
+    if (!select) return;
+    select.innerHTML = '';
+    const clients = await dbGetAllClients();
+    clients.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = `${c.name} (${c.suburb || 'Tauranga'})`;
+      select.appendChild(opt);
+    });
+    autoFillInvoiceClient();
+  } catch(e) {
+    console.error("Populate invoice select error:", e);
+  }
 }
 
-// 自动计算并生成下一个连续的发票编号 (如 INV-2026-002)
 async function generateNextInvoiceNumber() {
-  const clients = await dbGetAllClients();
-  let maxNum = 0;
-  clients.forEach(c => {
-    (c.jobs || []).forEach(j => {
-      if (j.invoice && j.invoice.invNumber) {
-        const match = j.invoice.invNumber.match(/(\d+)$/);
-        if (match) {
-          const n = parseInt(match[1], 10);
-          if (n > maxNum) maxNum = n;
+  try {
+    const clients = await dbGetAllClients();
+    let maxNum = 0;
+    clients.forEach(c => {
+      (c.jobs || []).forEach(j => {
+        if (j.invoice && j.invoice.invNumber) {
+          const match = j.invoice.invNumber.match(/(\d+)$/);
+          if (match) {
+            const n = parseInt(match[1], 10);
+            if (n > maxNum) maxNum = n;
+          }
         }
-      }
+      });
     });
-  });
-  const nextNumStr = `INV-${currentYear}-${String(maxNum + 1).padStart(3, '0')}`;
-  document.getElementById('invNumber').value = nextNumStr;
-  updateBankRefAuto();
+    const nextNumStr = `INV-${currentYear}-${String(maxNum + 1).padStart(3, '0')}`;
+    const invNumEl = document.getElementById('invNumber');
+    if (invNumEl) invNumEl.value = nextNumStr;
+    updateBankRefAuto();
+  } catch(e) {
+    console.error("Generate invoice number error:", e);
+  }
 }
 
 async function autoFillInvoiceClient(targetJobId = null) {
-  const select = document.getElementById('invClientSelect');
-  if (!select || !select.value) return;
-  const clients = await dbGetAllClients();
-  const client = clients.find(c => c.id === Number(select.value));
-  if (client) {
-    document.getElementById('pClientName').textContent = client.name;
-    const container = document.getElementById('invoiceItemsContainer');
-    container.innerHTML = '';
-    
-    let job = null;
-    if (targetJobId && client.jobs) {
-      job = client.jobs.find(j => j.id === targetJobId);
-    } else if (client.jobs && client.jobs.length > 0) {
-      job = client.jobs[0];
-    }
+  try {
+    const select = document.getElementById('invClientSelect');
+    if (!select || !select.value) return;
+    const clients = await dbGetAllClients();
+    const client = clients.find(c => c.id === Number(select.value));
+    if (client) {
+      const pName = document.getElementById('pClientName');
+      if (pName) pName.textContent = client.name;
+      const container = document.getElementById('invoiceItemsContainer');
+      if (container) container.innerHTML = '';
+      
+      let job = null;
+      if (targetJobId && client.jobs) {
+        job = client.jobs.find(j => j.id === targetJobId);
+      } else if (client.jobs && client.jobs.length > 0) {
+        job = client.jobs[0];
+      }
 
-    if (job && job.invoice) {
-      document.getElementById('invNumber').value = job.invoice.invNumber || 'INV-2026-001';
-      document.getElementById('invDate').value = job.invoice.invDate || new Date().toISOString().slice(0, 10);
-      addInvoiceItemRow(job.invoice.desc || '', job.invoice.mode || 'fixed', job.invoice.qty || 1, job.invoice.area || 0, job.invoice.rate || 0, job.invoice.price || job.price || 0);
-    } else {
-      // 如果是新开票，自动计算下一个发票号
-      await generateNextInvoiceNumber();
-      document.getElementById('invDate').value = new Date().toISOString().slice(0, 10);
-      const defaultPrice = job ? (job.price || 0) : (client.price || 0);
-      const defaultDesc = job ? (job.title === 'Residential Window Tinting' ? '' : job.title) : '';
-      addInvoiceItemRow(defaultDesc, 'fixed', 1, 0, 0, defaultPrice);
+      if (job && job.invoice) {
+        const invNum = document.getElementById('invNumber');
+        const invDate = document.getElementById('invDate');
+        if (invNum) invNum.value = job.invoice.invNumber || 'INV-2026-001';
+        if (invDate) invDate.value = job.invoice.invDate || new Date().toISOString().slice(0, 10);
+        addInvoiceItemRow(job.invoice.desc || '', job.invoice.mode || 'fixed', job.invoice.qty || 1, job.invoice.area || 0, job.invoice.rate || 0, job.invoice.price || job.price || 0);
+      } else {
+        await generateNextInvoiceNumber();
+        const invDate = document.getElementById('invDate');
+        if (invDate) invDate.value = new Date().toISOString().slice(0, 10);
+        const defaultPrice = job ? (job.price || 0) : (client.price || 0);
+        const defaultDesc = job ? (job.title === 'Residential Window Tinting' ? '' : job.title) : '';
+        addInvoiceItemRow(defaultDesc, 'fixed', 1, 0, 0, defaultPrice);
+      }
+      recalcInvoiceTotals();
     }
-    recalcInvoiceTotals();
+  } catch(e) {
+    console.error("Auto fill invoice client error:", e);
   }
 }
 
 function updateBankRefAuto() {
-  const num = document.getElementById('invNumber').value.trim() || 'INV-2026-001';
-  document.getElementById('bankRefDisplay').textContent = num;
-  document.getElementById('pBankRefText').textContent = num;
+  const numInput = document.getElementById('invNumber');
+  const num = numInput ? numInput.value.trim() : 'INV-2026-001';
+  const refDisp = document.getElementById('bankRefDisplay');
+  const pRefText = document.getElementById('pBankRefText');
+  if (refDisp) refDisp.textContent = num;
+  if (pRefText) pRefText.textContent = num;
 }
 
 async function openNewInvoiceBuilder() {
   await generateNextInvoiceNumber();
-  document.getElementById('invDate').value = new Date().toISOString().slice(0, 10);
+  const invDate = document.getElementById('invDate');
+  if (invDate) invDate.value = new Date().toISOString().slice(0, 10);
   const container = document.getElementById('invoiceItemsContainer');
-  container.innerHTML = '';
+  if (container) container.innerHTML = '';
   addInvoiceItemRow('', 'fixed', 1, 0, 0, 0);
   recalcInvoiceTotals();
 }
@@ -1156,6 +1271,7 @@ function createInvoiceFromOptimizer() {
 
 function addInvoiceItemRow(desc = '', mode = 'fixed', qty = 1, area = 0, rate = 0, price = 0) {
   const container = document.getElementById('invoiceItemsContainer');
+  if (!container) return;
   const rowId = 'item_row_' + Date.now() + Math.random().toString(36).substr(2, 5);
   const div = document.createElement('div');
   div.id = rowId;
@@ -1216,7 +1332,9 @@ function toggleItemMode(rowId) {
 function recalcInvoiceTotals() {
   let subtotal = 0;
   document.querySelectorAll('#invoiceItemsContainer > div').forEach(row => {
-    const mode = row.querySelector('.item-mode').value;
+    const modeEl = row.querySelector('.item-mode');
+    if (!modeEl) return;
+    const mode = modeEl.value;
     let amt = 0;
     if (mode === 'fixed') {
       amt = parseFloat(row.querySelector('.item-price').value) || 0;
@@ -1226,14 +1344,18 @@ function recalcInvoiceTotals() {
       const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
       amt = area * rate * qty;
     }
-    row.querySelector('.row-amount').textContent = `$${amt.toFixed(2)}`;
+    const amtSpan = row.querySelector('.row-amount');
+    if (amtSpan) amtSpan.textContent = `$${amt.toFixed(2)}`;
     subtotal += amt;
   });
   const gst = subtotal * 0.15;
   const grandTotal = subtotal + gst;
-  document.getElementById('invCalcSubtotal').textContent = `$${subtotal.toFixed(2)}`;
-  document.getElementById('invCalcGst').textContent = `$${gst.toFixed(2)}`;
-  document.getElementById('invCalcTotal').textContent = `$${grandTotal.toFixed(2)}`;
+  const subEl = document.getElementById('invCalcSubtotal');
+  const gstEl = document.getElementById('invCalcGst');
+  const totEl = document.getElementById('invCalcTotal');
+  if (subEl) subEl.textContent = `$${subtotal.toFixed(2)}`;
+  if (gstEl) gstEl.textContent = `$${gst.toFixed(2)}`;
+  if (totEl) totEl.textContent = `$${grandTotal.toFixed(2)}`;
 }
 
 function formatDateNZ(dateStr) {
@@ -1244,49 +1366,55 @@ function formatDateNZ(dateStr) {
 }
 
 async function saveInvoiceToSystem() {
-  const clientId = Number(document.getElementById('invClientSelect').value);
-  if (!clientId) { alert('请先选择客户！'); return; }
-  
-  const invNumber = document.getElementById('invNumber').value.trim();
-  const rawDate = document.getElementById('invDate').value;
-  const firstRow = document.querySelector('#invoiceItemsContainer > div');
-  if (!firstRow) { alert('请至少添加一行发票项目！'); return; }
-  
-  const firstRowDesc = firstRow.querySelector('.item-desc').value;
-  const firstRowMode = firstRow.querySelector('.item-mode').value;
-  const firstRowPrice = firstRowMode === 'fixed' ? (parseFloat(firstRow.querySelector('.item-price').value) || 0) : 0;
-  
-  let subtotal = 0;
-  document.querySelectorAll('#invoiceItemsContainer > div').forEach(r => {
-    const mode = r.querySelector('.item-mode').value;
-    if (mode === 'fixed') { subtotal += parseFloat(r.querySelector('.item-price').value) || 0; }
-    else {
-      const a = parseFloat(r.querySelector('.item-area').value) || 0;
-      const rt = parseFloat(r.querySelector('.item-rate').value) || 0;
-      const q = parseFloat(r.querySelector('.item-qty').value) || 1;
-      subtotal += a * rt * q;
-    }
-  });
+  try {
+    const clientSelect = document.getElementById('invClientSelect');
+    if (!clientSelect || !clientSelect.value) { alert('请先选择客户！'); return; }
+    const clientId = Number(clientSelect.value);
+    
+    const invNumber = document.getElementById('invNumber').value.trim();
+    const rawDate = document.getElementById('invDate').value;
+    const firstRow = document.querySelector('#invoiceItemsContainer > div');
+    if (!firstRow) { alert('请至少添加一行发票项目！'); return; }
+    
+    const firstRowDesc = firstRow.querySelector('.item-desc').value;
+    const firstRowMode = firstRow.querySelector('.item-mode').value;
+    const firstRowPrice = firstRowMode === 'fixed' ? (parseFloat(firstRow.querySelector('.item-price').value) || 0) : 0;
+    
+    let subtotal = 0;
+    document.querySelectorAll('#invoiceItemsContainer > div').forEach(r => {
+      const mode = r.querySelector('.item-mode').value;
+      if (mode === 'fixed') { subtotal += parseFloat(r.querySelector('.item-price').value) || 0; }
+      else {
+        const a = parseFloat(r.querySelector('.item-area').value) || 0;
+        const rt = parseFloat(r.querySelector('.item-rate').value) || 0;
+        const q = parseFloat(r.querySelector('.item-qty').value) || 1;
+        subtotal += a * rt * q;
+      }
+    });
 
-  const clients = await dbGetAllClients();
-  const client = clients.find(c => c.id === clientId);
-  if (client) {
-    if (!client.jobs || client.jobs.length === 0) {
-      client.jobs = [{ id: 'job_' + Date.now(), title: 'Window Tinting', date: rawDate, price: subtotal }];
+    const clients = await dbGetAllClients();
+    const client = clients.find(c => c.id === clientId);
+    if (client) {
+      if (!client.jobs || client.jobs.length === 0) {
+        client.jobs = [{ id: 'job_' + Date.now(), title: 'Window Tinting', date: rawDate, price: subtotal }];
+      }
+      client.jobs[0].invoice = {
+        invNumber,
+        invDate: rawDate,
+        desc: firstRowDesc,
+        mode: firstRowMode,
+        price: firstRowPrice,
+        subtotal,
+        grandTotal: subtotal * 1.15
+      };
+      client.updatedAt = Date.now();
+      await dbSaveClient(client);
+      if (accessToken) syncToCloud(false);
+      alert(`发票 ${invNumber} 已成功保存到客户 [${client.name}] 档案中！`);
     }
-    client.jobs[0].invoice = {
-      invNumber,
-      invDate: rawDate,
-      desc: firstRowDesc,
-      mode: firstRowMode,
-      price: firstRowPrice,
-      subtotal,
-      grandTotal: subtotal * 1.15
-    };
-    client.updatedAt = Date.now();
-    await dbSaveClient(client);
-    if (accessToken) syncToCloud(false);
-    alert(`发票 ${invNumber} 已成功保存到客户 [${client.name}] 档案中！`);
+  } catch(e) {
+    console.error("Save invoice error:", e);
+    alert('Save invoice failed');
   }
 }
 
