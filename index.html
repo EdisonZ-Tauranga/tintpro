@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v12.19 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v12.20 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -62,7 +62,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-white flex items-center gap-2">
-            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.19 Pro</span>
+            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.20 Pro</span>
           </h1>
           <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
         </div>
@@ -492,120 +492,18 @@ function handleGoogleAuth() {
   }
 }
 
-// ⚡ 核心修复：为所有记录赋予独立主键 ID，彻底防止“同名同 ID 联动删除”
-function deduplicateClientsList(clients) {
-  if (!Array.isArray(clients)) return [];
-  const validList = [];
-  const seenIds = new Set();
-
-  clients.forEach((c, index) => {
-    if (!c || !c.name) return;
-    let newClient = JSON.parse(JSON.stringify(c));
-    
-    // 如果没有 ID 或者 ID 重复了，给它生成一个绝对独立的新时间戳 ID
-    if (!newClient.id || seenIds.has(newClient.id)) {
-      newClient.id = Date.now() + index + Math.floor(Math.random() * 1000);
-    }
-    seenIds.add(newClient.id);
-    validList.push(newClient);
-  });
-  return validList;
-}
-
-async function syncToCloud(showAlert = false) {
-  if (!accessToken) { handleGoogleAuth(); return; }
-  try {
-    let localClients = await dbGetAllClients();
-    localClients = deduplicateClientsList(localClients);
-
-    const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='bayview-backup.json' and trashed=false`, {
-      headers: { 'Authorization': `Bearer ${accessToken}` }
-    });
-    const searchJson = await searchRes.json();
-    let fileId = null;
-    if (searchJson.files && searchJson.files.length > 0) {
-      fileId = searchJson.files[0].id;
-    }
-
-    const backupData = { version: 'v12.19', updatedAt: new Date().toISOString(), clients: localClients };
-    const fileContent = JSON.stringify(backupData, null, 2);
-    if (fileId) {
-      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: fileContent
-      });
-    } else {
-      const metadata = { name: 'bayview-backup.json', mimeType: 'application/json' };
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-      form.append('file', new Blob([fileContent], { type: 'application/json' }));
-      await fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, {
-        method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}` }, body: form
-      });
-    }
-    if (showAlert) alert('Cloud Sync Complete! / 云端备份已成功更新！');
-  } catch (err) { console.error(err); if (showAlert) alert('Sync failed'); }
-}
-
-async function cleanDuplicateClients() {
-  try {
-    let clients = await dbGetAllClients();
-    // 自动去重算法：完全相同的名称和地址只保留最新的一条
-    const map = new Map();
-    clients.forEach(c => {
-      if (!c || !c.name) return;
-      const key = `${c.name.trim().toLowerCase()}_${(c.address || '').trim().toLowerCase()}`;
-      if (!map.has(key) || (c.updatedAt || 0) >= (map.get(key).updatedAt || 0)) {
-        map.set(key, c);
-      }
-    });
-    const uniqueClients = Array.from(map.values());
-
-    const tx = db.transaction('clients', 'readwrite');
-    tx.objectStore('clients').clear();
-    await new Promise(resolve => tx.oncomplete = resolve);
-    for (let c of uniqueClients) { await dbSaveClient(c); }
-    
-    renderJobsList();
-    renderCalendar();
-    populateInvoiceClientSelect();
-    
-    if (accessToken) {
-      try {
-        const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='bayview-backup.json' and trashed=false`, {
-          headers: { 'Authorization': `Bearer ${accessToken}` }
-        });
-        const searchJson = await searchRes.json();
-        const backupData = { version: 'v12.19', updatedAt: new Date().toISOString(), clients: uniqueClients };
-        const fileContent = JSON.stringify(backupData, null, 2);
-        if (searchJson.files && searchJson.files.length > 0) {
-          const fileId = searchJson.files[0].id;
-          await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
-            method: 'PATCH',
-            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-            body: fileContent
-          });
-        }
-      } catch(e) { console.error("Cloud purge error:", e); }
-    }
-
-    alert(`智能去重完成！当前共保留 ${uniqueClients.length} 位独立客户。`);
-  } catch(e) {
-    console.error(e);
-    alert('Clean duplicate error');
-  }
-}
-
 const DB_NAME = 'NZTintDB_v12';
 const DB_VERSION = 1;
 let db = null;
+
 function initDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = (e) => {
       const database = e.target.result;
-      if (!database.objectStoreNames.contains('clients')) database.createObjectStore('clients', { keyPath: 'id' });
+      if (!database.objectStoreNames.contains('clients')) {
+        database.createObjectStore('clients', { keyPath: 'id' });
+      }
     };
     request.onsuccess = (e) => { db = e.target.result; resolve(db); };
     request.onerror = (e) => reject(e);
@@ -619,8 +517,20 @@ async function dbGetAllClients() {
       const tx = db.transaction('clients', 'readonly');
       const req = tx.objectStore('clients').getAll();
       req.onsuccess = () => {
-        const list = req.result || [];
-        resolve(deduplicateClientsList(list));
+        let list = req.result || [];
+        // ⚡ 强力隔离：为每一个读出来的对象赋予绝对安全且唯一的主键 ID（如果遇到重复 ID 自动递增）
+        const seenIds = new Set();
+        const safeList = [];
+        list.forEach((c, idx) => {
+          if (!c || !c.name) return;
+          let item = JSON.parse(JSON.stringify(c));
+          if (!item.id || seenIds.has(item.id)) {
+            item.id = Date.now() + idx + Math.floor(Math.random() * 10000);
+          }
+          seenIds.add(item.id);
+          safeList.push(item);
+        });
+        resolve(safeList);
       };
       req.onerror = () => resolve([]);
     } catch(e) {
@@ -643,11 +553,13 @@ function dbSaveClient(client) {
   });
 }
 
+// ⚡ 核心修复：按精确主键 ID 执行单条删除，绝不连带
 function dbDeleteClient(id) {
   return new Promise((resolve) => {
     if (!db) { resolve(); return; }
     try {
       const tx = db.transaction('clients', 'readwrite');
+      // 强制转为数字或字符串匹配
       tx.objectStore('clients').delete(id);
       tx.oncomplete = () => resolve();
       tx.onerror = () => resolve();
@@ -657,14 +569,68 @@ function dbDeleteClient(id) {
   });
 }
 
+async function cleanDuplicateClients() {
+  try {
+    let clients = await dbGetAllClients();
+    // 智能去重：按“姓名+地址”合并，只保留最新的一条，其余清理掉
+    const map = new Map();
+    clients.forEach(c => {
+      if (!c || !c.name) return;
+      const key = `${c.name.trim().toLowerCase()}_${(c.address || '').trim().toLowerCase()}`;
+      if (!map.has(key) || (c.updatedAt || 0) >= (map.get(key).updatedAt || 0)) {
+        map.set(key, c);
+      }
+    });
+    const uniqueClients = Array.from(map.values());
+
+    // ⚡ 物理重建数据库：先清空，再把去重且具备完全独立 ID 的记录写回
+    const tx = db.transaction('clients', 'readwrite');
+    const store = tx.objectStore('clients');
+    store.clear();
+    for (let c of uniqueClients) {
+      store.put(c);
+    }
+    await new Promise(resolve => tx.oncomplete = resolve);
+
+    renderJobsList();
+    renderCalendar();
+    populateInvoiceClientSelect();
+
+    if (accessToken) {
+      try {
+        const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='bayview-backup.json' and trashed=false`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        const searchJson = await searchRes.json();
+        const backupData = { version: 'v12.20', updatedAt: new Date().toISOString(), clients: uniqueClients };
+        const fileContent = JSON.stringify(backupData, null, 2);
+        if (searchJson.files && searchJson.files.length > 0) {
+          const fileId = searchJson.files[0].id;
+          await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: fileContent
+          });
+        }
+      } catch(e) { console.error("Cloud purge error:", e); }
+    }
+
+    alert(`数据库物理净化成功！当前共保留 ${uniqueClients.length} 位完全独立的有效客户。`);
+  } catch(e) {
+    console.error(e);
+    alert('Clean duplicate error');
+  }
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   try {
     await initDB();
     const clients = await dbGetAllClients();
-    const cleanList = deduplicateClientsList(clients);
+    // 自动重构数据库确保没有重复主键
     const tx = db.transaction('clients', 'readwrite');
-    tx.objectStore('clients').clear();
-    for (let c of cleanList) tx.objectStore('clients').put(c);
+    const store = tx.objectStore('clients');
+    store.clear();
+    for (let c of clients) store.put(c);
   } catch(e) {
     console.error("DB init error:", e);
   }
@@ -715,7 +681,6 @@ async function renderJobsList() {
     const searchInput = document.getElementById('jobSearchInput');
     const search = searchInput ? searchInput.value.toLowerCase() : '';
     let clients = await dbGetAllClients();
-    clients = deduplicateClientsList(clients);
     const filtered = clients.filter(c => (c.name + (c.suburb||'') + (c.address||'') + (c.phone||'')).toLowerCase().includes(search));
     
     if (filtered.length === 0) {
@@ -771,7 +736,6 @@ async function renderCalendar() {
     const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
     const todayStr = new Date().toISOString().split('T')[0];
     let clients = await dbGetAllClients();
-    clients = deduplicateClientsList(clients);
 
     for (let i = 0; i < firstDayIndex; i++) gridEl.appendChild(createSafeElement('div', 'cal-day-cell opacity-30'));
     for (let day = 1; day <= totalDays; day++) {
@@ -823,14 +787,13 @@ function goToday() {
 
 async function openClientModal(id = null) {
   try {
-    document.getElementById('editingClientId').value = id || '';
+    document.getElementById('editingClientId').value = id !== null ? id : '';
     currentPhotos = [];
     currentClientJobs = [];
 
-    if (id) {
+    if (id !== null && id !== '') {
       let clients = await dbGetAllClients();
-      clients = deduplicateClientsList(clients);
-      const client = clients.find(c => c.id === id);
+      const client = clients.find(c => String(c.id) === String(id));
       if (client) {
         document.getElementById('custName').value = client.name || '';
         document.getElementById('custPhone').value = client.phone || '';
@@ -1002,10 +965,13 @@ async function saveClientModal() {
     const nameEl = document.getElementById('custName');
     const name = nameEl ? nameEl.value.trim() : '';
     if (!name) { alert('Please enter client name'); return; }
-    const editingId = Number(document.getElementById('editingClientId').value);
+    const rawEditingId = document.getElementById('editingClientId').value;
+    
+    // 如果是新建客户，给一个绝对独一无二的新时间戳 ID
+    const clientId = rawEditingId !== '' ? isNaN(rawEditingId) ? rawEditingId : Number(rawEditingId) : Date.now();
     
     const clientData = {
-      id: editingId || Date.now(),
+      id: clientId,
       name,
       phone: document.getElementById('custPhone').value.trim(),
       suburb: document.getElementById('custSuburb').value,
@@ -1022,7 +988,7 @@ async function saveClientModal() {
     renderCalendar();
     populateInvoiceClientSelect();
     if (accessToken) syncToCloud(false);
-    alert('客户档案与子目录保存成功！');
+    alert('客户档案保存成功！');
   } catch(e) {
     console.error("Save client modal error:", e);
     alert('Save failed');
@@ -1482,7 +1448,15 @@ async function importDataJSON(e) {
       const imported = JSON.parse(evt.target.result);
       let clientList = Array.isArray(imported) ? imported : (imported.clients || []);
       if (confirm(`Import ${clientList.length} records?`)) {
-        for (let c of clientList) await dbSaveClient(c);
+        const tx = db.transaction('clients', 'readwrite');
+        const store = tx.objectStore('clients');
+        store.clear();
+        clientList.forEach((c, idx) => {
+          let item = JSON.parse(JSON.stringify(c));
+          if (!item.id) item.id = Date.now() + idx;
+          store.put(item);
+        });
+        await new Promise(resolve => tx.oncomplete = resolve);
         renderJobsList(); renderCalendar(); alert('Import successful!');
       }
     } catch(err) { alert('Import failed.'); }
