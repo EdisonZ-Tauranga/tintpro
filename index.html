@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v12.27 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v12.28 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -46,7 +46,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-white flex items-center gap-2">
-            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.27 Pro</span>
+            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.28 Pro</span>
           </h1>
           <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
         </div>
@@ -316,7 +316,7 @@
 
           <div class="no-print flex justify-end gap-2 pt-4">
             <button onclick="showInvoiceEditor()" class="px-5 py-2.5 bg-slate-600 hover:bg-slate-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition">✏️ 编辑发票</button>
-            <button onclick="window.print()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition">
+            <button onclick="printInvoice()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition">
               <i data-lucide="printer" class="w-4 h-4"></i> Send to Printer / Save PDF
             </button>
           </div>
@@ -682,7 +682,7 @@ async function syncToCloud(showAlert = false) {
     saveTombstones(m.del);
 
     if (!fileId || m.cloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v12.27', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del });
+      const fileContent = JSON.stringify({ version: 'v12.28', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -834,6 +834,20 @@ function showToast(msg, isError = false) {
     setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 450); }, isError ? 6000 : 2600);
   } catch(e) { console.log(msg); }
 }
+
+// 打印/另存 PDF 时，浏览器默认文件名取自页面标题 → 临时改成发票编号
+let originalDocTitle = document.title;
+function setPrintTitle() {
+  const inv = document.getElementById('pInvNum');
+  const num = inv ? inv.textContent.trim() : '';
+  if (!num) return;
+  if (document.title !== num) originalDocTitle = document.title;
+  document.title = num;
+}
+function restoreDocTitle() { document.title = originalDocTitle; }
+window.addEventListener('beforeprint', setPrintTitle);
+window.addEventListener('afterprint', restoreDocTitle);
+function printInvoice() { setPrintTitle(); window.print(); }
 
 function escapeHtml(str) {
   return String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
