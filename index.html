@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v12.39 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v13.0 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -61,7 +61,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-white flex items-center gap-2">
-            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v12.39 Pro</span>
+            TintPro Manager <span class="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v13.0 Pro</span>
           </h1>
           <p class="text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
         </div>
@@ -114,6 +114,7 @@
     <!-- TAB 1: 客户与项目列表 -->
     <section id="tab-dashboard" class="space-y-4">
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📅 本周安排（未来 7 天）</h2></div><div id="dashWeek" class="space-y-2"></div></div>
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📌 待跟进（咨询中 / 已确认待排期）</h2></div><div id="dashTodo" class="space-y-2"></div></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">💲 待收款</h2><button onclick="switchTab('receivables')" class="text-xs text-sky-400">查看全部 ➔</button></div><div id="dashDue" class="space-y-2"></div></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📝 等待回复的报价</h2></div><div id="dashQuotes" class="space-y-2"></div></div>
     </section>
@@ -122,16 +123,13 @@
         <input type="text" id="jobSearchInput" oninput="renderJobsList()" placeholder="🔍 搜索客户姓名、区域、电话..." class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-sky-500 w-full sm:w-80">
         <div class="flex gap-2">
           <button onclick="openTrash()" class="px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-xs text-slate-200 font-semibold">🗑 回收站</button>
-        <button onclick="cleanDuplicateClients()" class="px-3 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-xs font-semibold text-rose-300 transition flex items-center gap-1.5 shadow-sm">
-            <i data-lucide="trash-2" class="w-4 h-4"></i> 去除重复客户
-          </button>
           <button onclick="openClientModal()" class="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs transition shadow-md">
             <i data-lucide="plus" class="w-4 h-4"></i> <span data-i18n="newClientBtn">+ New Client / 新建客户档案</span>
           </button>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2 text-xs" id="clientFilterBar">
-        <button type="button" data-f="all" onclick="setClientFilter('all')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">全部</button><button type="button" data-f="Quote" onclick="setClientFilter('Quote')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">报价中</button><button type="button" data-f="Scheduled" onclick="setClientFilter('Scheduled')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">已预约</button><button type="button" data-f="Completed" onclick="setClientFilter('Completed')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">已完工</button><button type="button" data-f="Warranty" onclick="setClientFilter('Warranty')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">售后</button><button type="button" data-f="Unpaid" onclick="setClientFilter('Unpaid')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">💲 有欠款</button>
+        <button type="button" data-f="all" onclick="setClientFilter('all')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">全部</button><button type="button" data-f="Inquiry" onclick="setClientFilter('Inquiry')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">咨询中</button><button type="button" data-f="Quote" onclick="setClientFilter('Quote')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">报价中</button><button type="button" data-f="Confirmed" onclick="setClientFilter('Confirmed')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">已确认</button><button type="button" data-f="Scheduled" onclick="setClientFilter('Scheduled')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">已预约</button><button type="button" data-f="Completed" onclick="setClientFilter('Completed')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">已完工</button><button type="button" data-f="Warranty" onclick="setClientFilter('Warranty')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">售后</button><button type="button" data-f="Unpaid" onclick="setClientFilter('Unpaid')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">💲 有欠款</button>
         <select id="clientSort" onchange="renderJobsList()" class="ml-auto bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white"><option value="recent">最近修改</option><option value="name">姓名</option><option value="jobdate">工作日期</option></select>
       </div>
       <div id="jobsListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -419,7 +417,7 @@
   <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
     <div class="px-5 py-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/50">
       <h3 id="modalTitle" class="text-base font-bold text-white">Client Profile & Jobs Directory</h3>
-      <button type="button" onclick="requestCloseClientModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+      <div class="flex items-center gap-3"><span id="autoSaveState" class="text-[11px] text-slate-500"></span><button type="button" onclick="requestCloseClientModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button></div>
     </div>
     <div class="p-5 space-y-5 overflow-y-auto flex-1 custom-scroll">
       <input type="hidden" id="editingClientId">
@@ -458,9 +456,14 @@
       <div class="pt-3 border-t border-slate-700 space-y-2">
         <div class="flex justify-between items-center">
           <h4 class="font-bold text-sky-400 text-xs flex items-center gap-1.5"><i data-lucide="image" class="w-4 h-4"></i> 现场照片记录 (Site Photos)</h4>
-          <label class="cursor-pointer px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded-xl transition shadow">
-            <span>+ 拍照上传</span><input type="file" accept="image/*" multiple onchange="handlePhotoUpload(event)" class="hidden">
-          </label>
+          <div class="flex gap-2">
+            <label class="cursor-pointer px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs rounded-xl transition shadow">
+              <span>📷 拍照</span><input type="file" accept="image/*" capture="environment" onchange="handlePhotoUpload(event)" class="hidden">
+            </label>
+            <label class="cursor-pointer px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded-xl transition shadow">
+              <span>🖼 相册</span><input type="file" accept="image/*" multiple onchange="handlePhotoUpload(event)" class="hidden">
+            </label>
+          </div>
         </div>
         <div id="photoPreviewContainer" class="flex flex-wrap gap-3 pt-1"></div>
       </div>
@@ -711,16 +714,18 @@ function dbSaveClient(client) {
 }
 
 // ---- 客户状态：由工作记录决定（取日期最新的一条工作的状态）----
-const JOB_STATUSES = ['Quote 报价中', 'Scheduled 已预约', 'Completed 已完工', 'Warranty 售后/争议中'];
+const JOB_STATUSES = ['Inquiry 咨询中', 'Quote 报价中', 'Confirmed 客人已确认', 'Scheduled 已预约', 'Completed 已完工', 'Warranty 售后/争议中'];
 function deriveClientStatus(jobs) {
-  if (!jobs || jobs.length === 0) return 'Quote 报价中';
+  if (!jobs || jobs.length === 0) return 'Inquiry 咨询中';
   let best = jobs[0];
   jobs.forEach(j => { if ((j.date || '') >= (best.date || '')) best = j; });
   return best.status || 'Completed 已完工';
 }
 function statusBadgeClass(status) {
   const base = 'text-xs px-2.5 py-1 rounded-full border font-medium ';
+  if ((status || '').startsWith('Inquiry')) return base + 'bg-violet-500/20 text-violet-300 border-violet-500/30';
   if ((status || '').startsWith('Quote')) return base + 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+  if ((status || '').startsWith('Confirmed')) return base + 'bg-teal-500/20 text-teal-300 border-teal-500/30';
   if ((status || '').startsWith('Scheduled')) return base + 'bg-sky-500/20 text-sky-300 border-sky-500/30';
   if ((status || '').startsWith('Warranty')) return base + 'bg-rose-500/20 text-rose-300 border-rose-500/30';
   return base + 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
@@ -853,7 +858,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v12.39', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v13.0', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1268,8 +1273,12 @@ function refreshAllLists() {
   const rc = document.getElementById('tab-receivables');
   if (rc && !rc.classList.contains('hidden')) renderReceivables();
 }
-function requestCloseClientModal() {
-  if (clientModalDirty && !confirm('有修改还没保存，确定关闭吗？')) return;
+async function requestCloseClientModal() {
+  await autoSaveClientModal();   // 先把最后的修改自动保存一次
+  if (clientModalDirty) {
+    const noName = !(document.getElementById('custName').value || '').trim();
+    if (!confirm(noName ? '还没填客户名，现在关闭的话这些修改不会保存，确定关闭吗？' : '自动保存没有成功，确定关闭吗？')) return;
+  }
   closeClientModal();
 }
 
@@ -1740,7 +1749,17 @@ async function renderDashboard() {
   const qs = [];
   clients.forEach(c => (c.jobs || []).forEach(j => { if ((j.status || '').startsWith('Quote') && !j.invoice) qs.push({ c, j, age: Math.max(0, daysBetweenISO(j.quoteDate || isoOf(new Date(j.createdAt || c.updatedAt || Date.now())), today)) }); }));
   qs.sort((a, b) => b.age - a.age);
+  renderDashTodo(clients, today, one);
   document.getElementById('dashQuotes').innerHTML = qs.map(({ c, j, age }) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0"><div class="text-sm text-white truncate">${escapeHtml(c.name)} · ${one(j)}</div><div class="text-[11px] ${age >= 3 ? 'text-amber-300' : 'text-slate-400'}">${age} 天前${j.price ? ' · $' + Number(j.price).toFixed(2) + ' excl. GST' : ''}</div></div><button onclick="dashFollowUp('${c.id}','${j.id}')" class="px-2.5 py-1 bg-slate-600 text-white rounded-lg text-xs shrink-0">📧 跟进</button></div>`).join('') || '<p class="text-xs text-slate-500">没有等待回复的报价</p>';
+}
+function renderDashTodo(clients, today, one) {
+  const td = [];
+  clients.forEach(c => (c.jobs || []).forEach(j => {
+    const st = j.status || '', confirmed = st.startsWith('Confirmed');
+    if (!j.invoice && (st.startsWith('Inquiry') || (confirmed && !j.date))) td.push({ c, j, confirmed, age: Math.max(0, daysBetweenISO(isoOf(new Date(j.createdAt || c.updatedAt || Date.now())), today)) });
+  }));
+  td.sort((a, b) => (a.confirmed ? 0 : 1) - (b.confirmed ? 0 : 1) || b.age - a.age);
+  document.getElementById('dashTodo').innerHTML = td.map(({ c, j, confirmed, age }) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0"><div class="text-sm text-white truncate">${escapeHtml(c.name)} · ${one(j)}</div><div class="text-[11px] ${confirmed ? 'text-teal-300' : 'text-slate-400'}">${confirmed ? '已确认 · 待排期' : '咨询中 · ' + age + ' 天前'}</div></div><button onclick="openClientModal('${c.id}')" class="px-2.5 py-1 bg-slate-600 text-white rounded-lg text-xs shrink-0">打开</button></div>`).join('') || '<p class="text-xs text-slate-500">没有待跟进的事项</p>';
 }
 async function dashFollowUp(cid, jid) {
   const c = (await dbGetActiveClients()).find(x => String(x.id) === String(cid)); const j = c && c.jobs.find(x => x.id === jid);
@@ -2059,7 +2078,7 @@ function quoteHtml(job) {
       <label class="text-[10px] text-slate-400">除旧膜 $/m²${inp('stripRate', stripRateOf(q), '除膜单价').replace('class="', 'class="w-full ')}</label>
       <label class="text-[10px] text-slate-400">面积取整<select onchange="updateJobQuote('${job.id}','areaRound',this.value)" class="w-full min-w-0 bg-slate-800 border border-slate-700 rounded p-1 text-xs text-white">${areaRoundOptions(q)}</select></label>
     </div>
-    <div class="grid grid-cols-2 gap-1">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1">
       <label class="text-[10px] text-slate-400">报价单“贴膜”行说明（可改）<input type="text" value="${escapeHtml(q.lblFilm || LBL_FILM)}" oninput="updateJobQuote('${job.id}','lblFilm',this.value)" class="w-full min-w-0 bg-slate-800 border border-slate-700 rounded p-1 text-xs text-white"></label>
       <label class="text-[10px] text-slate-400">报价单“除膜”行说明（可改）<input type="text" value="${escapeHtml(q.lblStrip || LBL_STRIP)}" oninput="updateJobQuote('${job.id}','lblStrip',this.value)" class="w-full min-w-0 bg-slate-800 border border-slate-700 rounded p-1 text-xs text-white"></label>
     </div>
@@ -2380,7 +2399,7 @@ function goToday() {
 }
 
 async function openClientModal(id = null) {
-  clientModalDirty = false;
+  clientModalDirty = false; clientModalAutoSaved = false; setAutoSaveState('');
   try {
     document.getElementById('editingClientId').value = id !== null ? id : '';
     currentPhotos = [];
@@ -2419,7 +2438,7 @@ async function openClientModal(id = null) {
         quoteDate: todayISO(),
         createdAt: Date.now(),
         price: 0,
-        status: 'Quote 报价中',
+        status: 'Inquiry 咨询中',
         invoice: null,
         zones: [{ id: zid0, name: 'Area A', active: true }],
         panels: [{ id: newPanelId(), label: '', w: '', h: '', qty: 1, zone: zid0 }]
@@ -2434,10 +2453,12 @@ async function openClientModal(id = null) {
 }
 
 function closeClientModal() {
+  const was = clientModalAutoSaved; clientModalAutoSaved = false;
   clientModalDirty = false;
   document.getElementById('clientModal').classList.add('hidden');
   currentPhotos = [];
   currentClientJobs = [];
+  if (was) { refreshAllLists(); renderCalendar(); populateInvoiceClientSelect(); if (accessToken) syncToCloud(false); }   // 自动保存过：关闭时刷新列表并同步一次
 }
 
 function renderClientJobsList() {
@@ -2491,7 +2512,7 @@ function addNewJobToCurrentClient() {
     quoteDate: todayISO(),
     createdAt: Date.now(),
     price: 0,
-    status: 'Quote 报价中',
+    status: 'Inquiry 咨询中',
     invoice: null,
     zones: [{ id: zid, name: 'Area A', active: true }],
     panels: [{ id: newPanelId(), label: '', w: '', h: '', qty: 1, zone: zid }]
@@ -2607,6 +2628,7 @@ async function saveClientModal() {
       return;
     }
     
+    clientModalAutoSaved = false;
     closeClientModal();
     renderJobsList();
     renderCalendar();
@@ -3407,6 +3429,45 @@ async function importDataJSON(e) {
   };
   reader.readAsText(file);
 }
+
+// ---- v13.0：客户档案自动保存（填了客户名之后，有修改就在后台保存，不弹窗）----
+let clientModalAutoSaved = false, autoSaving = false;
+function setAutoSaveState(txt, warn) {
+  const el = document.getElementById('autoSaveState'); if (!el) return;
+  el.textContent = txt || ''; el.className = 'text-[11px] ' + (warn ? 'text-amber-300' : 'text-emerald-400');
+}
+async function autoSaveClientModal() {
+  const modal = document.getElementById('clientModal');
+  if (!modal || modal.classList.contains('hidden') || !clientModalDirty || autoSaving) return;
+  const name = (document.getElementById('custName').value || '').trim();
+  if (!name) { setAutoSaveState('填写客户名后才会自动保存', true); return; }
+  autoSaving = true;
+  try {
+    const raw = document.getElementById('editingClientId').value;
+    const clientId = raw !== '' ? (isNaN(raw) ? raw : Number(raw)) : Date.now();
+    const clientData = {
+      id: clientId, name,
+      phone: document.getElementById('custPhone').value.trim(),
+      suburb: getSuburbValue(),
+      email: (document.getElementById('custEmail').value || '').trim(),
+      address: document.getElementById('custAddress').value.trim(),
+      status: deriveClientStatus(currentClientJobs),
+      updatedAt: Date.now(),
+      photos: [...currentPhotos],
+      jobs: currentClientJobs
+    };
+    clientModalDirty = false;   // 先清掉；保存过程中如果又有改动，会重新变成 true，下一轮再存
+    const ok = await dbSaveClient(clientData);
+    if (!ok) { clientModalDirty = true; setAutoSaveState('⚠️ 自动保存失败（存储空间可能已满），请先 Export 备份', true); return; }
+    document.getElementById('editingClientId').value = String(clientId);   // 新客户第一次保存后固定 id，之后都更新同一份
+    clientModalAutoSaved = true;
+    const d = new Date(); setAutoSaveState('✓ 已自动保存 ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'));
+  } catch (e) { clientModalDirty = true; setAutoSaveState('⚠️ 自动保存失败', true); console.error('autosave', e); }
+  finally { autoSaving = false; }
+}
+setInterval(() => { autoSaveClientModal(); }, 2000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'visible') autoSaveClientModal(); });   // 锁屏 / 切 App / 来电的瞬间立刻存一次
+window.addEventListener('pagehide', () => { autoSaveClientModal(); });
 </script>
 </body>
 </html>
