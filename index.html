@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v13.3 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v13.4 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -51,6 +51,13 @@
   #optimizerPanelsTbody tr.prow td:nth-child(6) button { width: 40px; height: 40px; font-size: 26px; line-height: 1; border-radius: 8px; background: rgba(51,65,85,.6); }
   #optimizerPanelsTbody input { font-size: 16px; padding: 8px !important; }
 }
+/* v13.4：手机日历 —— 格子里只显示色点，点日期看详情 */
+@media (max-width: 639px) {
+  .cal-day-cell { min-height: 54px; padding: 4px; }
+  .cal-day-cell.has-ev { cursor: pointer; }
+  .cal-day-cell.sel { border-color: #38bdf8; box-shadow: inset 0 0 0 1px #38bdf8; background: rgba(56,189,248,.10); }
+  .cal-day-cell.today .cal-num { background: #008BEA; color: #fff; border-radius: 9999px; padding: 0 6px; }
+}
 /* v13.3：手机底部导航 */
 .bn-on { color: #38bdf8; background: rgba(51,65,85,.7); }
 @media (max-width: 767px) {
@@ -72,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v13.3<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v13.4<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -148,7 +155,7 @@
         <div class="flex gap-2">
           <button onclick="openTrash()" class="px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-xs text-slate-200 font-semibold">🗑 回收站</button>
           <button onclick="openClientModal()" class="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs transition shadow-md">
-            <i data-lucide="plus" class="w-4 h-4"></i> <span>+ 新建客户</span>
+            <i data-lucide="plus" class="w-4 h-4"></i> <span>新建客户</span>
           </button>
         </div>
       </div>
@@ -167,16 +174,17 @@
             <h2 id="cal-month-title" class="text-base font-bold text-white flex items-center gap-2">
               <i data-lucide="calendar" class="w-5 h-5 text-sky-400"></i>
             </h2>
-            <p class="text-xs text-slate-400 mt-1">Manage measurements and job schedule</p>
+            <p class="text-xs text-slate-400 mt-1">量尺和施工安排</p>
           </div>
           <div class="flex gap-2">
-            <button onclick="changeMonth(-1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs text-white">◀ Prev</button>
-            <button onclick="goToday()" class="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs text-white font-semibold">Today</button>
-            <button onclick="changeMonth(1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs text-white">Next ▶</button>
+            <button onclick="changeMonth(-1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs text-white">◀ 上月</button>
+            <button onclick="goToday()" class="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs text-white font-semibold">今天</button>
+            <button onclick="changeMonth(1)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs text-white">下月 ▶</button>
           </div>
         </div>
         <div id="cal-week-header" class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-bold text-slate-400 pb-2"></div>
         <div id="cal-grid" class="grid grid-cols-7 gap-1 sm:gap-2"></div>
+        <div id="cal-detail" class="sm:hidden mt-4"></div>
       </div>
     </section>
 
@@ -186,9 +194,9 @@
         <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
             <h2 class="text-lg font-bold text-white flex items-center gap-2">
-              <i data-lucide="scissors" class="w-5 h-5 text-sky-400"></i> High-contrast 2D 裁切优化引擎
+              <i data-lucide="scissors" class="w-5 h-5 text-sky-400"></i> 裁膜引擎
             </h2>
-            <p class="text-xs text-slate-400 mt-1">MaxRects algorithm tailored for architectural window film rolls</p>
+            <p class="text-xs text-slate-400 mt-1">按每块玻璃的尺寸，算出膜卷最省的排法</p>
           </div>
           <div class="flex flex-wrap gap-2">
             <button onclick="createInvoiceFromOptimizer()" class="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center gap-1 shadow">
@@ -222,10 +230,10 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-center text-xs">
           <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block text-[10px]">所需膜长</span><strong id="resTotalLength" class="text-sky-400 font-mono text-sm">0.00m</strong></div>
           <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block text-[10px]">玻璃净面积</span><strong id="resUsedArea" class="text-emerald-400 font-mono text-sm">0.00m²</strong></div>
-          <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block text-[10px]">损耗率 (Waste %)</span><strong id="resWastePct" class="text-amber-400 font-mono text-sm">0%</strong></div>
-          <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block text-[10px]">毛料成本 (Est Cost)</span><strong id="resEstCost" class="text-indigo-400 font-mono text-sm">$0.00</strong></div>
-          <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block text-[10px]">消耗膜面积 (Film Used)</span><strong id="resFilmArea" class="text-cyan-400 font-mono text-sm">0.00m²</strong></div>
-          <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block text-[10px]">浪费面积 (Waste Area)</span><strong id="resWasteArea" class="text-rose-400 font-mono text-sm">0.00m²</strong></div>
+          <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block text-[10px]">损耗率</span><strong id="resWastePct" class="text-amber-400 font-mono text-sm">0%</strong></div>
+          <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block text-[10px]">毛料成本</span><strong id="resEstCost" class="text-indigo-400 font-mono text-sm">$0.00</strong></div>
+          <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block text-[10px]">消耗膜面积</span><strong id="resFilmArea" class="text-cyan-400 font-mono text-sm">0.00m²</strong></div>
+          <div class="bg-slate-900 p-3 rounded-xl border border-slate-800"><span class="text-slate-400 block text-[10px]">浪费面积</span><strong id="resWasteArea" class="text-rose-400 font-mono text-sm">0.00m²</strong></div>
         </div>
         <div id="optCompare" class="text-xs text-slate-300 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2"></div>
         <div id="optInfo" class="text-xs text-slate-300 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2">点击图形查看详情 · 双指缩放 / 单指拖动 · 双击切换视图</div>
@@ -250,7 +258,7 @@
           </div>
           <div id="oqWarn" class="hidden bg-amber-500/10 border border-amber-500/40 rounded-xl p-2.5 text-amber-200 text-[11px] leading-relaxed"></div>
           <div class="grid grid-cols-3 gap-2">
-            <div><label class="text-slate-400 block mb-1 whitespace-nowrap">计价依据</label><select id="oqBasis" onchange="oqChanged()" class="min-w-0 w-full h-10 bg-slate-800 border border-slate-700 rounded-lg px-2 text-white"><option value="glass">按玻璃面积</option><option value="film">按膜面积</option><option value="fixed">一口价</option></select></div>
+            <div><label class="text-slate-400 block mb-1 whitespace-nowrap">计价依据</label><select id="oqBasis" onchange="oqChanged()" class="min-w-0 w-full h-10 bg-slate-800 border border-slate-700 rounded-lg px-2 text-white"><option value="glass">玻璃面积</option><option value="film">膜面积</option><option value="fixed">一口价</option></select></div>
             <div><label id="oqRateLabel" class="text-slate-400 block mb-1 whitespace-nowrap">单价 $/m²</label><input id="oqRate" type="number" step="0.01" oninput="oqChanged()" class="w-full min-w-0 h-10 bg-slate-800 border border-slate-700 rounded-lg px-2 text-white font-mono"></div>
             <div><label class="text-slate-400 block mb-1 whitespace-nowrap">类型</label><select id="oqType" onchange="oqTypeChanged()" class="min-w-0 w-full h-10 bg-slate-800 border border-slate-700 rounded-lg px-2 text-white"><option value="">未选择</option><option value="res">住宅</option><option value="com">商业</option></select></div>
           </div>
@@ -295,7 +303,7 @@
             <p class="text-xs text-slate-400 mt-0.5">开具含 15% GST 的发票</p>
           </div>
           <button onclick="openNewInvoiceBuilder()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-1.5 justify-center">
-            <i data-lucide="plus" class="w-4 h-4"></i> + 新建发票
+            <i data-lucide="plus" class="w-4 h-4"></i> 新建发票
           </button>
         </div>
 
@@ -327,9 +335,13 @@
 
           <!-- 行项目区域 -->
           <div class="space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-slate-300 text-xs">项目明细（不含 GST）</span>
-              <div class="flex gap-2 items-center"><select id="tplSelect" onchange="insertTemplate(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white max-w-[9rem]"></select><button type="button" onclick="openTemplates()" class="text-xs text-slate-400 underline">管理</button><button onclick="addInvoiceItemRow('', 'fixed', 1, 0, 0, 0)" class="px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white text-xs rounded-lg">+ 添加项目</button></div>
+            <div class="flex justify-between items-center gap-2">
+              <span class="font-bold text-slate-300 text-sm">项目明细<span class="font-normal text-slate-500 text-xs">（不含 GST）</span></span>
+              <button onclick="addInvoiceItemRow('', 'fixed', 1, 0, 0, 0)" class="shrink-0 whitespace-nowrap px-3 h-9 bg-sky-600 hover:bg-sky-500 text-white text-xs rounded-lg">+ 添加项目</button>
+            </div>
+            <div class="flex items-center gap-3">
+              <select id="tplSelect" onchange="insertTemplate(this.value)" class="flex-1 min-w-0 h-9 bg-slate-900 border border-slate-700 rounded-lg px-2 text-xs text-white"></select>
+              <button type="button" onclick="openTemplates()" class="shrink-0 whitespace-nowrap text-xs text-slate-400 underline">管理模板</button>
             </div>
             <div id="invoiceItemsContainer" class="space-y-3"></div>
           </div>
@@ -354,7 +366,7 @@
 
           <div class="flex justify-end gap-2 pt-2 border-t border-slate-700">
             <button onclick="saveInvoiceToSystem()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">
-              <i data-lucide="save" class="w-4 h-4"></i> 💾 保存发票
+              <i data-lucide="save" class="w-4 h-4"></i> 保存发票
             </button>
             <button onclick="renderPrintableInvoice()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">
               <i data-lucide="printer" class="w-4 h-4"></i> 预览打印
@@ -401,7 +413,7 @@
           <div class="flex justify-between items-end pt-4 border-t-2 border-slate-900">
             <div id="pTermsBlock" class="hidden text-slate-600 space-y-1 text-xs max-w-sm"><p class="font-bold text-slate-900">Terms:</p><p id="pTermsText" class="whitespace-pre-line"></p></div>
             <div id="pBankBlock" class="text-slate-600 space-y-1">
-              <p class="font-bold text-slate-900">收款信息:</p>
+              <p class="font-bold text-slate-900">Direct Deposit Payment Info:</p>
               <div class="font-mono text-xs bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-0.5">
                 <p id="pBankLine"></p>
                 <p id="pBankAccLine"></p>
@@ -410,7 +422,7 @@
               </div>
             </div>
             <div class="w-56 space-y-1.5 text-right">
-              <div class="flex justify-between text-slate-600"><span>小计（不含 GST）：</span><span id="pSubtotal" class="font-mono">$0.00</span></div>
+              <div class="flex justify-between text-slate-600"><span>Subtotal (excl. GST):</span><span id="pSubtotal" class="font-mono">$0.00</span></div>
               <div class="flex justify-between text-slate-600"><span>15% GST:</span><span id="pGst" class="font-mono">$0.00</span></div>
               <div class="flex justify-between text-base font-black text-slate-900 pt-1 border-t border-slate-200"><span id="pTotalLabel">Total Due:</span><span id="pTotal" class="font-mono text-sky-700">$0.00</span></div>
             </div>
@@ -759,6 +771,7 @@ function deriveClientStatus(jobs) {
   jobs.forEach(j => { if ((j.date || '') >= (best.date || '')) best = j; });
   return best.status || 'Completed 已完工';
 }
+function statusZh(st) { return String(st || '').replace(/^[A-Za-z]+\s+/, ''); }
 function statusBadgeClass(status) {
   const base = 'text-xs px-2.5 py-1 rounded-full border font-medium ';
   if ((status || '').startsWith('Inquiry')) return base + 'bg-violet-500/20 text-violet-300 border-violet-500/30';
@@ -894,7 +907,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v13.3', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v13.4', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -963,7 +976,7 @@ async function cleanDuplicateClients() {
     alert(`数据清洗成功！当前共保留 ${uniqueClients.length} 位完全独立的有效客户。`);
   } catch(e) {
     console.error(e);
-    alert('Clean duplicate error');
+    alert('清理重复客户出错');
   }
 }
 
@@ -2395,22 +2408,22 @@ async function renderJobsList() {
       const left = createSafeElement('div');
       left.appendChild(createSafeElement('span', 'text-[11px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-semibold', c.suburb || 'Tauranga'));
       left.appendChild(createSafeElement('h3', 'font-bold text-white text-base mt-1', c.name));
-      left.appendChild(createSafeElement('p', 'text-xs text-slate-400', `📍 ${c.address || 'Address TBD'}`));
+      left.appendChild(createSafeElement('p', 'text-xs text-slate-400', `📍 ${(!c.address || /^address tbd$/i.test(String(c.address).trim())) ? '未填地址' : c.address}`));
       const dueInfo = (c.jobs || []).map(payInfo).filter(p => p && p.out > 0.005);
       if (dueInfo.length) {
         const owed = r2(dueInfo.reduce((a, p) => a + p.out, 0)), od = Math.max(...dueInfo.map(p => p.overdue));
         left.appendChild(createSafeElement('p', 'text-[11px] font-semibold mt-1 ' + (od ? 'text-rose-400' : 'text-amber-300'), od ? `⚠️ 逾期 ${od} 天 · 欠 $${owed.toFixed(2)}` : `💲 欠款 $${owed.toFixed(2)}`));
       }
       top.appendChild(left);
-      top.appendChild(createSafeElement('span', statusBadgeClass(c.status), c.status || 'Active'));
+      top.appendChild(createSafeElement('span', statusBadgeClass(c.status), statusZh(c.status) || '正常'));
 
       const mid = createSafeElement('div', 'flex justify-between text-xs pt-2 border-t border-slate-700/60 text-slate-300');
-      mid.appendChild(createSafeElement('span', '', `📞 ${c.phone || 'N/A'}`));
-      mid.appendChild(createSafeElement('span', '', `📁 Jobs: ${jobsCount} | 🖼️ Photos: ${photoCount}`));
+      mid.appendChild(createSafeElement('span', '', `📞 ${c.phone || '未填电话'}`));
+      mid.appendChild(createSafeElement('span', '', `📁 工作 ${jobsCount} | 🖼️ 照片 ${photoCount}`));
 
       const btm = createSafeElement('div', 'flex justify-between items-center pt-1');
-      btm.appendChild(createSafeElement('span', 'text-sky-400 text-xs font-medium hover:underline', 'Edit Profile & Jobs ➔'));
-      const delBtn = createSafeElement('button', 'px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-lg transition', 'Delete');
+      btm.appendChild(createSafeElement('span', 'text-sky-400 text-xs font-medium hover:underline', '编辑档案 ➔'));
+      const delBtn = createSafeElement('button', 'px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-lg transition', '删除');
       delBtn.onclick = (e) => { e.stopPropagation(); deleteClient(c.id); };
       btm.appendChild(delBtn);
 
@@ -2421,7 +2434,7 @@ async function renderJobsList() {
       if (c.address || c.suburb) { const a = createSafeElement('a', 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-600 text-white', '🗺️ 导航'); a.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr); a.target = '_blank'; a.rel = 'noopener'; a.onclick = stop; act.appendChild(a); }
       const eb = createSafeElement('button', 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-600 text-white', '📧 邮件'); eb.onclick = (e) => { stop(e); quickEmail(c.id); }; act.appendChild(eb);
       const sel = document.createElement('select'); sel.className = 'bg-slate-900 border border-slate-600 rounded-lg text-xs text-white px-1.5 py-1';
-      JOB_STATUSES.forEach(st => { const o = document.createElement('option'); o.value = st; o.textContent = st; if ((c.status || '') === st) o.selected = true; sel.appendChild(o); });
+      JOB_STATUSES.forEach(st => { const o = document.createElement('option'); o.value = st; o.textContent = statusZh(st); if ((c.status || '') === st) o.selected = true; sel.appendChild(o); });
       sel.onclick = stop; sel.onchange = () => quickSetStatus(c.id, sel.value); act.appendChild(sel);
       card.appendChild(top); card.appendChild(mid); card.appendChild(act); card.appendChild(btm);
       frag.appendChild(card);
@@ -2434,23 +2447,24 @@ async function renderJobsList() {
   }
 }
 
+var calSelected = '';
 async function renderCalendar() {
   try {
     const gridEl = document.getElementById('cal-grid');
     const titleEl = document.getElementById('cal-month-title');
     const weekHeaderEl = document.getElementById('cal-week-header');
     if (!gridEl || !titleEl || !weekHeaderEl) return;
-    const monthNamesEN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    titleEl.textContent = `${monthNamesEN[currentMonth]} ${currentYear} Schedule Calendar`;
+    titleEl.textContent = `${currentYear} 年 ${currentMonth + 1} 月`;
     if (!document.getElementById('calLegend')) titleEl.insertAdjacentHTML('afterend', '<div id="calLegend" class="text-[11px] text-slate-400 mt-1"><span class="inline-block w-2.5 h-2.5 rounded bg-amber-400/70 mr-1"></span>报价日期<span class="inline-block w-2.5 h-2.5 rounded bg-sky-400/70 ml-3 mr-1"></span>施工日期</div>');
     weekHeaderEl.innerHTML = '';
-    ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(w => weekHeaderEl.appendChild(createSafeElement('div', '', w)));
-    
+    ['日', '一', '二', '三', '四', '五', '六'].forEach(w => weekHeaderEl.appendChild(createSafeElement('div', '', w)));
+
     let clients = await dbGetActiveClients();
     const frag = document.createDocumentFragment();
     const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
     const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
     const todayStr = todayISO();
+    const monthEvents = {};
 
     for (let i = 0; i < firstDayIndex; i++) frag.appendChild(createSafeElement('div', 'cal-day-cell opacity-30'));
     for (let day = 1; day <= totalDays; day++) {
@@ -2461,35 +2475,70 @@ async function renderCalendar() {
       let dayEvents = [];
       clients.forEach(c => {
         (c.jobs || []).forEach(j => {
-          if (j.date && (j.date === dateKey || j.jobDate === dateKey)) dayEvents.push({ type: 'scheduled', title: `${c.name} (${String(j.title || 'Job').split('\n')[0]})`, clientId: c.id });
+          const jt = String(j.title || '').split('\n')[0];
+          if (j.date && (j.date === dateKey || j.jobDate === dateKey)) dayEvents.push({ type: 'scheduled', name: c.name, job: jt, clientId: c.id });
           const qd = j.quoteDate || (j.quote && j.quote.date);
-          if (qd === dateKey) dayEvents.push({ type: 'quote', title: `${c.name} (Quote${j.quote && j.quote.number ? ' ' + j.quote.number : ''})`, clientId: c.id });
+          if (qd === dateKey) dayEvents.push({ type: 'quote', name: c.name, job: jt, number: (j.quote && j.quote.number) || '', clientId: c.id });
         });
-        if (c.quoteDate && c.quoteDate.startsWith(dateKey)) dayEvents.push({ type: 'quote', title: `${c.name} (Quote)`, clientId: c.id });
+        if (c.quoteDate && c.quoteDate.startsWith(dateKey)) dayEvents.push({ type: 'quote', name: c.name, job: '', number: '', clientId: c.id });
       });
+      monthEvents[dateKey] = dayEvents;
 
-      const cell = createSafeElement('div', `cal-day-cell ${isToday ? 'today' : ''} flex flex-col`);
+      const cell = createSafeElement('div', `cal-day-cell ${isToday ? 'today' : ''} ${dayEvents.length ? 'has-ev' : ''} ${calSelected === dateKey ? 'sel' : ''} flex flex-col`);
       const numHeader = createSafeElement('div', 'font-bold text-slate-400 text-xs mb-1 flex justify-between');
-      numHeader.appendChild(createSafeElement('span', '', String(day)));
-      if (isToday) {
-        numHeader.appendChild(createSafeElement('span', 'text-sky-400 text-[10px]', 'Today'));
-      }
+      numHeader.appendChild(createSafeElement('span', 'cal-num', String(day)));
+      if (isToday) numHeader.appendChild(createSafeElement('span', 'hidden sm:inline text-sky-400 text-[10px]', '今天'));
       cell.appendChild(numHeader);
 
+      // 电脑：格子里显示完整名称
+      const full = createSafeElement('div', 'hidden sm:block');
       dayEvents.forEach(ev => {
-        const evDiv = createSafeElement('div', `cal-event ${ev.type}`, ev.title);
+        const text = ev.type === 'quote' ? `${ev.name} (报价${ev.number ? ' ' + ev.number : ''})` : `${ev.name} (${ev.job || '工作'})`;
+        const evDiv = createSafeElement('div', `cal-event ${ev.type}`, text);
         evDiv.onclick = (e) => { e.stopPropagation(); openClientModal(ev.clientId); };
-        cell.appendChild(evDiv);
+        full.appendChild(evDiv);
       });
+      cell.appendChild(full);
+
+      // 手机：只显示色点，点日期看详情
+      if (dayEvents.length) {
+        const dots = createSafeElement('div', 'sm:hidden flex flex-wrap gap-1 justify-center');
+        dayEvents.slice(0, 4).forEach(ev => dots.appendChild(createSafeElement('span', `inline-block w-2.5 h-2.5 rounded-full ${ev.type === 'quote' ? 'bg-amber-400' : 'bg-sky-400'}`)));
+        cell.appendChild(dots);
+        cell.onclick = () => { calSelected = (calSelected === dateKey ? '' : dateKey); renderCalendar(); };
+      }
       frag.appendChild(cell);
     }
     gridEl.replaceChildren(frag);
+
+    // 手机：下方详情
+    const detailEl = document.getElementById('cal-detail');
+    if (detailEl) {
+      detailEl.innerHTML = '';
+      const evs = calSelected && monthEvents[calSelected];
+      if (!evs) {
+        detailEl.appendChild(createSafeElement('p', 'text-xs text-slate-500 text-center', '点有颜色点的日期，查看当天安排'));
+      } else {
+        const parts = calSelected.split('-');
+        detailEl.appendChild(createSafeElement('div', 'text-sm font-bold text-white mb-2', `${Number(parts[1])} 月 ${Number(parts[2])} 日`));
+        evs.forEach(ev => {
+          const row = createSafeElement('button', `w-full text-left rounded-xl p-3 mb-2 border ${ev.type === 'quote' ? 'bg-amber-500/10 border-amber-500/30' : 'bg-sky-500/10 border-sky-500/30'}`);
+          row.type = 'button';
+          row.appendChild(createSafeElement('div', `text-[11px] font-bold ${ev.type === 'quote' ? 'text-amber-300' : 'text-sky-300'}`, ev.type === 'quote' ? '报价' + (ev.number ? ' · ' + ev.number : '') : '施工'));
+          row.appendChild(createSafeElement('div', 'text-sm text-white font-semibold', ev.name));
+          if (ev.job) row.appendChild(createSafeElement('div', 'text-xs text-slate-400 mt-0.5', ev.job));
+          row.onclick = () => openClientModal(ev.clientId);
+          detailEl.appendChild(row);
+        });
+      }
+    }
   } catch(e) {
     console.error("Render calendar error:", e);
   }
 }
 
 function changeMonth(dir) {
+  calSelected = '';
   currentMonth += dir;
   if (currentMonth > 11) { currentMonth = 0; currentYear++; }
   if (currentMonth < 0) { currentMonth = 11; currentYear--; }
@@ -2500,6 +2549,7 @@ function goToday() {
   const now = new Date();
   currentYear = now.getFullYear();
   currentMonth = now.getMonth();
+  calSelected = todayISO();
   renderCalendar();
 }
 
@@ -2589,7 +2639,7 @@ function renderClientJobsList() {
         <div><label class="text-[10px] text-slate-400 block">报价日期</label><input type="date" value="${job.quoteDate || (job.quote && job.quote.date) || ''}" oninput="updateJobField('${job.id}', 'quoteDate', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white"></div>
         <div><label class="text-[10px] text-slate-400 block">施工日期（未定可留空）</label><input type="date" value="${job.date || ''}" oninput="updateJobField('${job.id}', 'date', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white"></div>
         <div><label class="text-[10px] text-slate-400 block">Price ($ excl. GST)</label><input type="number" step="0.01" value="${job.price || ''}" oninput="updateJobField('${job.id}', 'price', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white font-mono"></div>
-        <div><label class="text-[10px] text-slate-400 block">状态</label><select onchange="updateJobField('${job.id}', 'status', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white">${JOB_STATUSES.map(st => `<option value="${st}"${(job.status || 'Completed 已完工') === st ? ' selected' : ''}>${st}</option>`).join('')}</select></div>
+        <div><label class="text-[10px] text-slate-400 block">状态</label><select onchange="updateJobField('${job.id}', 'status', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white">${JOB_STATUSES.map(st => `<option value="${st}"${(job.status || 'Completed 已完工') === st ? ' selected' : ''}>${statusZh(st)}</option>`).join('')}</select></div>
       </div>
       ${panelsHtml(job)}
       ${quoteHtml(job)}
@@ -2713,7 +2763,7 @@ async function saveClientModal() {
   try {
     const nameEl = document.getElementById('custName');
     const name = nameEl ? nameEl.value.trim() : '';
-    if (!name) { alert('Please enter client name'); return; }
+    if (!name) { alert('请先填写客户姓名'); return; }
     const rawEditingId = document.getElementById('editingClientId').value;
     
     const clientId = rawEditingId !== '' ? isNaN(rawEditingId) ? rawEditingId : Number(rawEditingId) : Date.now();
@@ -2745,7 +2795,7 @@ async function saveClientModal() {
     showToast('✅ 客户档案已保存');
   } catch(e) {
     console.error("Save client modal error:", e);
-    alert('Save failed');
+    alert('保存失败');
   }
 }
 
@@ -3237,32 +3287,33 @@ function addInvoiceItemRow(desc = '', mode = 'fixed', qty = 1, area = 0, rate = 
   div.id = rowId;
   div.className = "bg-slate-800/90 border border-slate-700 p-3 rounded-xl space-y-2";
   div.innerHTML = `
-    <div class="flex justify-between items-center gap-2">
-      <div class="flex items-center gap-2">
-        <label class="text-[11px] text-slate-400 font-bold">Billing Mode:</label>
-        <select onchange="toggleItemMode('${rowId}')" class="item-mode bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white">
-          <option value="fixed" ${mode==='fixed'?'selected':''}>Fixed Price (一口价)</option>
-          <option value="area" ${mode==='area'?'selected':''}>Area & Rate (按面积单价)</option>
-        </select>
-      </div>
-      <div class="flex gap-3"><button type="button" onclick="saveRowAsTemplate('${rowId}')" class="text-sky-300 hover:text-sky-200 text-xs">💾 存为模板</button><button type="button" onclick="document.getElementById('${rowId}').remove(); recalcInvoiceTotals();" class="text-rose-400 hover:text-rose-300 text-xs">Remove</button></div>
+    <div class="flex items-center gap-2">
+      <label class="shrink-0 whitespace-nowrap text-[11px] text-slate-400 font-bold">计价方式</label>
+      <select onchange="toggleItemMode('${rowId}')" class="item-mode flex-1 min-w-0 h-9 bg-slate-900 border border-slate-700 rounded px-2 text-xs text-white">
+        <option value="fixed" ${mode==='fixed'?'selected':''}>一口价</option>
+        <option value="area" ${mode==='area'?'selected':''}>按面积单价</option>
+      </select>
+      <button type="button" onclick="document.getElementById('${rowId}').remove(); recalcInvoiceTotals();" class="shrink-0 whitespace-nowrap px-3 h-9 rounded bg-slate-700/60 text-rose-400 hover:text-rose-300 text-xs">删除</button>
     </div>
     <div>
-      <label class="text-[10px] text-slate-400 block mb-0.5">Item Description (可自由换行排版)</label>
+      <div class="flex justify-between items-center mb-0.5">
+        <label class="text-[10px] text-slate-400">项目描述（可换行）</label>
+        <button type="button" onclick="saveRowAsTemplate('${rowId}')" class="shrink-0 whitespace-nowrap text-sky-300 hover:text-sky-200 text-xs">💾 存为模板</button>
+      </div>
       <textarea rows="3" placeholder="例如：Supply and Installation of Frosted Privacy Film..." class="item-desc w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-sky-500 whitespace-pre-line">${escapeHtml(desc)}</textarea>
     </div>
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 items-center">
       <div class="mode-fixed-fields ${mode==='fixed'?'':'hidden'}">
-        <label class="text-[10px] text-slate-400 block">Amount ($ excl. GST)</label>
+        <label class="text-[10px] text-slate-400 block whitespace-nowrap">金额 $（不含 GST）</label>
         <input type="number" step="0.01" value="${price || ''}" placeholder="180" oninput="recalcInvoiceTotals()" class="item-price w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-white font-mono">
       </div>
       <div class="mode-area-fields ${mode==='area'?'grid grid-cols-3 gap-1 col-span-3':'hidden'}">
-        <div><label class="text-[10px] text-slate-400 block">Area (m²)</label><input type="number" step="0.01" value="${area || ''}" oninput="recalcInvoiceTotals()" class="item-area w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-white font-mono"></div>
-        <div><label class="text-[10px] text-slate-400 block">Rate ($/m²)</label><input type="number" step="0.01" value="${rate || ''}" oninput="recalcInvoiceTotals()" class="item-rate w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-white font-mono"></div>
-        <div><label class="text-[10px] text-slate-400 block">Qty</label><input type="number" min="1" value="${qty}" oninput="recalcInvoiceTotals()" class="item-qty w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-white font-mono"></div>
+        <div><label class="text-[10px] text-slate-400 block whitespace-nowrap">面积 m²</label><input type="number" step="0.01" value="${area || ''}" oninput="recalcInvoiceTotals()" class="item-area w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-white font-mono"></div>
+        <div><label class="text-[10px] text-slate-400 block whitespace-nowrap">单价 $/m²</label><input type="number" step="0.01" value="${rate || ''}" oninput="recalcInvoiceTotals()" class="item-rate w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-white font-mono"></div>
+        <div><label class="text-[10px] text-slate-400 block whitespace-nowrap">数量</label><input type="number" min="1" value="${qty}" oninput="recalcInvoiceTotals()" class="item-qty w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-white font-mono"></div>
       </div>
       <div class="text-right sm:col-start-4">
-        <span class="text-[10px] text-slate-400 block">Excl. Amount:</span>
+        <span class="text-[10px] text-slate-400 block whitespace-nowrap">小计（不含 GST）</span>
         <span class="row-amount font-mono font-bold text-emerald-400 text-sm">$0.00</span>
       </div>
     </div>
@@ -3407,7 +3458,7 @@ async function saveInvoiceToSystem(opts = {}) {
     return false;
   } catch(e) {
     console.error("Save invoice error:", e);
-    alert('Save invoice failed');
+    alert('保存发票失败');
     return false;
   }
 }
