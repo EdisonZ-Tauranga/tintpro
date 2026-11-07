@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.0 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v14.1 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.0<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.1<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -116,6 +116,7 @@
       <button type="button" onclick="closeMobileMenu(); document.getElementById('importFile').click()" class="flex items-center gap-2 px-3 h-11 rounded-xl bg-slate-700 active:bg-slate-600 text-sm text-slate-200"><i data-lucide="upload" class="w-4 h-4 text-indigo-400"></i><span>导入</span></button>
       <button type="button" onclick="closeMobileMenu(); openPriceSettings()" class="flex items-center gap-2 px-3 h-11 rounded-xl bg-slate-700 active:bg-slate-600 text-sm text-slate-200"><span>⚙️</span><span>设置</span></button>
       <button type="button" onclick="closeMobileMenu(); switchTab('receivables')" class="flex items-center gap-2 px-3 h-11 rounded-xl bg-slate-700 active:bg-slate-600 text-sm text-slate-200"><span>💲</span><span>应收款</span></button>
+      <button type="button" onclick="closeMobileMenu(); switchTab('sales')" class="flex items-center gap-2 px-3 h-11 rounded-xl bg-slate-700 active:bg-slate-600 text-sm text-slate-200"><span>📊</span><span>销售汇总</span></button>
     </div>
   </div>
 </header>
@@ -138,12 +139,14 @@
         <i data-lucide="file-text" class="w-5 h-5 shrink-0"></i><span>发票</span>
       </button>
       <button onclick="switchTab('receivables')" id="nav-receivables" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/60 font-medium text-sm transition"><span class="w-5 text-center">💲</span><span>应收款</span></button>
+      <button onclick="switchTab('sales')" id="nav-sales" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/60 font-medium text-sm transition"><span class="w-5 text-center">📊</span><span>销售汇总</span></button>
     </nav>
   </aside>
 
   <main class="flex-1 min-w-0">
     <!-- TAB 1: 客户与项目列表 -->
     <section id="tab-dashboard" class="space-y-4">
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">💰 本周营业额 <span id="dashSalesRange" class="text-slate-400 font-normal text-xs"></span></h2><button onclick="switchTab('sales')" class="text-xs text-sky-400">汇总 ➔</button></div><div id="dashSales" class="grid grid-cols-3 gap-2"></div></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📅 本周安排（未来 7 天）</h2></div><div id="dashWeek" class="space-y-2"></div></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">💬 咨询中 <span id="dashInqCount" class="text-slate-400 font-normal"></span></h2></div><div id="dashInquiry" class="space-y-2"></div></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📝 已报价 <span id="dashQuoCount" class="text-slate-400 font-normal"></span></h2></div><div id="dashQuotes" class="space-y-2"></div></div>
@@ -454,6 +457,10 @@
     <label class="text-xs text-slate-300 flex items-center gap-2 cursor-pointer"><input type="checkbox" id="recvShowPaid" onchange="renderReceivables()" class="w-4 h-4"> 同时显示已付清</label>
   </div>
   <div id="recvList" class="space-y-3"></div>
+</section>
+<section id="tab-sales" class="hidden space-y-4">
+  <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><h2 class="text-base font-bold text-white">销售汇总</h2><p class="text-xs text-slate-400 mt-1">按发票日期统计 · 每周从周一算起 · 财年从 4 月 1 日算起</p></div>
+  <div id="salesBody" class="space-y-4"></div>
 </section>
 </main>
 </div>
@@ -773,6 +780,55 @@ function deriveClientStatus(jobs) {
   return best.status || 'Completed 已完工';
 }
 function statusZh(st) { return String(st || '').replace(/^[A-Za-z]+\s+/, ''); }
+// ---- v14.1：状态只往前走（咨询中 → 已报价 → 已确认 → 已预约 → 已完工；售后/争议中不会被自动改）----
+const STATUS_RANK = ['Inquiry', 'Quote', 'Confirmed', 'Scheduled', 'Completed', 'Warranty'];
+function statusRank(st) {
+  const done = STATUS_RANK.indexOf('Completed');
+  if (!st) return done;   // 没有状态的工作，软件一直把它当“已完工”
+  const i = STATUS_RANK.findIndex(k => String(st).startsWith(k));
+  return i < 0 ? done : i;
+}
+function statusFull(key) { return JOB_STATUSES.find(x => x.startsWith(key)) || key; }
+function refreshAfterStatus() {
+  refreshAllLists();
+  const d = document.getElementById('tab-dashboard'); if (d && !d.classList.contains('hidden')) renderDashboard();
+}
+async function autoAdvanceStatus(clientId, jobId, key, why) {   // 直接改已保存的数据（客户档案弹窗没开时用）
+  try {
+    const all = await dbGetAllClients(), c = all.find(x => String(x.id) === String(clientId)), j = c && (c.jobs || []).find(x => x.id === jobId);
+    if (!j || statusRank(j.status) >= STATUS_RANK.indexOf(key)) return false;
+    const prev = j.status || '';
+    j.status = statusFull(key); c.status = deriveClientStatus(c.jobs); c.updatedAt = Date.now();
+    if (!(await dbSaveClient(c))) return false;
+    refreshAfterStatus(); if (accessToken) syncToCloud(false);
+    showUndoToast(`${why}，状态已改为：${statusZh(j.status)}`, () => undoStatus(clientId, jobId, prev));
+    return true;
+  } catch(e) { console.error('autoAdvanceStatus', e); return false; }
+}
+async function undoStatus(clientId, jobId, prev) {
+  try {
+    const all = await dbGetAllClients(), c = all.find(x => String(x.id) === String(clientId)), j = c && (c.jobs || []).find(x => x.id === jobId);
+    if (!j) return;
+    j.status = prev; c.status = deriveClientStatus(c.jobs); c.updatedAt = Date.now();
+    if (await dbSaveClient(c)) { refreshAfterStatus(); showToast('↩️ 已撤销，状态改回：' + (statusZh(prev) || '无')); if (accessToken) syncToCloud(false); }
+  } catch(e) { console.error('undoStatus', e); }
+}
+function modalAutoAdvance(job, key, why) {   // 客户档案弹窗开着时：只改弹窗里的数据，由自动保存写入
+  if (!job || statusRank(job.status) >= STATUS_RANK.indexOf(key)) return;
+  const prev = job.status || '';
+  const sel = () => [...document.querySelectorAll('#clientModal select')].find(x => (x.getAttribute('onchange') || '').includes(`'${job.id}', 'status'`));
+  job.status = statusFull(key); const s1 = sel(); if (s1) s1.value = job.status; clientModalDirty = true;
+  showUndoToast(`${why}，状态改为：${statusZh(job.status)}`, () => { job.status = prev; const s2 = sel(); if (s2) s2.value = prev; clientModalDirty = true; });
+}
+async function emailOpenedHook() {   // 打开报价邮件（Gmail / 邮件 App）时，工作变成“已报价”。软件没法知道你有没有真的发出去
+  try {
+    const tpl = (document.getElementById('emTemplate') || {}).value;
+    if (tpl !== 'quote' || !emailCtx || !emailCtx.job) return;
+    const all = (await dbGetAllClients()).filter(x => !x.deletedAt && (x.jobs || []).some(j => j.id === emailCtx.job.id));
+    const c = all.find(x => x.name === emailCtx.name) || all[0];
+    if (c) await autoAdvanceStatus(c.id, emailCtx.job.id, 'Quote', '已打开报价邮件');
+  } catch(e) { console.error('emailOpenedHook', e); }
+}
 function statusBadgeClass(status) {
   const base = 'text-xs px-2.5 py-1 rounded-full border font-medium ';
   if ((status || '').startsWith('Inquiry')) return base + 'bg-violet-500/20 text-violet-300 border-violet-500/30';
@@ -908,7 +964,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.0', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.1', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1023,8 +1079,9 @@ function updateBottomNav(tab) {
 function switchTab(tab, opts = {}) {
   try {
     if (tab === 'receivables') renderReceivables();
+    if (tab === 'sales') renderSales();
     if (tab === 'dashboard') renderDashboard();
-    ['dashboard', 'jobs', 'calendar', 'optimizer', 'invoices', 'receivables'].forEach(t => {
+    ['dashboard', 'jobs', 'calendar', 'optimizer', 'invoices', 'receivables', 'sales'].forEach(t => {
       const el = document.getElementById('tab-' + t);
       const nav = document.getElementById('nav-' + t);
       if (el) el.classList.add('hidden');
@@ -1086,6 +1143,26 @@ function showToast(msg, isError = false) {
     t.style.cssText = 'padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;color:#fff;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.4);transition:opacity .4s;opacity:1;background:' + (isError ? '#be123c' : '#047857') + ';';
     box.appendChild(t);
     setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 450); }, isError ? 6000 : 2600);
+  } catch(e) { console.log(msg); }
+}
+
+function showUndoToast(msg, onUndo) {
+  try {
+    let box = document.getElementById('toastBox');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'toastBox';
+      box.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;max-width:92vw;';
+      document.body.appendChild(box);
+    }
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;border-radius:12px;font-size:13px;font-weight:600;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.4);transition:opacity .4s;opacity:1;background:#047857;pointer-events:auto;';
+    const sp = document.createElement('span'); sp.textContent = msg; t.appendChild(sp);
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = '撤销';
+    b.style.cssText = 'padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;';
+    b.onclick = () => { b.disabled = true; t.remove(); try { onUndo && onUndo(); } catch (e) { console.error(e); } };
+    t.appendChild(b); box.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 450); }, 8000);
   } catch(e) { console.log(msg); }
 }
 
@@ -1306,12 +1383,14 @@ async function copyEmailSubject() {
   }
 }
 function openEmailInGmail() {
+  emailOpenedHook();
   const to = encodeURIComponent((document.getElementById('emTo').value || '').trim());
   const su = encodeURIComponent(document.getElementById('emSubject').value);
   const body = encodeURIComponent(emailBodyPlain());
   window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${su}&body=${body}`, '_blank');
 }
 function openEmailInMailApp() {
+  emailOpenedHook();
   const to = (document.getElementById('emTo').value || '').trim();
   window.location.href = `mailto:${to}?subject=${encodeURIComponent(document.getElementById('emSubject').value)}&body=${encodeURIComponent(emailBodyPlain())}`;
 }
@@ -1827,27 +1906,81 @@ async function renderDashboard() {
   due.sort((a, b) => order[a.p.state] - order[b.p.state] || b.p.overdue - a.p.overdue);
   document.getElementById('dashDue').innerHTML = due.slice(0, 5).map(({ c, j, p }) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0"><div class="text-sm text-white truncate">${escapeHtml(c.name)} · ${escapeHtml(j.invoice.invNumber)}</div><div class="text-[11px] ${p.overdue ? 'text-rose-400' : 'text-amber-300'}">${p.overdue ? '逾期 ' + p.overdue + ' 天 · ' : ''}欠 $${p.out.toFixed(2)}</div></div><button onclick="openPaymentModal('${c.id}','${j.id}')" class="px-2.5 py-1 bg-amber-600 text-white rounded-lg text-xs shrink-0">💲 记录付款</button></div>`).join('') || '<p class="text-xs text-slate-500">没有待收款 🎉</p>';
   renderDashGroups(clients, today, one);
+  renderDashSales(clients, today);
 }
 function renderDashGroups(clients, today, one) {
-  const row = (c, j) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0 text-sm text-white truncate">${escapeHtml(c.name)} · ${one(j)}</div><button onclick="openClientModal('${c.id}')" class="px-2.5 py-1 bg-slate-600 text-white rounded-lg text-xs shrink-0">打开</button></div>`;
+  const row = (c, j, follow) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0 text-sm text-white truncate">${escapeHtml(c.name)} · ${one(j)}</div><div class="flex gap-1 shrink-0">${follow ? `<button onclick="dashFollowUp('${c.id}','${j.id}')" class="px-2.5 py-1 bg-amber-600 text-white rounded-lg text-xs">📧 跟进</button>` : ''}<button onclick="openClientModal('${c.id}')" class="px-2.5 py-1 bg-slate-600 text-white rounded-lg text-xs">打开</button></div></div>`;
   const created = (c, j) => Number(j.createdAt || c.updatedAt || 0);
   const inq = [], quo = [], book = [];
   clients.forEach(c => (c.jobs || []).forEach(j => {
     const st = j.status || '';
     if (!j.invoice && st.startsWith('Inquiry')) inq.push({ c, j });
-    else if (!j.invoice && st.startsWith('Quote')) quo.push({ c, j });
+    else if (!j.invoice && st.startsWith('Quote')) quo.push({ c, j, follow: daysBetweenISO(j.quoteDate || isoOf(new Date(created(c, j) || Date.now())), today) >= 3 });   // 报价满 3 天：提醒跟进
     else if (st.startsWith('Confirmed') || st.startsWith('Scheduled')) book.push({ c, j });
   }));
   inq.sort((a, b) => created(a.c, a.j) - created(b.c, b.j));            // 等得最久的在前
   quo.sort((a, b) => (a.j.quoteDate || '9999').localeCompare(b.j.quoteDate || '9999') || created(a.c, a.j) - created(b.c, b.j));
   book.sort((a, b) => (a.j.date ? 1 : 0) - (b.j.date ? 1 : 0) || (a.j.date || '').localeCompare(b.j.date || '') || created(a.c, a.j) - created(b.c, b.j));   // 没排日期的在前，其余按施工日期从近到远
   const fill = (id, cid, list, empty) => {
-    document.getElementById(id).innerHTML = list.map(({ c, j }) => row(c, j)).join('') || `<p class="text-xs text-slate-500">${empty}</p>`;
+    document.getElementById(id).innerHTML = list.map(({ c, j, follow }) => row(c, j, follow)).join('') || `<p class="text-xs text-slate-500">${empty}</p>`;
     const n = document.getElementById(cid); if (n) n.textContent = list.length ? `（${list.length}）` : '';
   };
   fill('dashInquiry', 'dashInqCount', inq, '没有咨询中的工作');
   fill('dashQuotes', 'dashQuoCount', quo, '没有已报价的工作');
   fill('dashBooked', 'dashBookCount', book, '没有已确认或已预约的工作');
+}
+// ---- v14.1：销售汇总（按开发票日期；周一起算；财年 4 月 1 日起）----
+function salesMoney(n) { return '$' + Number(n || 0).toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function weekStartISO(t) { const p = t.split('-').map(Number); const dow = (new Date(p[0], p[1] - 1, p[2]).getDay() + 6) % 7; return isoAddDays(t, -dow); }
+function salesPeriods(today) {
+  const ws = weekStartISO(today), y = Number(today.slice(0, 4)), m = Number(today.slice(5, 7)), fy = m >= 4 ? y : y - 1;
+  return [
+    { key: 'week', name: '本周', start: ws, end: isoAddDays(ws, 6) },
+    { key: 'month', name: '本月', start: today.slice(0, 8) + '01', end: isoOf(new Date(y, m, 0)) },
+    { key: 'year', name: '本年（4 月 1 日起）', start: fy + '-04-01', end: (fy + 1) + '-03-31' },
+  ];
+}
+function salesCompute(clients, today) {
+  const invs = [];
+  clients.forEach(c => (c.jobs || []).forEach(j => {
+    const inv = j.invoice; if (!inv || !inv.invDate || !(Number(inv.grandTotal) > 0)) return;
+    const total = r2(inv.grandTotal), ex = inv.subtotal != null ? r2(inv.subtotal) : r2(total / 1.15), p = payInfo(j);
+    invs.push({ date: inv.invDate, ex, gst: r2(total - ex), total, out: Math.max(0, p ? p.out : 0) });
+  }));
+  const sum = (arr, k) => r2(arr.reduce((a, i) => a + i[k], 0));
+  return salesPeriods(today).map(per => {
+    const inP = invs.filter(i => i.date >= per.start && i.date <= per.end), before = invs.filter(i => i.date < per.start && i.out > 0.005);
+    const carry = {};
+    before.forEach(i => { const k = i.date.slice(0, 7); carry[k] = carry[k] || { out: 0, n: 0 }; carry[k].out = r2(carry[k].out + i.out); carry[k].n++; });
+    const carryList = Object.keys(carry).sort().reverse().map(k => ({ month: k, out: carry[k].out, n: carry[k].n }));
+    const outNow = sum(inP, 'out'), outCarry = sum(before, 'out');
+    return { ...per, count: inP.length, ex: sum(inP, 'ex'), gst: sum(inP, 'gst'), total: sum(inP, 'total'), outNow, carryList, outCarry, outAll: r2(outNow + outCarry) };
+  });
+}
+function salesRange(r) {
+  const dm = (x) => x.slice(8) + '/' + x.slice(5, 7);
+  return r.key === 'year' ? `${dm(r.start)}/${r.start.slice(0, 4)} – ${dm(r.end)}/${r.end.slice(0, 4)}` : `${dm(r.start)} – ${dm(r.end)}`;
+}
+function renderDashSales(clients, today) {
+  const el = document.getElementById('dashSales'); if (!el) return;
+  const w = salesCompute(clients, today)[0], cell = (label, v) => `<div class="bg-slate-900 rounded-xl px-2 py-2 text-center"><div class="text-[10px] text-slate-400">${label}</div><div class="text-[13px] font-mono font-bold text-white mt-0.5">${salesMoney(v)}</div></div>`;
+  el.innerHTML = cell('不含 GST', w.ex) + cell('含 GST', w.total) + cell('未收款', w.outAll);
+  const rg = document.getElementById('dashSalesRange'); if (rg) rg.textContent = salesRange(w);
+}
+async function renderSales() {
+  const body = document.getElementById('salesBody'); if (!body) return;
+  const res = salesCompute(await dbGetActiveClients(), todayISO());
+  const line = (a, b, cls) => `<div class="flex justify-between gap-3 text-sm py-0.5"><span class="${cls || 'text-slate-300'}">${a}</span><span class="font-mono ${cls ? 'font-bold ' + cls : 'text-white'}">${b}</span></div>`;
+  body.innerHTML = res.map(r => `<div class="bg-slate-800 border border-slate-700 rounded-2xl p-4">
+    <div class="flex justify-between items-baseline gap-2 mb-2"><h3 class="font-bold text-white text-sm">${r.name}</h3><span class="text-[11px] text-slate-400">${salesRange(r)}</span></div>
+    ${line('销售额（不含 GST）', salesMoney(r.ex))}${line('GST', salesMoney(r.gst))}${line('含 GST 合计', salesMoney(r.total), 'text-emerald-300')}
+    <div class="text-[11px] text-slate-500 mt-0.5">共 ${r.count} 张发票</div>
+    <div class="mt-3 pt-3 border-t border-slate-700">
+      <div class="text-xs text-slate-400 mb-1">未收款（截至今天）</div>
+      ${line('本期开出的发票', salesMoney(r.outNow))}
+      ${r.carryList.map(x => line(`${x.month.slice(0, 4)} 年 ${Number(x.month.slice(5))} 月开出的发票（${x.n} 张）`, salesMoney(x.out), 'text-amber-300')).join('')}
+      ${line('未收款合计', salesMoney(r.outAll), 'text-amber-300')}
+    </div></div>`).join('') + '<p class="text-[11px] text-slate-500">按发票日期统计。往期欠款按开发票的月份分开列出。</p>';
 }
 async function dashFollowUp(cid, jid) {
   const c = (await dbGetActiveClients()).find(x => String(x.id) === String(cid)); const j = c && c.jobs.find(x => x.id === jid);
@@ -2262,6 +2395,7 @@ async function openQuoteDoc(clientId, jobId) {
   j.quote.date = j.quoteDate;
   if (!j.quote.number) { j.quote.number = await quoteNextNumber(); }
   c.updatedAt = Date.now(); await dbSaveClient(c); refreshAllLists(); if (accessToken) syncToCloud(false);
+  await autoAdvanceStatus(c.id, j.id, 'Quote', '已生成报价单');
   switchTab('invoices', { keepInvoice: true }); setInvoiceEditorVisible(false);
   renderQuoteDocument(c, j); window.scrollTo({ top: 0 });
 }
@@ -2695,6 +2829,7 @@ function removeClientJob(jobId) {
 function updateJobField(jobId, field, val) {
   const job = currentClientJobs.find(j => j.id === jobId);
   if (job) job[field] = val;
+  if (job && field === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(val || '')) modalAutoAdvance(job, 'Scheduled', '已填施工日期');
 }
 
 async function openInvoiceForJob(jobId, viewOnly) {
@@ -3456,12 +3591,16 @@ async function saveInvoiceToSystem(opts = {}) {
         if (j !== targetJob && j.invoice && j.invoice.invNumber === invNumber && !(String(c.id) === String(client.id) && j.id === targetJob.id)) dupOwner = c.name;
       }));
       if (dupOwner && !confirm(`发票号 ${invNumber} 已经用在客户 [${dupOwner}] 的发票上了。\n同一个发票号不能重复使用，确定仍要保存吗？`)) return false;
+      const wasNewInvoice = !targetJob.invoice, prevJobStatus = targetJob.status || '';
+      let advanced = false;
+      if (wasNewInvoice && statusRank(targetJob.status) < STATUS_RANK.indexOf('Completed')) { targetJob.status = statusFull('Completed'); client.status = deriveClientStatus(client.jobs); advanced = true; }
       targetJob.invoice = newInvoice;
       client.updatedAt = Date.now();
       const savedOk = await dbSaveClient(client);
       if (!savedOk) { alert('发票保存失败！数据没有写入浏览器，请先点 Export 备份数据再试。'); return false; }
       if (accessToken) syncToCloud(false);
-      showToast(opts.auto ? `✅ 发票 ${invNumber} 已自动保存` : `✅ 发票 ${invNumber} 已保存到客户 [${client.name}] 档案`);
+      if (advanced) { const cid = client.id, jid = targetJob.id; showUndoToast(`✅ 发票 ${invNumber} 已保存，状态已改为：${statusZh(targetJob.status)}`, () => undoStatus(cid, jid, prevJobStatus)); refreshAfterStatus(); }
+      else showToast(opts.auto ? `✅ 发票 ${invNumber} 已自动保存` : `✅ 发票 ${invNumber} 已保存到客户 [${client.name}] 档案`);
       return true;
     }
     return false;
