@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.1 Pro - Light & Salt / Bayview Edition</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
+<title>TintPro Manager v14.2 Pro - Light & Salt / Bayview Edition</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.1<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.2<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -624,7 +624,14 @@
   <label class="block text-xs text-slate-400">GST 号<input id="bzGst" type="text" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label>
   <p class="text-[11px] text-slate-400">这些信息只保存在这台设备里，并同步到你自己的 Google Drive，不写在网页代码里。留空的项目不会印出来。</p>
   <label class="flex items-start gap-2 text-xs text-slate-300 pt-2 border-t border-slate-700"><input id="stAutoConn" type="checkbox" class="mt-0.5 w-4 h-4 shrink-0"><span>打开软件时自动连接 Google（只在这台设备上生效，默认关闭）。关闭时，需要同步就点“同步”。</span></label>
+  <button type="button" onclick="closePriceSettings(); openStorage()" class="w-full px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold">💾 存储与照片清理</button>
   <div class="flex justify-end gap-2 pt-1"><button type="button" onclick="closePriceSettings()" class="px-3 py-2 rounded-lg bg-slate-600 text-white text-xs">取消</button><button type="button" onclick="savePriceSettings()" class="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold">保存</button></div>
+</div></div>
+
+<!-- v14.2 存储与照片清理 -->
+<div id="storageModal" class="hidden fixed inset-0 bg-slate-950/80 flex items-start sm:items-center justify-center p-3 overflow-y-auto" style="z-index:80;"><div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl my-4 p-5 space-y-3 text-sm text-slate-200">
+  <div class="flex justify-between items-center"><h3 class="font-bold text-white">💾 存储与照片清理</h3><button onclick="closeStorage()" class="text-slate-400 hover:text-white">✕</button></div>
+  <div id="storageBody" class="space-y-3"></div>
 </div></div>
 
 <!-- v13.3 手机底部导航 -->
@@ -964,7 +971,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.1', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.2', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1492,6 +1499,96 @@ async function savePayment() {
   job.payments.push({ id: 'pay_' + Date.now(), date, amount, method: document.getElementById('payMethod').value });
   if (await persistPaymentChange(client, job)) { showToast('✅ 付款已记录'); await renderPaymentModal(); }
 }
+async function quickPayFull(cid, jid) {
+  const all = await dbGetAllClients(), client = all.find(c => String(c.id) === String(cid)), job = client && (client.jobs || []).find(j => j.id === jid);
+  const p = job && payInfo(job);
+  if (!p || p.out <= 0.005) { showToast('这张发票已经付清了'); return; }
+  if (!confirm(`给 [${client.name}] 记录全额收款？\n发票 ${job.invoice.invNumber} · 金额 $${p.out.toFixed(2)} · 日期 ${todayISO()}`)) return;
+  job.payments = job.payments || [];
+  job.payments.push({ id: 'pay_' + Date.now(), date: todayISO(), amount: p.out, method: (document.getElementById('payMethod') || {}).value || 'Bank transfer' });
+  if (await persistPaymentChange(client, job)) showToast(`✅ 已记录全额收款 $${p.out.toFixed(2)}`);
+}
+// ---- v14.2：存储用量 + 照片清理 ----
+const PHOTO_DAYS_QUOTE = 30, PHOTO_DAYS_DONE = 90;
+function fmtBytes(n) { n = Number(n) || 0; return n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(0) + ' KB' : n < 1073741824 ? (n / 1048576).toFixed(1) + ' MB' : (n / 1073741824).toFixed(2) + ' GB'; }
+function photoBytes(c) { return (c.photos || []).reduce((a, p) => a + (typeof p === 'string' ? p.length : 0), 0); }
+function jobPhotoKind(j, today) {   // 'quote' = 没成交且报价有效期已过；'done' = 已完工满 90 天；'' = 不清理
+  const st = j.status || '';
+  if (!j.invoice && (st.startsWith('Inquiry') || st.startsWith('Quote'))) {
+    const qd = j.quoteDate || (j.quote && j.quote.date) || '';
+    let expire = '';
+    if (qd) expire = isoAddDays(qd, Number(j.quote && j.quote.validDays) || PHOTO_DAYS_QUOTE);
+    else if (j.createdAt) { const t = isNaN(Number(j.createdAt)) ? Date.parse(j.createdAt) : Number(j.createdAt); if (!isNaN(t)) expire = isoAddDays(isoOf(new Date(t)), PHOTO_DAYS_QUOTE); }
+    return expire && today > expire ? 'quote' : '';
+  }
+  if (j.invoice && j.invoice.invDate && !st.startsWith('Warranty') && !st.startsWith('Confirmed') && !st.startsWith('Scheduled') && daysBetweenISO(j.invoice.invDate, today) >= PHOTO_DAYS_DONE) return 'done';
+  return '';
+}
+function photoCleanupGroups(clients, today) {   // 一个客户的所有工作都满足条件，才会列出来
+  const A = [], B = [];
+  clients.forEach(c => {
+    if (!(c.photos || []).length || !(c.jobs || []).length) return;
+    const kinds = c.jobs.map(j => jobPhotoKind(j, today));
+    if (kinds.some(k => !k)) return;
+    (kinds.every(k => k === 'quote') ? A : B).push({ c, n: c.photos.length, bytes: photoBytes(c) });
+  });
+  return { A, B };
+}
+function closeStorage() { document.getElementById('storageModal').classList.add('hidden'); }
+async function openStorage() {
+  document.getElementById('storageModal').classList.remove('hidden');
+  const body = document.getElementById('storageBody'); body.innerHTML = '<p class="text-xs text-slate-400">读取中…</p>';
+  const all = await dbGetAllClients(), act = all.filter(c => !c.deletedAt), today = todayISO();
+  const withPh = all.filter(c => (c.photos || []).length), phTotal = withPh.reduce((a, c) => a + photoBytes(c), 0), phCount = withPh.reduce((a, c) => a + c.photos.length, 0);
+  const dataSize = JSON.stringify(all).length, top = withPh.slice().sort((a, b) => photoBytes(b) - photoBytes(a)).slice(0, 3);
+  const g = photoCleanupGroups(act, today);
+  const line = (a, b) => `<div class="flex justify-between gap-3 text-sm py-0.5"><span class="text-slate-300">${a}</span><span class="font-mono text-white text-right">${b}</span></div>`;
+  let browser = '读取不到';
+  try { if (navigator.storage && navigator.storage.estimate) { const e = await navigator.storage.estimate(); browser = `已用 ${fmtBytes(e.usage)} / 可用上限 ${fmtBytes(e.quota)}`; } } catch(e) {}
+  let drive = accessToken ? '读取中…' : '连接 Google（点“同步”）后显示';
+  const grp = (key, title, hint, list) => `<div id="cleanup-${key}" class="bg-slate-900 rounded-xl p-3 space-y-2"><div class="font-bold text-white text-xs">${title}</div><div class="text-[11px] text-slate-400">${hint}</div>${list.length ? list.map(x => `<label class="flex items-center gap-2 text-xs"><input type="checkbox" checked data-cid="${x.c.id}" class="w-4 h-4 shrink-0"><span class="flex-1 min-w-0 truncate text-slate-200">${escapeHtml(x.c.name)}</span><span class="font-mono text-slate-400 whitespace-nowrap">${x.n} 张 · ${fmtBytes(x.bytes)}</span></label>`).join('') + `<div class="flex justify-between items-center pt-1"><span class="text-[11px] text-slate-400">合计 ${list.reduce((a, x) => a + x.n, 0)} 张 · ${fmtBytes(list.reduce((a, x) => a + x.bytes, 0))}</span><button type="button" onclick="cleanPhotoGroup('${key}')" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold">清理这一组</button></div>` : '<div class="text-xs text-slate-500">现在没有符合条件的客户</div>'}</div>`;
+  body.innerHTML = `<div>
+    <div class="text-xs text-slate-400 mb-1">照片</div>
+    ${line('照片累计', `${phCount} 张 · ${fmtBytes(phTotal)}`)}${line('有照片的客户', withPh.length + ' 位')}
+    ${top.length ? `<div class="text-[11px] text-slate-500 mt-1">占用最多：${top.map(c => escapeHtml(c.name) + ' ' + fmtBytes(photoBytes(c))).join('；')}</div>` : ''}</div>
+  <div class="pt-2 border-t border-slate-700"><div class="text-xs text-slate-400 mb-1">存储</div>
+    ${line('这台设备上的客户数据', '约 ' + fmtBytes(dataSize))}${line('这台设备的浏览器空间', browser)}<div id="storageDrive">${line('Google Drive', drive)}</div></div>
+  <div class="pt-2 border-t border-slate-700 space-y-2"><div class="text-xs text-slate-400">照片清理（删除后无法恢复，同步后 Drive 上的备份也会少掉这些照片。客户资料、尺寸、报价、发票不会删。第一次清理前，先 Export 备份一次）</div>
+    ${grp('A', '① 没成交，报价有效期已过', `状态仍是咨询中或已报价，报价日期加有效天数（默认 ${PHOTO_DAYS_QUOTE} 天）已过；没出过报价的，从建档日起算 ${PHOTO_DAYS_QUOTE} 天`, g.A)}
+    ${grp('B', `② 已完工 ${PHOTO_DAYS_DONE} 天以上`, `开发票满 ${PHOTO_DAYS_DONE} 天，状态不是“售后/争议中”`, g.B)}
+    <div class="text-[11px] text-slate-500">一个客户有多个工作时，所有工作都满足条件才会列出。已确认、已预约、售后/争议中的客户不会出现。</div></div>`;
+  if (accessToken) loadDriveUsage();
+}
+async function loadDriveUsage() {
+  const el = document.getElementById('storageDrive'); if (!el) return;
+  const row = (a, b) => `<div class="flex justify-between gap-3 text-sm py-0.5"><span class="text-slate-300">${a}</span><span class="font-mono text-white text-right">${b}</span></div>`;
+  let html = '';
+  try {
+    const auth = { Authorization: 'Bearer ' + accessToken };
+    const q = encodeURIComponent("name='bayview-backup.json' and trashed=false");
+    const f = await (await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=modifiedTime%20desc&fields=files(size)`, { headers: auth })).json();
+    html += row('Drive 上的备份文件', f.files && f.files[0] && f.files[0].size ? fmtBytes(f.files[0].size) : '读取不到');
+  } catch(e) { html += row('Drive 上的备份文件', '读取不到'); }
+  try {
+    const a = await (await fetch('https://www.googleapis.com/drive/v3/about?fields=storageQuota', { headers: { Authorization: 'Bearer ' + accessToken } })).json();
+    const sq = a.storageQuota; html += row('Google 账号空间', sq ? (sq.limit ? `已用 ${fmtBytes(sq.usage)} / ${fmtBytes(sq.limit)}` : `已用 ${fmtBytes(sq.usage)}`) : '读取不到');
+  } catch(e) { html += row('Google 账号空间', '读取不到'); }
+  el.innerHTML = html;
+}
+async function cleanPhotoGroup(key) {
+  const ids = [...document.querySelectorAll(`#cleanup-${key} input[type=checkbox]:checked`)].map(x => String(x.dataset.cid));
+  if (!ids.length) { showToast('没有选中的客户', true); return; }
+  if (!document.getElementById('clientModal').classList.contains('hidden')) { showToast('请先关闭客户档案，再清理照片', true); return; }
+  const g = photoCleanupGroups((await dbGetAllClients()).filter(c => !c.deletedAt), todayISO()), ok = (g[key] || []).filter(x => ids.includes(String(x.c.id)));   // 再核对一次，以现在的数据为准
+  if (!ok.length) { showToast('这些客户现在已经不符合清理条件', true); openStorage(); return; }
+  const n = ok.reduce((a, x) => a + x.n, 0), by = ok.reduce((a, x) => a + x.bytes, 0);
+  if (!confirm(`清理 ${ok.length} 位客户的 ${n} 张照片（约 ${fmtBytes(by)}）？\n删除后无法恢复。客户资料、尺寸、报价、发票不会删除。`)) return;
+  let done = 0;
+  for (const x of ok) { x.c.photos = []; x.c.updatedAt = Date.now(); if (await dbSaveClient(x.c)) done++; }
+  refreshAllLists(); if (accessToken) syncToCloud(false);
+  showToast(`✅ 已清理 ${done} 位客户的照片（约 ${fmtBytes(by)}）`);
+  openStorage();
+}
 async function deletePayment(id) {
   if (!confirm('删除这笔付款记录？')) return;
   const { client, job } = await loadPayCtx();
@@ -1515,7 +1612,7 @@ async function renderReceivables() {
     <div class="flex justify-between items-start gap-2"><div><div class="font-bold text-white text-sm">${escapeHtml(c.name)}</div><div class="text-[11px] text-slate-400 font-mono">${escapeHtml(j.invoice.invNumber)} · 到期 ${addDaysNZ(j.invoice.invDate, 7)}</div></div>
     <span class="text-[11px] px-2 py-0.5 rounded-full border ${chip[p.state]}">${p.state === 'overdue' ? '逾期 ' + p.overdue + ' 天' : p.state === 'partial' ? '部分已付' : p.state === 'paid' ? '已付清' : '未付款'}</span></div>
     <div class="text-xs text-slate-300 font-mono">总额 $${p.total.toFixed(2)} · 已收 $${p.paid.toFixed(2)} · <b class="text-white">欠款 $${p.out.toFixed(2)}</b></div>
-    <div class="flex flex-wrap gap-2"><button onclick="openPaymentModal('${c.id}','${j.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold">💲 记录付款</button>
+    <div class="flex flex-wrap gap-2">${p.out > 0.005 ? `<button onclick="quickPayFull('${c.id}','${j.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold">✅ 已全额收款</button>` : ''}<button onclick="openPaymentModal('${c.id}','${j.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold">💲 记录付款</button>
     <button onclick="recvReminder('${c.id}','${j.id}')" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-xs font-bold">📧 催款邮件</button>
     <button onclick="openInvoiceByIds('${c.id}','${j.id}',true)" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold">🖨 查看发票</button></div></div>`).join('') || '<div class="text-center text-slate-500 text-sm py-10">没有待收款的发票 🎉</div>';
 }
@@ -1898,13 +1995,13 @@ async function renderDashboard() {
   const mapLink = (c) => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([c.address && !/^address tbd$/i.test(c.address.trim()) ? c.address : '', c.suburb, 'New Zealand'].filter(Boolean).join(', '));
   const wk = [];
   clients.forEach(c => (c.jobs || []).forEach(j => { if (j.date && j.date >= today && j.date <= end && !(j.status || '').startsWith('Completed')) wk.push({ c, j }); }));
-  wk.sort((a, b) => a.j.date.localeCompare(b.j.date));
-  document.getElementById('dashWeek').innerHTML = wk.map(({ c, j }) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0"><div class="text-sm text-white truncate">${j.date.slice(8)}/${j.date.slice(5, 7)} · ${escapeHtml(c.name)}</div><div class="text-[11px] text-slate-400 truncate">${one(j)} · ${escapeHtml(c.suburb || '')}</div></div><div class="flex gap-1 shrink-0">${c.phone ? `<a href="tel:${escapeHtml(String(c.phone).replace(/[^\d+]/g, ''))}" class="px-2 py-1 bg-emerald-600 text-white rounded-lg text-xs">📞</a>` : ''}<a href="${mapLink(c)}" target="_blank" rel="noopener" class="px-2 py-1 bg-sky-600 text-white rounded-lg text-xs">🗺️</a></div></div>`).join('') || '<p class="text-xs text-slate-500">未来 7 天没有安排</p>';
+  wk.sort((a, b) => a.j.date.localeCompare(b.j.date) || (a.j.time || '99:99').localeCompare(b.j.time || '99:99'));
+  document.getElementById('dashWeek').innerHTML = wk.map(({ c, j }) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0"><div class="text-sm text-white truncate">${j.date.slice(8)}/${j.date.slice(5, 7)}${j.time ? ' ' + escapeHtml(j.time) : ''} · ${escapeHtml(c.name)}</div><div class="text-[11px] text-slate-400 truncate">${one(j)} · ${escapeHtml(c.suburb || '')}</div></div><div class="flex gap-1 shrink-0">${c.phone ? `<a href="tel:${escapeHtml(String(c.phone).replace(/[^\d+]/g, ''))}" class="px-2 py-1 bg-emerald-600 text-white rounded-lg text-xs">📞</a>` : ''}<a href="${mapLink(c)}" target="_blank" rel="noopener" class="px-2 py-1 bg-sky-600 text-white rounded-lg text-xs">🗺️</a></div></div>`).join('') || '<p class="text-xs text-slate-500">未来 7 天没有安排</p>';
   const due = [];
   clients.forEach(c => (c.jobs || []).forEach(j => { const p = payInfo(j); if (p && p.out > 0.005) due.push({ c, j, p }); }));
   const order = { overdue: 0, partial: 1, unpaid: 2 };
   due.sort((a, b) => order[a.p.state] - order[b.p.state] || b.p.overdue - a.p.overdue);
-  document.getElementById('dashDue').innerHTML = due.slice(0, 5).map(({ c, j, p }) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0"><div class="text-sm text-white truncate">${escapeHtml(c.name)} · ${escapeHtml(j.invoice.invNumber)}</div><div class="text-[11px] ${p.overdue ? 'text-rose-400' : 'text-amber-300'}">${p.overdue ? '逾期 ' + p.overdue + ' 天 · ' : ''}欠 $${p.out.toFixed(2)}</div></div><button onclick="openPaymentModal('${c.id}','${j.id}')" class="px-2.5 py-1 bg-amber-600 text-white rounded-lg text-xs shrink-0">💲 记录付款</button></div>`).join('') || '<p class="text-xs text-slate-500">没有待收款 🎉</p>';
+  document.getElementById('dashDue').innerHTML = due.slice(0, 5).map(({ c, j, p }) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0"><div class="text-sm text-white truncate">${escapeHtml(c.name)} · ${escapeHtml(j.invoice.invNumber)}</div><div class="text-[11px] ${p.overdue ? 'text-rose-400' : 'text-amber-300'}">${p.overdue ? '逾期 ' + p.overdue + ' 天 · ' : ''}欠 $${p.out.toFixed(2)}</div></div><div class="flex gap-1 shrink-0"><button onclick="quickPayFull('${c.id}','${j.id}')" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-xs">✅ 收齐</button><button onclick="openPaymentModal('${c.id}','${j.id}')" class="px-2.5 py-1 bg-amber-600 text-white rounded-lg text-xs">💲 记录付款</button></div></div>`).join('') || '<p class="text-xs text-slate-500">没有待收款 🎉</p>';
   renderDashGroups(clients, today, one);
   renderDashSales(clients, today);
 }
@@ -2619,12 +2716,13 @@ async function renderCalendar() {
       clients.forEach(c => {
         (c.jobs || []).forEach(j => {
           const jt = String(j.title || '').split('\n')[0];
-          if (j.date && (j.date === dateKey || j.jobDate === dateKey)) dayEvents.push({ type: 'scheduled', name: c.name, job: jt, clientId: c.id });
+          if (j.date && (j.date === dateKey || j.jobDate === dateKey)) dayEvents.push({ type: 'scheduled', name: c.name, job: jt, time: j.time || '', clientId: c.id });
           const qd = j.quoteDate || (j.quote && j.quote.date);
           if (qd === dateKey) dayEvents.push({ type: 'quote', name: c.name, job: jt, number: (j.quote && j.quote.number) || '', clientId: c.id });
         });
         if (c.quoteDate && c.quoteDate.startsWith(dateKey)) dayEvents.push({ type: 'quote', name: c.name, job: '', number: '', clientId: c.id });
       });
+      dayEvents.sort((a, b) => (a.type === 'scheduled' ? '0' + (a.time || '99:99') : '1').localeCompare(b.type === 'scheduled' ? '0' + (b.time || '99:99') : '1'));   // 施工的在前，按开始时间排
       monthEvents[dateKey] = dayEvents;
 
       const cell = createSafeElement('div', `cal-day-cell ${isToday ? 'today' : ''} ${dayEvents.length ? 'has-ev' : ''} ${calSelected === dateKey ? 'sel' : ''} flex flex-col`);
@@ -2636,7 +2734,7 @@ async function renderCalendar() {
       // 电脑：格子里显示完整名称
       const full = createSafeElement('div', 'hidden sm:block');
       dayEvents.forEach(ev => {
-        const text = ev.type === 'quote' ? `${ev.name} (报价${ev.number ? ' ' + ev.number : ''})` : `${ev.name} (${ev.job || '工作'})`;
+        const text = ev.type === 'quote' ? `${ev.name} (报价${ev.number ? ' ' + ev.number : ''})` : `${ev.time ? ev.time + ' ' : ''}${ev.name} (${ev.job || '工作'})`;
         const evDiv = createSafeElement('div', `cal-event ${ev.type}`, text);
         evDiv.onclick = (e) => { e.stopPropagation(); openClientModal(ev.clientId); };
         full.appendChild(evDiv);
@@ -2667,7 +2765,7 @@ async function renderCalendar() {
         evs.forEach(ev => {
           const row = createSafeElement('button', `w-full text-left rounded-xl p-3 mb-2 border ${ev.type === 'quote' ? 'bg-amber-500/10 border-amber-500/30' : 'bg-sky-500/10 border-sky-500/30'}`);
           row.type = 'button';
-          row.appendChild(createSafeElement('div', `text-[11px] font-bold ${ev.type === 'quote' ? 'text-amber-300' : 'text-sky-300'}`, ev.type === 'quote' ? '报价' + (ev.number ? ' · ' + ev.number : '') : '施工'));
+          row.appendChild(createSafeElement('div', `text-[11px] font-bold ${ev.type === 'quote' ? 'text-amber-300' : 'text-sky-300'}`, ev.type === 'quote' ? '报价' + (ev.number ? ' · ' + ev.number : '') : '施工' + (ev.time ? ' · ' + ev.time : '')));
           row.appendChild(createSafeElement('div', 'text-sm text-white font-semibold', ev.name));
           if (ev.job) row.appendChild(createSafeElement('div', 'text-xs text-slate-400 mt-0.5', ev.job));
           row.onclick = () => openClientModal(ev.clientId);
@@ -2781,7 +2879,8 @@ function renderClientJobsList() {
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <div><label class="text-[10px] text-slate-400 block">报价日期</label><input type="date" value="${job.quoteDate || (job.quote && job.quote.date) || ''}" oninput="updateJobField('${job.id}', 'quoteDate', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white"></div>
         <div><label class="text-[10px] text-slate-400 block">施工日期（未定可留空）</label><input type="date" value="${job.date || ''}" oninput="updateJobField('${job.id}', 'date', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white"></div>
-        <div><label class="text-[10px] text-slate-400 block">Price ($ excl. GST)</label><input type="number" step="0.01" value="${job.price || ''}" oninput="updateJobField('${job.id}', 'price', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white font-mono"></div>
+        <div><label class="text-[10px] text-slate-400 block">开始时间（可留空）</label><input type="time" value="${job.time || ''}" oninput="updateJobField('${job.id}', 'time', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white"></div>
+        <div><label class="text-[10px] text-slate-400 block">价格 $（不含 GST）</label><input type="number" step="0.01" value="${job.price || ''}" oninput="updateJobField('${job.id}', 'price', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white font-mono"></div>
         <div><label class="text-[10px] text-slate-400 block">状态</label><select onchange="updateJobField('${job.id}', 'status', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white">${JOB_STATUSES.map(st => `<option value="${st}"${(job.status || 'Completed 已完工') === st ? ' selected' : ''}>${statusZh(st)}</option>`).join('')}</select></div>
       </div>
       ${panelsHtml(job)}
