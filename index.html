@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.3 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v14.4 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.3<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.4<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -971,7 +971,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.3', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.4', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -2161,7 +2161,8 @@ function deleteTemplate(id) {
 // ============ v12.34：报价（共用数据）/ 正式报价单 / 转发票 ============
 // ---- v14.3：新西兰公共假期（Tauranga：含 Auckland Anniversary）+ 工作日有效期 ----
 const MIN_VISIT_CHARGE = 200;   // 每次上门最低收费（不含 GST）。只用于提醒和默认条款，不会自动改金额
-const MIN_CHARGE_TERMS = `This quotation is for all listed areas completed together in one visit. If you prefer to proceed with only some areas first, a minimum charge of $${MIN_VISIT_CHARGE} + GST applies per visit, and pricing for the remaining areas will be confirmed separately.`;
+const OLD_MIN_TERMS = 'This quotation is for all listed areas completed together in one visit. If you prefer to proceed with only some areas first, a minimum charge of $200 + GST applies per visit, and pricing for the remaining areas will be confirmed separately.';   // v14.3 自动写进条款的那段，v14.4 起改成报价单上的自动提示
+function stripOldMinTerms(t) { return String(t || '').split('\n' + OLD_MIN_TERMS).join('').split(OLD_MIN_TERMS).join('').trim(); }
 const NZ_MATARIKI = { 2022: '06-24', 2023: '07-14', 2024: '06-28', 2025: '06-20', 2026: '07-10', 2027: '06-25', 2028: '07-14', 2029: '07-06', 2030: '06-21', 2031: '07-11', 2032: '07-02', 2033: '06-24', 2034: '07-07', 2035: '06-29', 2036: '07-18', 2037: '07-10', 2038: '06-25', 2039: '07-15', 2040: '07-06', 2041: '07-19', 2042: '07-11', 2043: '07-03', 2044: '06-24' };   // 政府公布的日期，只到 2044 年
 const _nzHolCache = {};
 function nzHolidays(y) {
@@ -2208,7 +2209,7 @@ function fmtNzPhone(s) {   // 027 448 4555 的分组显示；不是纯数字的�
   if (/^0[3-9]\d{7}$/.test(d)) return d.slice(0, 2) + ' ' + d.slice(2, 5) + ' ' + d.slice(5);
   return raw;
 }
-const QUOTE_TERMS = (d, unit) => `This quote is valid for ${d} ${unit === 'work' ? 'working days' : 'days'} from the date of issue.` + (unit === 'work' ? '\n' + MIN_CHARGE_TERMS : '');
+const QUOTE_TERMS = (d, unit) => `This quote is valid for ${d} ${unit === 'work' ? 'working days' : 'days'} from the date of issue.`;
 const LBL_FILM = 'Supply & install new film', LBL_STRIP = 'Remove existing film';
 function lblOf(q, kind) { const v = String((q && (kind === 'strip' ? q.lblStrip : q.lblFilm)) || '').trim(); return v || (kind === 'strip' ? LBL_STRIP : LBL_FILM); }
 function stripRateOf(q) { const v = Number(q && q.stripRate); return v > 0 ? v : priceSettings().strip; }
@@ -2360,6 +2361,7 @@ function oqWrite() {
 function oqLoadFromJob(job) {
   oqEditKey = null;
   optQuote = job.quote ? JSON.parse(JSON.stringify(job.quote)) : newQuote();
+  if (optQuote.terms) optQuote.terms = stripOldMinTerms(optQuote.terms);
   if (!optQuote.overrides) optQuote.overrides = {};
   oqWrite();
   document.getElementById('oqDate').value = job.quoteDate || (job.quote && job.quote.date) || todayISO();
@@ -2572,18 +2574,20 @@ function renderQuoteDocument(c, j) {
   const row = (d, a, extra) => `<tr><td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${d}</td><td class="p-2.5 text-right font-mono font-bold">${a === null ? '' : '$' + Number(a).toFixed(2)}</td></tr>`;
   let h = '';
   if (scope.length) h += `<tr><td colspan="2" class="p-2.5 text-slate-600 whitespace-pre-line">${escapeHtml(scope.join('\n'))}</td></tr>`;
+  const lowSet = new Set(); if (q.display !== 'total' && calc.rooms.length >= 2) calc.rooms.forEach((r) => { if (r.amount > 0 && r.amount < MIN_VISIT_CHARGE) lowSet.add(r); });
+  const star = (r) => lowSet.has(r) ? ' *' : '';
   const hasStrip = calc.rooms.some(r => r.lines.some(l => l.kind === 'strip'));   // 有除膜时：每个区域分成“贴膜 / 除膜”两行，各报各的价钱，不写面积
   if (q.display === 'total') {
     if (hasStrip) { h += row(escapeHtml(lblOf(q, 'film')), calc.filmSum); h += row(escapeHtml(lblOf(q, 'strip')), calc.stripSum); }
     else h += row('Supply and installation of window film', calc.roomsSum);
   } else calc.rooms.forEach(r => {
-    if (r.virtual) { h += row(escapeHtml(r.name), r.amount); return; }
+    if (r.virtual) { h += row(escapeHtml(r.name) + star(r), r.amount); return; }
     if (!hasStrip) {
       const dsc = lineDesc(r.items, r.other);
-      h += row(r.items.length ? `<div>${escapeHtml(r.name)}</div><div class="mt-0.5 text-xs font-normal text-slate-500">${escapeHtml(dsc)}</div>` : `${escapeHtml(r.name)} — ${r.count} window${r.count > 1 ? 's' : ''}`, r.amount);
+      h += row(r.items.length ? `<div>${escapeHtml(r.name)}${star(r)}</div><div class="mt-0.5 text-xs font-normal text-slate-500">${escapeHtml(dsc)}</div>` : `${escapeHtml(r.name)}${star(r)} — ${r.count} window${r.count > 1 ? 's' : ''}`, r.amount);
       return;
     }
-    h += `<tr><td colspan="2" class="p-2.5 pb-0.5 font-bold text-slate-800">${escapeHtml(r.name)}</td></tr>`;
+    h += `<tr><td colspan="2" class="p-2.5 pb-0.5 font-bold text-slate-800">${escapeHtml(r.name)}${star(r)}</td></tr>`;
     r.lines.forEach(l => {
       const dsc = l.kind === 'strip' ? lineDesc(r.stripItems, r.stripOther) : lineDesc(r.items, r.other);
       h += `<tr><td class="p-2.5 py-1 pl-5 text-sm text-slate-700">${escapeHtml(lblOf(q, l.kind) + (dsc ? ': ' + dsc : ''))}</td><td class="p-2.5 py-1 text-right font-mono">${money2(l.amount)}</td></tr>`;
@@ -2592,9 +2596,10 @@ function renderQuoteDocument(c, j) {
   });
   if (calc.callout) h += row('Call-out fee', calc.callout);
   if (calc.extra) h += row('Additional charges', calc.extra);
+  if (lowSet.size) h += `<tr><td colspan="2" class="p-2.5 pt-3 text-xs text-slate-600">* Areas marked with an asterisk are priced below our minimum charge. If you choose to proceed with only some areas, a minimum charge of $${MIN_VISIT_CHARGE} + GST per visit applies.</td></tr>`;
   g('pInvoiceTbody').innerHTML = h;
   g('pSubtotal').textContent = money2(calc.subtotal); g('pGst').textContent = money2(calc.gst); g('pTotal').textContent = money2(calc.total);
-  g('pTermsText').textContent = q.terms || '';
+  g('pTermsText').textContent = stripOldMinTerms(q.terms);
 }
 async function quoteEditFromDoc() {
   if (!quoteDocCtx) return;
