@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.2 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v14.3 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.2<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.3<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -279,7 +279,7 @@
           <div id="oqMore" class="hidden space-y-3">
             <div class="grid grid-cols-2 gap-2">
               <div><label class="text-slate-400 block mb-1">报价日期</label><input id="oqDate" type="date" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white"></div>
-              <div><label class="text-slate-400 block mb-1">有效期（天）</label><input id="oqValid" type="number" value="30" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
+              <div><label id="oqValidLbl" class="text-slate-400 block mb-1">有效期（工作日）</label><input id="oqValid" type="number" value="10" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
               <div><label class="text-slate-400 block mb-1">上门费 $</label><input id="oqCallout" type="number" step="0.01" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
               <div><label class="text-slate-400 block mb-1">其他费用 $</label><input id="oqExtra" type="number" step="0.01" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
               <div><label class="text-slate-400 block mb-1">除旧膜 $/m²（不含GST）</label><input id="oqStripRate" type="number" step="0.01" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
@@ -425,15 +425,15 @@
                 <p class="font-bold text-slate-900">Ref: <span id="pBankRefText">INV-2026-001</span></p>
               </div>
             </div>
-            <div class="w-56 space-y-1.5 text-right">
+            <div class="w-64 space-y-1.5 text-right">
               <div class="flex justify-between text-slate-600"><span>Subtotal (excl. GST):</span><span id="pSubtotal" class="font-mono">$0.00</span></div>
               <div class="flex justify-between text-slate-600"><span>15% GST:</span><span id="pGst" class="font-mono">$0.00</span></div>
-              <div class="flex justify-between text-base font-black text-slate-900 pt-1 border-t border-slate-200"><span id="pTotalLabel">Total Due:</span><span id="pTotal" class="font-mono text-sky-700">$0.00</span></div>
+              <div class="flex justify-between text-base font-black text-slate-900 pt-1 border-t border-slate-200"><span id="pTotalLabel" class="whitespace-nowrap">Total Due (incl. GST):</span><span id="pTotal" class="font-mono text-sky-700">$0.00</span></div>
             </div>
           </div>
 
           <div id="pFootNote" class="text-center pt-8 border-t border-slate-200 text-[11px] text-slate-500">
-            Thank you for choosing Bayview Window Tinting! Quality Guaranteed.
+            Thank you for choosing Bayview Window Tinting!
           </div>
 
           <div class="no-print flex justify-end gap-2 pt-4">
@@ -559,7 +559,7 @@
         <div data-for="invoice reminder"><label class="text-[10px] text-slate-400 block">发票编号</label><input type="text" id="emInv" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
         <div data-for="invoice quote reminder quote_followup"><label class="text-[10px] text-slate-400 block">金额 (含 GST)</label><input type="text" id="emTotal" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
         <div data-for="invoice reminder"><label class="text-[10px] text-slate-400 block">付款到期日</label><input type="text" id="emDue" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
-        <div data-for="quote quote_followup"><label class="text-[10px] text-slate-400 block">报价有效期（天）</label><input type="number" id="emValid" value="30" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
+        <div data-for="quote quote_followup"><label id="emValidLbl" class="text-[10px] text-slate-400 block">报价有效期（工作日）</label><input type="number" id="emValid" value="10" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
       </div>
       <div>
         <label class="text-[10px] text-slate-400 block">邮件标题</label>
@@ -971,7 +971,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.2', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.3', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1227,13 +1227,14 @@ function onEmailTemplateChange() {
   updateEmailFieldVisibility(tpl);
   renderEmailPreview();
 }
+function emValidUnit() { const q = emailCtx && emailCtx.job && emailCtx.job.quote; return q ? (q.validUnit || '') : 'work'; }
 function openEmailModal(ctx) {
   emailCtx = ctx;
   const el = id => document.getElementById(id);
   el('emName').value = emFirstName(ctx.name);
   el('emTo').value = ctx.email || '';
   el('emWork').value = 'window tinting application';
-  el('emValid').value = 30;
+  { const q0 = ctx.job && ctx.job.quote; el('emValid').value = (q0 && Number(q0.validDays)) || (q0 ? 30 : 10); const lb = el('emValidLbl'); if (lb) lb.textContent = emValidUnit() === 'work' ? '报价有效期（工作日）' : '报价有效期（天）'; }
   const tpl = ctx.template || (ctx.job && ctx.job.invoice ? 'invoice' : 'quote');
   el('emTemplate').value = tpl;
   emFillDefaults(tpl);
@@ -1277,11 +1278,11 @@ function renderEmailPreview() {
 <li><b>Reference:</b> ${inv}</li>`;
   const pay = payInfo(emailCtx && emailCtx.job);
   const hasPaid = !!(pay && pay.paid > 0);
-  const sig = `<p>Kind regards,</p><p><b>${B.sender}</b><br>${B.biz}<br>📞 ${B.phone}</p>`;
+  const sig = `<p>Kind regards,</p><p><b>${B.sender}</b></p>`;
   let subject = '', body = '';
   if (tpl === 'quote') {
-    const days = parseInt(v('emValid'), 10) || 30;
-    const valid = addDaysNZ((emailCtx && emailCtx.job && (emailCtx.job.quoteDate || (emailCtx.job.quote && emailCtx.job.quote.date))) || todayISO(), days);
+    const vq = { validDays: parseInt(v('emValid'), 10) || (emValidUnit() === 'work' ? 10 : 30), validUnit: emValidUnit() };
+    const valid = formatDateNZ(quoteExpiryISO((emailCtx && emailCtx.job && (emailCtx.job.quoteDate || (emailCtx.job.quote && emailCtx.job.quote.date))) || todayISO(), vq));
     const totNum = parseFloat(String(totalRaw).replace(/[^0-9.]/g, ''));
     const excl = isNaN(totNum) ? '' : emMoney(totNum / 1.15);
     const gst = isNaN(totNum) ? '' : emMoney(totNum - totNum / 1.15);
@@ -1301,9 +1302,9 @@ function renderEmailPreview() {
 <p>If you're happy to go ahead, just reply to this email or give me a call and we'll arrange a time that suits you. Please don't hesitate to reach out if you have any questions.</p>
 ${sig}`;
   } else if (tpl === 'quote_followup') {
-    const days = parseInt(v('emValid'), 10) || 30;
+    const vq = { validDays: parseInt(v('emValid'), 10) || (emValidUnit() === 'work' ? 10 : 30), validUnit: emValidUnit() };
     const ej = emailCtx && emailCtx.job, ca = ej && ej.createdAt, qd0 = ej && (ej.quoteDate || (ej.quote && ej.quote.date));
-    const valid = qd0 ? addDaysNZ(qd0, days) : (ca ? addDaysNZ(isoOf(new Date(ca)), days) : '');
+    const valid = qd0 ? formatDateNZ(quoteExpiryISO(qd0, vq)) : (ca ? formatDateNZ(quoteExpiryISO(isoOf(new Date(ca)), vq)) : '');
     subject = 'Following up on your window tinting quote';
     body = `<p>Hi ${name},</p>
 <p>I hope you're doing well. I just wanted to follow up on the quote I recently sent through for the ${work} at your property.</p>
@@ -1327,8 +1328,7 @@ ${sig}`;
   } else {
     subject = `Tax Invoice ${v('emInv') || ''} - Bayview Window Tinting`.replace('  ', ' ');
     body = `<p>Hi ${name},</p>
-<p>Hope you're doing well, and that you are enjoying your new window tinting!</p>
-<p>Please find attached the Tax Invoice <b>${inv}</b> for the recent ${work} at your property.</p>
+<p>Thank you for choosing Bayview Window Tinting. Please find attached Tax Invoice <b>${inv}</b> for the ${(!v('emWork') || /^window tinting application$/i.test(v('emWork').trim())) ? 'window tinting' : work} at your property.</p>
 <p><b>Payment Details:</b></p>
 <ul>
 ${hasPaid ? `<li><b>Invoice Total (Incl. GST):</b> ${emMoney(pay.total)}</li>
@@ -1340,7 +1340,7 @@ ${hasPaid ? `<li><b>Invoice Total (Incl. GST):</b> ${emMoney(pay.total)}</li>
 <li><b>Account Number:</b> ${B.accNo}</li>
 <li><b>Reference:</b> ${inv}</li>
 </ul>
-<p>If you have any questions or if there's anything else you need, please don't hesitate to reach out. Thank you once again for choosing Bayview Window Tinting!</p>
+<p>If you have any questions or if there's anything else you need, please don't hesitate to reach out.</p>
 ${sig}`;
   }
   document.getElementById('emSubject').value = subject;
@@ -1517,7 +1517,7 @@ function jobPhotoKind(j, today) {   // 'quote' = 没成交且报价有效期已�
   if (!j.invoice && (st.startsWith('Inquiry') || st.startsWith('Quote'))) {
     const qd = j.quoteDate || (j.quote && j.quote.date) || '';
     let expire = '';
-    if (qd) expire = isoAddDays(qd, Number(j.quote && j.quote.validDays) || PHOTO_DAYS_QUOTE);
+    if (qd) expire = Number(j.quote && j.quote.validDays) ? quoteExpiryISO(qd, j.quote) : isoAddDays(qd, PHOTO_DAYS_QUOTE);
     else if (j.createdAt) { const t = isNaN(Number(j.createdAt)) ? Date.parse(j.createdAt) : Number(j.createdAt); if (!isNaN(t)) expire = isoAddDays(isoOf(new Date(t)), PHOTO_DAYS_QUOTE); }
     return expire && today > expire ? 'quote' : '';
   }
@@ -2098,7 +2098,7 @@ const BIZ_KEYS = { bank: 'bzBank', accName: 'bzAccName', accNo: 'bzAccNo', email
 function bizSettings() { const b = loadSettings().biz || {}, o = {}; Object.keys(BIZ_KEYS).forEach(k => { o[k] = String(b[k] || '').trim(); }); return o; }
 function applyBizToDoc(mode) {   // 把设置页的信息填进打印版（发票 / 报价单）
   const b = bizSettings(), g = (id) => document.getElementById(id);
-  setPrintLine('pBizContact', [b.email ? 'Email: ' + b.email : '', b.phone ? 'Phone: ' + b.phone : ''].filter(Boolean).join(' | '));
+  setPrintLine('pBizContact', [b.email ? 'Email: ' + b.email : '', b.phone ? 'Phone: ' + fmtNzPhone(b.phone) : ''].filter(Boolean).join(' | '));
   setPrintLine('pBizGst', b.gst ? 'GST Reg No: ' + b.gst : '');
   setPrintLine('pBankLine', b.bank ? 'Bank: ' + b.bank : ''); setPrintLine('pBankAccLine', b.accNo ? 'Account: ' + b.accNo : ''); setPrintLine('pBankNameLine', b.accName ? 'Name: ' + b.accName : '');
   if (mode === 'invoice') {
@@ -2159,7 +2159,56 @@ function deleteTemplate(id) {
 }
 
 // ============ v12.34：报价（共用数据）/ 正式报价单 / 转发票 ============
-const QUOTE_TERMS = (d) => `This quote is valid for ${d} days from the date of issue.`;
+// ---- v14.3：新西兰公共假期（Tauranga：含 Auckland Anniversary）+ 工作日有效期 ----
+const MIN_VISIT_CHARGE = 200;   // 每次上门最低收费（不含 GST）。只用于提醒和默认条款，不会自动改金额
+const MIN_CHARGE_TERMS = `This quotation is for all listed areas completed together in one visit. If you prefer to proceed with only some areas first, a minimum charge of $${MIN_VISIT_CHARGE} + GST applies per visit, and pricing for the remaining areas will be confirmed separately.`;
+const NZ_MATARIKI = { 2022: '06-24', 2023: '07-14', 2024: '06-28', 2025: '06-20', 2026: '07-10', 2027: '06-25', 2028: '07-14', 2029: '07-06', 2030: '06-21', 2031: '07-11', 2032: '07-02', 2033: '06-24', 2034: '07-07', 2035: '06-29', 2036: '07-18', 2037: '07-10', 2038: '06-25', 2039: '07-15', 2040: '07-06', 2041: '07-19', 2042: '07-11', 2043: '07-03', 2044: '06-24' };   // 政府公布的日期，只到 2044 年
+const _nzHolCache = {};
+function nzHolidays(y) {
+  if (_nzHolCache[y]) return _nzHolCache[y];
+  const S = new Set(), pad = (n) => String(n).padStart(2, '0');
+  const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const mk = (m, d) => new Date(y, m - 1, d);
+  const shift = (d0, n) => new Date(d0.getFullYear(), d0.getMonth(), d0.getDate() + n);
+  const toMon = (d0) => { const w = d0.getDay(); return w === 6 ? shift(d0, 2) : w === 0 ? shift(d0, 1) : d0; };   // 周六/周日 → 顺延到周一
+  const plus2 = (d0) => { const w = d0.getDay(); return (w === 6 || w === 0) ? shift(d0, 2) : d0; };   // 元旦翌日、圣诞、节礼日的顺延
+  const ny = toMon(mk(1, 1)); let dan = plus2(mk(1, 2)); if (iso(dan) === iso(ny)) dan = shift(dan, 1);
+  S.add(iso(ny)); S.add(iso(dan));
+  S.add(iso(toMon(mk(2, 6)))); S.add(iso(toMon(mk(4, 25))));   // Waitangi Day、ANZAC Day（落在周末顺延到周一）
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const em = Math.floor((h + l - 7 * m + 114) / 31), ed = ((h + l - 7 * m + 114) % 31) + 1, easter = mk(em, ed);
+  S.add(iso(shift(easter, -2))); S.add(iso(shift(easter, 1)));   // Good Friday、Easter Monday
+  const nthMon = (month, n) => { const first = mk(month, 1), off = (8 - first.getDay()) % 7; return mk(month, 1 + off + 7 * (n - 1)); };
+  S.add(iso(nthMon(6, 1))); S.add(iso(nthMon(10, 4)));   // King's Birthday（6月第一个周一）、Labour Day（10月第四个周一）
+  if (NZ_MATARIKI[y]) S.add(y + '-' + NZ_MATARIKI[y]);
+  const j29 = mk(1, 29), w = j29.getDay(), off = w === 1 ? 0 : (w >= 2 && w <= 4) ? -(w - 1) : (w === 5 ? 3 : w === 6 ? 2 : 1);
+  S.add(iso(shift(j29, off)));   // Auckland Anniversary Day（Bay of Plenty 同一天）：1月29日最近的周一
+  S.add(iso(plus2(mk(12, 25)))); S.add(iso(plus2(mk(12, 26))));
+  return (_nzHolCache[y] = S);
+}
+function addWorkingDaysISO(iso, n) {
+  const p = String(iso).split('-').map(Number); let d = new Date(p[0], p[1] - 1, p[2]), left = Math.max(0, Math.min(400, Math.floor(Number(n)) || 0));
+  const pad = (x) => String(x).padStart(2, '0');
+  while (left > 0) {
+    d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+    const w = d.getDay(), key = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    if (w !== 0 && w !== 6 && !nzHolidays(d.getFullYear()).has(key)) left--;
+  }
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+function quoteExpiryISO(baseISO, q) {   // 新报价（validUnit='work'）按工作日算；旧报价没有这个字段，仍按日历天
+  const n = Math.max(1, Number(q && q.validDays) || (q && q.validUnit === 'work' ? 10 : 30));
+  return q && q.validUnit === 'work' ? addWorkingDaysISO(baseISO, n) : isoAddDays(baseISO, n);
+}
+function fmtNzPhone(s) {   // 027 448 4555 的分组显示；不是纯数字的（带 +64 等）原样不动
+  const raw = String(s || '').trim(); if (!raw || !/^[\d\s\-()]+$/.test(raw)) return raw;
+  const d = raw.replace(/\D/g, '');
+  if (/^02\d{7,9}$/.test(d)) return d.slice(0, 3) + ' ' + d.slice(3, 6) + ' ' + d.slice(6);
+  if (/^0[3-9]\d{7}$/.test(d)) return d.slice(0, 2) + ' ' + d.slice(2, 5) + ' ' + d.slice(5);
+  return raw;
+}
+const QUOTE_TERMS = (d, unit) => `This quote is valid for ${d} ${unit === 'work' ? 'working days' : 'days'} from the date of issue.` + (unit === 'work' ? '\n' + MIN_CHARGE_TERMS : '');
 const LBL_FILM = 'Supply & install new film', LBL_STRIP = 'Remove existing film';
 function lblOf(q, kind) { const v = String((q && (kind === 'strip' ? q.lblStrip : q.lblFilm)) || '').trim(); return v || (kind === 'strip' ? LBL_STRIP : LBL_FILM); }
 function stripRateOf(q) { const v = Number(q && q.stripRate); return v > 0 ? v : priceSettings().strip; }
@@ -2170,7 +2219,7 @@ function areaRoundOptions(q) {
   return list.map(([v, t]) => `<option value="${v}"${m === v ? ' selected' : ''}>${t}</option>`).join('');
 }
 function fmtArea(x) { x = Number(x) || 0; return Number.isInteger(x) ? String(x) : x.toFixed(2); }
-function newQuote() { return { basis: 'glass', rate: '', round: 0, areaRound: 'round', jobType: '', stripRate: priceSettings().strip, lblFilm: LBL_FILM, lblStrip: LBL_STRIP, callout: 0, extra: 0, display: 'rooms', validDays: 30, overrides: {}, terms: QUOTE_TERMS(30), termsAuto: true }; }
+function newQuote() { return { basis: 'glass', rate: '', round: 0, areaRound: 'round', jobType: '', stripRate: priceSettings().strip, lblFilm: LBL_FILM, lblStrip: LBL_STRIP, callout: 0, extra: 0, display: 'rooms', validDays: 10, validUnit: 'work', overrides: {}, terms: QUOTE_TERMS(10, 'work'), termsAuto: true }; }
 function panelsSig(ps, zones) {
   const on = zones && zones.length ? Object.fromEntries(zones.map(z => [z.id, z.active !== false])) : null;
   return JSON.stringify((ps || []).map(p => { const a = [String(p.label || '').trim(), Number(p.w) || 0, Number(p.h) || 0, Number(p.qty) || 1]; if (on) { const zid = panelZoneId(p, zones); a.push(zid, on[zid]); if (p.strip) a.push('s'); } return a; }));
@@ -2296,8 +2345,8 @@ function oqRead() {
   const q = optQuote; q.basis = v('oqBasis'); q.rate = v('oqRate'); q.callout = Number(v('oqCallout')) || 0; q.extra = Number(v('oqExtra')) || 0;
   q.stripRate = Number(v('oqStripRate')) || 0; q.jobType = v('oqType'); q.lblFilm = v('oqLblFilm'); q.lblStrip = v('oqLblStrip');
   const ar = v('oqAreaRound'); if (ar === 'legacy') delete q.areaRound; else if (ar) q.areaRound = ar;
-  q.display = v('oqDisplay'); const vd = Math.max(1, parseInt(v('oqValid'), 10) || 30);
-  if (vd !== q.validDays) { q.validDays = vd; if (q.termsAuto) { q.terms = QUOTE_TERMS(vd); document.getElementById('oqTerms').value = q.terms; } }
+  q.display = v('oqDisplay'); const vd = Math.max(1, parseInt(v('oqValid'), 10) || (q.validUnit === 'work' ? 10 : 30));
+  if (vd !== q.validDays) { q.validDays = vd; if (q.termsAuto) { q.terms = QUOTE_TERMS(vd, q.validUnit); document.getElementById('oqTerms').value = q.terms; } }
 }
 function oqWrite() {
   const q = optQuote, set = (id, v) => { document.getElementById(id).value = v; };
@@ -2305,7 +2354,8 @@ function oqWrite() {
   set('oqType', q.jobType || ''); set('oqStripRate', stripRateOf(q)); set('oqLblFilm', q.lblFilm || LBL_FILM); set('oqLblStrip', q.lblStrip || LBL_STRIP);
   document.getElementById('oqAreaRound').innerHTML = areaRoundOptions(q);
   oqEditKey = null; { const mo = document.getElementById('oqMore'); if (mo) { const open = !!(Number(q.callout) || Number(q.extra)); mo.classList.toggle('hidden', !open); const mb = document.getElementById('oqMoreBtn'); if (mb) mb.textContent = mb.textContent.replace(/^[▾▸]/, open ? '▾' : '▸'); } }
-  oqSyncLabels(); set('oqDisplay', q.display || 'rooms'); set('oqValid', q.validDays || 30); set('oqTerms', q.terms || QUOTE_TERMS(q.validDays || 30));
+  oqSyncLabels(); set('oqDisplay', q.display || 'rooms'); set('oqValid', q.validDays || (q.validUnit === 'work' ? 10 : 30)); set('oqTerms', q.terms || QUOTE_TERMS(q.validDays || (q.validUnit === 'work' ? 10 : 30), q.validUnit));
+  { const vl = document.getElementById('oqValidLbl'); if (vl) vl.textContent = q.validUnit === 'work' ? '有效期（工作日）' : '有效期（天）'; }
 }
 function oqLoadFromJob(job) {
   oqEditKey = null;
@@ -2374,7 +2424,7 @@ function renderOptQuote(keepRows) {
   const roundNote = (act, per) => rounded ? `（实际 ${act.toFixed(2)} m²，${per ? '各区域分别' : ''}${modeName}）` : '';
   const sumHead = c.fixed ? `一口价 <b>${money2(c.base)}</b>` + (d.glassArea > 0 && c.base > 0 ? `（折合玻璃净面积约 ${money2(c.base / d.glassArea)}/m²）` : '') + (c.stripSum > 0 ? `<br>其中除旧膜约 ${money2(c.stripSum)}（按面积比例分摊）` : '')
     : `${baseName} ${fmtArea(c.basisArea)} m²${roundNote(c.filmActual, optQuote.basis !== 'film')} × ${money2(optQuote.rate)} = <b>${money2(c.base)}</b>` + (c.step ? `（各区域取整到 $${c.step}）` : '') + (c.stripBilled > 0 ? `<br>除旧膜 ${fmtArea(c.stripBilled)} m²${roundNote(c.stripActual, true)} × ${money2(c.stripRate)} = <b>${money2(c.stripAuto)}</b>` : '');
-  document.getElementById('oqSummary').innerHTML = sumHead + (c.partial ? '<br><span class="text-amber-300">⚠️ 一口价是全部区域的价格；只做已勾选的部分需要重新定价，出发票前会提示你填金额</span>' : '');
+  document.getElementById('oqSummary').innerHTML = sumHead + (c.partial ? '<br><span class="text-amber-300">⚠️ 一口价是全部区域的价格；只做已勾选的部分需要重新定价，出发票前会提示你填金额</span>' : '') + (c.subtotal > 0 && c.subtotal < MIN_VISIT_CHARGE ? `<br><span class="text-amber-300">⚠️ 不含GST合计 ${money2(c.subtotal)}，低于每次上门最低收费 ${money2(MIN_VISIT_CHARGE)}。只做这部分的话，请手动把金额改到最低收费</span>` : '');
   const rate = Number(optQuote.rate) || 0, filmCost = d.L / 1000 * (parseFloat(document.getElementById('optCostPerM').value) || 0), rev = c.subtotal - c.stripSum, profit = rev - filmCost;
   const calcAs = (b) => quoteCalc(Object.assign({}, optQuote, { basis: b, overrides: {} }), panels, areas, optZones).subtotal;
   const profTxt = `膜成本约 ${money2(filmCost)}，${c.stripSum > 0 ? '贴膜部分（不含除膜收入）' : '本报价'}预计毛利 ${money2(profit)}（${rev > 0 ? (profit / rev * 100).toFixed(0) : 0}%）`;
@@ -2499,9 +2549,9 @@ async function openQuoteDoc(clientId, jobId) {
 function setDocMode(mode) {
   const quote = mode === 'quote', g = (id) => document.getElementById(id);
   g('pDocTitle').textContent = quote ? 'QUOTE' : 'TAX INVOICE'; g('pDueLabel').textContent = quote ? 'Valid Until:' : 'Payment Due:';
-  g('pBilledLabel').textContent = quote ? 'Prepared For:' : 'Billed To:'; g('pTotalLabel').textContent = quote ? 'Total (incl. GST):' : 'Total Due:';
+  g('pBilledLabel').textContent = quote ? 'Prepared For:' : 'Billed To:'; g('pTotalLabel').textContent = quote ? 'Total (incl. GST):' : 'Total Due (incl. GST):';
   g('pBankBlock').classList.toggle('hidden', quote); g('pTermsBlock').classList.toggle('hidden', !quote);
-  g('pFootNote').textContent = quote ? 'Thank you for the opportunity to quote. We look forward to working with you!' : 'Thank you for choosing Bayview Window Tinting! Quality Guaranteed.';
+  g('pFootNote').textContent = quote ? 'Thank you for the opportunity to quote. We look forward to working with you!' : 'Thank you for choosing Bayview Window Tinting!';
   document.querySelectorAll('#printableInvoice .inv-only').forEach(b => b.classList.toggle('hidden', quote));
   document.querySelectorAll('#printableInvoice .quote-only').forEach(b => b.classList.toggle('hidden', !quote));
   if (quote) g('pCopyBadge').classList.add('hidden');
@@ -2513,11 +2563,11 @@ function renderQuoteDocument(c, j) {
   invDocHold = true; autoFillSeq++;
   g('printableInvoice').classList.remove('hidden'); setDocMode('quote');
   const qd = j.quoteDate || q.date || todayISO();
-  g('pInvNum').textContent = q.number; g('pInvDate').textContent = formatDateNZ(qd); g('pDueDate').textContent = addDaysNZ(qd, q.validDays || 30);
+  g('pInvNum').textContent = q.number; g('pInvDate').textContent = formatDateNZ(qd); g('pDueDate').textContent = formatDateNZ(quoteExpiryISO(qd, q));
   g('pClientName').textContent = c.name;
   const ap = []; if (c.address && !/^address tbd$/i.test(c.address.trim())) ap.push(c.address.trim()); if (c.suburb) ap.push(c.suburb);
   setPrintLine('pClientAddress', ap.join(', ')); setPrintLine('pClientPhone', c.phone ? 'Phone: ' + c.phone : ''); setPrintLine('pJobSite', '');
-  g('pInvoiceThead').innerHTML = '<tr class="text-slate-700 font-bold bg-slate-100"><th class="p-2.5 w-4/5">Description</th><th class="p-2.5 text-right">Amount (excl. GST)</th></tr>';
+  g('pInvoiceThead').innerHTML = '<tr class="text-slate-700 font-bold bg-slate-100"><th class="p-2.5 w-3/4">Description</th><th class="p-2.5 text-right whitespace-nowrap">Amount (excl. GST)</th></tr>';
   const scope = String(j.title || '').split('\n').map(x => x.trim()).filter(Boolean);
   const row = (d, a, extra) => `<tr><td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${d}</td><td class="p-2.5 text-right font-mono font-bold">${a === null ? '' : '$' + Number(a).toFixed(2)}</td></tr>`;
   let h = '';
@@ -3751,9 +3801,9 @@ async function renderPrintableInvoice(opts = {}) {
   });
 
   if (hasAreaMode) {
-    pThead.innerHTML = `<tr class="text-slate-700 font-bold bg-slate-100"><th class="p-2.5 w-3/5">Item Description</th><th class="p-2.5 text-center">Qty</th><th class="p-2.5 text-right">Rate / Detail (excl.)</th><th class="p-2.5 text-right">Amount (excl. GST)</th></tr>`;
+    pThead.innerHTML = `<tr class="text-slate-700 font-bold bg-slate-100"><th class="p-2.5 w-3/5">Item Description</th><th class="p-2.5 text-center">Qty</th><th class="p-2.5 text-right">Rate / Detail (excl.)</th><th class="p-2.5 text-right whitespace-nowrap">Amount (excl. GST)</th></tr>`;
   } else {
-    pThead.innerHTML = `<tr class="text-slate-700 font-bold bg-slate-100"><th class="p-2.5 w-4/5">Item Description</th><th class="p-2.5 text-right">Amount (excl. GST)</th></tr>`;
+    pThead.innerHTML = `<tr class="text-slate-700 font-bold bg-slate-100"><th class="p-2.5 w-3/4">Item Description</th><th class="p-2.5 text-right whitespace-nowrap">Amount (excl. GST)</th></tr>`;
   }
 
   let subtotal = 0;
