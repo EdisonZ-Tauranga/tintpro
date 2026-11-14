@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.4 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v14.5 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.4<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.5<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -291,6 +291,7 @@
               <div><label class="text-slate-400 block mb-1">报价单上“除膜”行的说明（可改）</label><input id="oqLblStrip" type="text" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white"></div>
             </div>
             <div><label class="text-slate-400 block mb-1">条款（显示在报价单上，可自由编辑）</label><textarea id="oqTerms" rows="3" oninput="oqTermsEdited()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white"></textarea></div>
+            <div class="space-y-1"><div class="flex items-center gap-2 flex-wrap"><label class="flex items-center gap-2 text-slate-300"><input id="oqMinOn" type="checkbox" onchange="oqChanged()"> 报价单显示最低收费提示</label><span class="text-slate-400">每次上门最低 $</span><input id="oqMinAmt" type="number" step="0.01" oninput="oqChanged()" class="w-24 bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-white font-mono"><span class="text-slate-400">+ GST</span></div><p class="text-[11px] text-slate-500">勾上后，如果有区域的金额低于这个数，报价单上这些区域会加 *，并加一句英文说明。</p></div>
           </div>
         </div>
       </div>
@@ -614,7 +615,8 @@
   <label class="block text-xs text-slate-400">住宅贴膜 $/m²<input id="prRes" type="number" step="0.01" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label>
   <label class="block text-xs text-slate-400">商业贴膜 $/m²<input id="prCom" type="number" step="0.01" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label>
   <label class="block text-xs text-slate-400">除旧膜 $/m²<input id="prStrip" type="number" step="0.01" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label>
-  <p class="text-[11px] text-slate-400">只影响以后新建的报价，或在报价里重新选择类型时。已经保存的报价金额不会自动变化。</p>
+  <label class="block text-xs text-slate-400">每次上门最低收费 $（不含 GST，报价单提示用）<input id="prMin" type="number" step="0.01" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label>
+  <p class="text-[11px] text-slate-400">只影响以后新建的报价，或在报价里重新选择类型时。已经保存的报价金额不会自动变化；最低收费数字每张报价可以单独改。</p>
   <p class="text-xs font-bold text-white pt-2 border-t border-slate-700">收款与联系信息（印在发票、报价单和邮件上）</p>
   <label class="block text-xs text-slate-400">银行名称<input id="bzBank" type="text" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white"></label>
   <label class="block text-xs text-slate-400">账户名<input id="bzAccName" type="text" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white"></label>
@@ -971,7 +973,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.4', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.5', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -2089,10 +2091,10 @@ const SETTINGS_KEY = 'tintpro_settings_v1';
 function loadSettings() { try { const x = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); return x && Array.isArray(x.templates) ? x : { templates: [], updatedAt: 0 }; } catch(e) { return { templates: [], updatedAt: 0 }; } }
 function saveSettings(x) { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(x)); } catch(e) {} }
 // ---- v12.38：默认单价（住宅 / 商业 / 除旧膜），跟着设置一起同步到 Google Drive ----
-const DEFAULT_PRICES = { res: 75, com: 68, strip: 25 };
+const DEFAULT_PRICES = { res: 75, com: 68, strip: 25, min: 200 };   // min = 每次上门最低收费（不含 GST），v14.5 起可在设置里改
 function priceSettings() {
   const p = loadSettings().prices || {}, g = (k) => Number(p[k]) > 0 ? Number(p[k]) : DEFAULT_PRICES[k];
-  return { res: g('res'), com: g('com'), strip: g('strip') };
+  return { res: g('res'), com: g('com'), strip: g('strip'), min: g('min') };
 }
 const BIZ_KEYS = { bank: 'bzBank', accName: 'bzAccName', accNo: 'bzAccNo', email: 'bzEmail', phone: 'bzPhone', gst: 'bzGst' };
 function bizSettings() { const b = loadSettings().biz || {}, o = {}; Object.keys(BIZ_KEYS).forEach(k => { o[k] = String(b[k] || '').trim(); }); return o; }
@@ -2113,16 +2115,17 @@ function refreshBizEditor() {   // 发票编辑页里的付款信息
 }
 function openPriceSettings() {
   const p = priceSettings(), b = bizSettings();
-  document.getElementById('prRes').value = p.res; document.getElementById('prCom').value = p.com; document.getElementById('prStrip').value = p.strip;
+  document.getElementById('prRes').value = p.res; document.getElementById('prCom').value = p.com; document.getElementById('prStrip').value = p.strip; document.getElementById('prMin').value = p.min;
   document.getElementById('stAutoConn').checked = autoConnectOn();
   Object.keys(BIZ_KEYS).forEach(k => { document.getElementById(BIZ_KEYS[k]).value = b[k]; });
   document.getElementById('priceModal').classList.remove('hidden');
 }
 function closePriceSettings() { document.getElementById('priceModal').classList.add('hidden'); }
 function savePriceSettings() {
-  const v = (id) => Number(document.getElementById(id).value), res = v('prRes'), com = v('prCom'), strip = v('prStrip');
+  const v = (id) => Number(document.getElementById(id).value), res = v('prRes'), com = v('prCom'), strip = v('prStrip'), min = v('prMin');
   if (!(res > 0) || !(com > 0) || !(strip > 0)) { showToast('三个单价都要大于 0', true); return; }
-  const st = loadSettings(); st.prices = { res, com, strip };
+  if (!(min > 0)) { showToast('最低收费要大于 0', true); return; }
+  const st = loadSettings(); st.prices = { res, com, strip, min };
   st.biz = {}; Object.keys(BIZ_KEYS).forEach(k => { st.biz[k] = document.getElementById(BIZ_KEYS[k]).value.trim(); });
   st.updatedAt = Date.now(); saveSettings(st); refreshBizEditor(); markLocalChange();
   try { localStorage.setItem(AUTOCONN_KEY, document.getElementById('stAutoConn').checked ? '1' : '0'); } catch(e) {}
@@ -2160,7 +2163,8 @@ function deleteTemplate(id) {
 
 // ============ v12.34：报价（共用数据）/ 正式报价单 / 转发票 ============
 // ---- v14.3：新西兰公共假期（Tauranga：含 Auckland Anniversary）+ 工作日有效期 ----
-const MIN_VISIT_CHARGE = 200;   // 每次上门最低收费（不含 GST）。只用于提醒和默认条款，不会自动改金额
+function minAmountOf(q) { const n = Number(q && q.minAmount); return n > 0 ? n : priceSettings().min; }   // 每次上门最低收费（不含 GST）：报价里的数字优先，没有就用设置里的。只用于提醒和报价单提示，不会自动改金额
+function fmtMin(n) { n = Number(n); return Number.isInteger(n) ? String(n) : n.toFixed(2); }
 const OLD_MIN_TERMS = 'This quotation is for all listed areas completed together in one visit. If you prefer to proceed with only some areas first, a minimum charge of $200 + GST applies per visit, and pricing for the remaining areas will be confirmed separately.';   // v14.3 自动写进条款的那段，v14.4 起改成报价单上的自动提示
 function stripOldMinTerms(t) { return String(t || '').split('\n' + OLD_MIN_TERMS).join('').split(OLD_MIN_TERMS).join('').trim(); }
 const NZ_MATARIKI = { 2022: '06-24', 2023: '07-14', 2024: '06-28', 2025: '06-20', 2026: '07-10', 2027: '06-25', 2028: '07-14', 2029: '07-06', 2030: '06-21', 2031: '07-11', 2032: '07-02', 2033: '06-24', 2034: '07-07', 2035: '06-29', 2036: '07-18', 2037: '07-10', 2038: '06-25', 2039: '07-15', 2040: '07-06', 2041: '07-19', 2042: '07-11', 2043: '07-03', 2044: '06-24' };   // 政府公布的日期，只到 2044 年
@@ -2220,7 +2224,7 @@ function areaRoundOptions(q) {
   return list.map(([v, t]) => `<option value="${v}"${m === v ? ' selected' : ''}>${t}</option>`).join('');
 }
 function fmtArea(x) { x = Number(x) || 0; return Number.isInteger(x) ? String(x) : x.toFixed(2); }
-function newQuote() { return { basis: 'glass', rate: '', round: 0, areaRound: 'round', jobType: '', stripRate: priceSettings().strip, lblFilm: LBL_FILM, lblStrip: LBL_STRIP, callout: 0, extra: 0, display: 'rooms', validDays: 10, validUnit: 'work', overrides: {}, terms: QUOTE_TERMS(10, 'work'), termsAuto: true }; }
+function newQuote() { return { basis: 'glass', rate: '', round: 0, areaRound: 'round', jobType: '', stripRate: priceSettings().strip, lblFilm: LBL_FILM, lblStrip: LBL_STRIP, callout: 0, extra: 0, display: 'rooms', validDays: 10, validUnit: 'work', overrides: {}, terms: QUOTE_TERMS(10, 'work'), termsAuto: true, minNotice: false, minAmount: priceSettings().min }; }
 function panelsSig(ps, zones) {
   const on = zones && zones.length ? Object.fromEntries(zones.map(z => [z.id, z.active !== false])) : null;
   return JSON.stringify((ps || []).map(p => { const a = [String(p.label || '').trim(), Number(p.w) || 0, Number(p.h) || 0, Number(p.qty) || 1]; if (on) { const zid = panelZoneId(p, zones); a.push(zid, on[zid]); if (p.strip) a.push('s'); } return a; }));
@@ -2347,7 +2351,9 @@ function oqRead() {
   q.stripRate = Number(v('oqStripRate')) || 0; q.jobType = v('oqType'); q.lblFilm = v('oqLblFilm'); q.lblStrip = v('oqLblStrip');
   const ar = v('oqAreaRound'); if (ar === 'legacy') delete q.areaRound; else if (ar) q.areaRound = ar;
   q.display = v('oqDisplay'); const vd = Math.max(1, parseInt(v('oqValid'), 10) || (q.validUnit === 'work' ? 10 : 30));
-  if (vd !== q.validDays) { q.validDays = vd; if (q.termsAuto) { q.terms = QUOTE_TERMS(vd, q.validUnit); document.getElementById('oqTerms').value = q.terms; } }
+  if (vd !== q.validDays) { const byUser = q.validDays !== undefined; q.validDays = vd; if (byUser && !q.validUnit) q.validUnit = 'work'; if (q.termsAuto) { q.terms = QUOTE_TERMS(vd, q.validUnit); document.getElementById('oqTerms').value = q.terms; } }   // 旧报价（按日历天）一改有效期，就转成按工作日
+  { const vl = document.getElementById('oqValidLbl'); if (vl) vl.textContent = q.validUnit === 'work' ? '有效期（工作日）' : '有效期（天）'; }
+  q.minNotice = !!document.getElementById('oqMinOn').checked; { const ma = Number(v('oqMinAmt')); q.minAmount = ma > 0 ? ma : priceSettings().min; }
 }
 function oqWrite() {
   const q = optQuote, set = (id, v) => { document.getElementById(id).value = v; };
@@ -2357,6 +2363,7 @@ function oqWrite() {
   oqEditKey = null; { const mo = document.getElementById('oqMore'); if (mo) { const open = !!(Number(q.callout) || Number(q.extra)); mo.classList.toggle('hidden', !open); const mb = document.getElementById('oqMoreBtn'); if (mb) mb.textContent = mb.textContent.replace(/^[▾▸]/, open ? '▾' : '▸'); } }
   oqSyncLabels(); set('oqDisplay', q.display || 'rooms'); set('oqValid', q.validDays || (q.validUnit === 'work' ? 10 : 30)); set('oqTerms', q.terms || QUOTE_TERMS(q.validDays || (q.validUnit === 'work' ? 10 : 30), q.validUnit));
   { const vl = document.getElementById('oqValidLbl'); if (vl) vl.textContent = q.validUnit === 'work' ? '有效期（工作日）' : '有效期（天）'; }
+  document.getElementById('oqMinOn').checked = !!q.minNotice; set('oqMinAmt', minAmountOf(q));
 }
 function oqLoadFromJob(job) {
   oqEditKey = null;
@@ -2426,7 +2433,7 @@ function renderOptQuote(keepRows) {
   const roundNote = (act, per) => rounded ? `（实际 ${act.toFixed(2)} m²，${per ? '各区域分别' : ''}${modeName}）` : '';
   const sumHead = c.fixed ? `一口价 <b>${money2(c.base)}</b>` + (d.glassArea > 0 && c.base > 0 ? `（折合玻璃净面积约 ${money2(c.base / d.glassArea)}/m²）` : '') + (c.stripSum > 0 ? `<br>其中除旧膜约 ${money2(c.stripSum)}（按面积比例分摊）` : '')
     : `${baseName} ${fmtArea(c.basisArea)} m²${roundNote(c.filmActual, optQuote.basis !== 'film')} × ${money2(optQuote.rate)} = <b>${money2(c.base)}</b>` + (c.step ? `（各区域取整到 $${c.step}）` : '') + (c.stripBilled > 0 ? `<br>除旧膜 ${fmtArea(c.stripBilled)} m²${roundNote(c.stripActual, true)} × ${money2(c.stripRate)} = <b>${money2(c.stripAuto)}</b>` : '');
-  document.getElementById('oqSummary').innerHTML = sumHead + (c.partial ? '<br><span class="text-amber-300">⚠️ 一口价是全部区域的价格；只做已勾选的部分需要重新定价，出发票前会提示你填金额</span>' : '') + (c.subtotal > 0 && c.subtotal < MIN_VISIT_CHARGE ? `<br><span class="text-amber-300">⚠️ 不含GST合计 ${money2(c.subtotal)}，低于每次上门最低收费 ${money2(MIN_VISIT_CHARGE)}。只做这部分的话，请手动把金额改到最低收费</span>` : '');
+  document.getElementById('oqSummary').innerHTML = sumHead + (c.partial ? '<br><span class="text-amber-300">⚠️ 一口价是全部区域的价格；只做已勾选的部分需要重新定价，出发票前会提示你填金额</span>' : '') + (c.subtotal > 0 && c.subtotal < minAmountOf(optQuote) ? `<br><span class="text-amber-300">⚠️ 不含GST合计 ${money2(c.subtotal)}，低于每次上门最低收费 ${money2(minAmountOf(optQuote))}。只做这部分的话，请手动把金额改到最低收费</span>` : '');
   const rate = Number(optQuote.rate) || 0, filmCost = d.L / 1000 * (parseFloat(document.getElementById('optCostPerM').value) || 0), rev = c.subtotal - c.stripSum, profit = rev - filmCost;
   const calcAs = (b) => quoteCalc(Object.assign({}, optQuote, { basis: b, overrides: {} }), panels, areas, optZones).subtotal;
   const profTxt = `膜成本约 ${money2(filmCost)}，${c.stripSum > 0 ? '贴膜部分（不含除膜收入）' : '本报价'}预计毛利 ${money2(profit)}（${rev > 0 ? (profit / rev * 100).toFixed(0) : 0}%）`;
@@ -2574,7 +2581,7 @@ function renderQuoteDocument(c, j) {
   const row = (d, a, extra) => `<tr><td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${d}</td><td class="p-2.5 text-right font-mono font-bold">${a === null ? '' : '$' + Number(a).toFixed(2)}</td></tr>`;
   let h = '';
   if (scope.length) h += `<tr><td colspan="2" class="p-2.5 text-slate-600 whitespace-pre-line">${escapeHtml(scope.join('\n'))}</td></tr>`;
-  const lowSet = new Set(); if (q.display !== 'total' && calc.rooms.length >= 2) calc.rooms.forEach((r) => { if (r.amount > 0 && r.amount < MIN_VISIT_CHARGE) lowSet.add(r); });
+  const minAmt = minAmountOf(q), lowSet = new Set(); if (q.minNotice && q.display !== 'total' && calc.rooms.length >= 2) calc.rooms.forEach((r) => { if (r.amount > 0 && r.amount < minAmt) lowSet.add(r); });   // 只有这张报价勾了“显示最低收费提示”才加星号和说明
   const star = (r) => lowSet.has(r) ? ' *' : '';
   const hasStrip = calc.rooms.some(r => r.lines.some(l => l.kind === 'strip'));   // 有除膜时：每个区域分成“贴膜 / 除膜”两行，各报各的价钱，不写面积
   if (q.display === 'total') {
@@ -2596,7 +2603,7 @@ function renderQuoteDocument(c, j) {
   });
   if (calc.callout) h += row('Call-out fee', calc.callout);
   if (calc.extra) h += row('Additional charges', calc.extra);
-  if (lowSet.size) h += `<tr><td colspan="2" class="p-2.5 pt-3 text-xs text-slate-600">* Areas marked with an asterisk are priced below our minimum charge. If you choose to proceed with only some areas, a minimum charge of $${MIN_VISIT_CHARGE} + GST per visit applies.</td></tr>`;
+  if (lowSet.size) h += `<tr><td colspan="2" class="p-2.5 pt-3 text-xs text-slate-600">* Areas marked with an asterisk are priced below our minimum charge. If you choose to proceed with only some areas, a minimum charge of $${fmtMin(minAmt)} + GST per visit applies.</td></tr>`;
   g('pInvoiceTbody').innerHTML = h;
   g('pSubtotal').textContent = money2(calc.subtotal); g('pGst').textContent = money2(calc.gst); g('pTotal').textContent = money2(calc.total);
   g('pTermsText').textContent = stripOldMinTerms(q.terms);
