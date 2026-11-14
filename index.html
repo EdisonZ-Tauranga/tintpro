@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.5 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v14.6 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.5<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.6<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -307,9 +307,23 @@
             </h2>
             <p class="text-xs text-slate-400 mt-0.5">开具含 15% GST 的发票</p>
           </div>
-          <button onclick="openNewInvoiceBuilder()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-1.5 justify-center">
-            <i data-lucide="plus" class="w-4 h-4"></i> 新建发票
-          </button>
+          <div class="flex gap-2 justify-end">
+            <button id="invBackBtn" onclick="showInvoiceList()" class="hidden px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-semibold shadow transition">← 发票列表</button>
+            <button onclick="newInvoiceFromList()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-1.5 justify-center">
+              <i data-lucide="plus" class="w-4 h-4"></i> 新建发票
+            </button>
+          </div>
+        </div>
+
+        <div id="invListBox" class="space-y-3">
+          <div id="invGapWarn" class="hidden text-xs bg-amber-500/10 border border-amber-500/40 text-amber-200 rounded-xl p-3 leading-relaxed"></div>
+          <div class="flex flex-wrap gap-2 items-center">
+            <div class="inline-flex rounded-xl overflow-hidden border border-slate-700 text-xs"><button id="invGrpMonth" onclick="setInvView('group','month')" class="px-3 py-1.5">按月</button><button id="invGrpWeek" onclick="setInvView('group','week')" class="px-3 py-1.5">按周</button></div>
+            <input id="invSearch" type="search" placeholder="搜发票号或客户名" oninput="renderInvoiceList()" class="flex-1 min-w-[8rem] bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white">
+          </div>
+          <div class="flex flex-wrap gap-1.5 text-xs"><button id="invSt-all" onclick="setInvView('status','all')" class="px-3 py-1 rounded-full border">全部</button><button id="invSt-unpaid" onclick="setInvView('status','unpaid')" class="px-3 py-1 rounded-full border">未付清</button><button id="invSt-overdue" onclick="setInvView('status','overdue')" class="px-3 py-1 rounded-full border">已逾期</button><button id="invSt-paid" onclick="setInvView('status','paid')" class="px-3 py-1 rounded-full border">已付清</button></div>
+          <div id="invListSummary" class="text-xs text-slate-300 bg-slate-900 border border-slate-700 rounded-xl p-3 font-mono leading-relaxed"></div>
+          <div id="invListBody" class="space-y-3"></div>
         </div>
 
         <div id="invoiceBuilderBox" class="bg-slate-900/90 border border-slate-700 rounded-2xl p-4 sm:p-5 space-y-4 shadow-inner">
@@ -378,6 +392,8 @@
             </button>
           </div>
         </div>
+
+        <div id="invPayPanel" class="no-print hidden bg-slate-900/90 border border-slate-700 rounded-2xl p-4 space-y-2 text-sm"></div>
 
         <!-- 🖨️ A4 打印预览容器 -->
         <div id="printableInvoice" class="bg-white text-slate-900 p-8 rounded-2xl shadow-2xl border border-slate-300 hidden space-y-6">
@@ -973,7 +989,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.5', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.6', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1103,10 +1119,9 @@ function switchTab(tab, opts = {}) {
     updateBottomNav(tab); closeMobileMenu();
     if (tab === 'optimizer') { populateOptClients(); optimizeRollLayout(); }
     if (tab === 'calendar') renderCalendar();
-    if (tab === 'invoices' && !opts.keepInvoice) {
-      invDocHold = false;
-      setInvoiceEditorVisible(true);
-      populateInvoiceClientSelect();   // 内部会载入所选客户的发票或生成新编号
+    if (tab === 'invoices') {
+      if (opts.keepInvoice) invListHide();   // 从别处直接打开某张发票/报价单：不显示列表
+      else { invDocHold = false; showInvoiceList(); }   // v14.6：点“发票”先看发票列表
     }
   } catch(e) {
     console.error("Switch tab error:", e);
@@ -1421,6 +1436,9 @@ function refreshAllLists() {
   if (dbd && !dbd.classList.contains('hidden')) renderDashboard();
   const rc = document.getElementById('tab-receivables');
   if (rc && !rc.classList.contains('hidden')) renderReceivables();
+  const il = document.getElementById('invListBox');
+  if (il && !il.classList.contains('hidden') && inv && !inv.classList.contains('hidden')) renderInvoiceList();
+  if (invPanelCtx && inv && !inv.classList.contains('hidden')) renderInvPayPanel();
 }
 async function requestCloseClientModal() {
   await autoSaveClientModal();   // 先把最后的修改自动保存一次
@@ -1623,6 +1641,102 @@ async function recvReminder(cid, jid) {
   const j = c && c.jobs.find(x => x.id === jid);
   if (j) openEmailModal({ name: c.name, email: c.email || '', job: j, template: 'reminder' });
 }
+
+// ---- v14.6：发票列表（按月/按周分组、状态筛选、搜索、缺号提示、付款记录面板）----
+const invView = { group: 'month', status: 'all' };
+let invPanelCtx = null;
+function setInvView(k, v) { invView[k] = v; renderInvoiceList(); }
+function invListHide() {
+  const lb = document.getElementById('invListBox'); if (lb) lb.classList.add('hidden');
+  const bb = document.getElementById('invBackBtn'); if (bb) bb.classList.remove('hidden');
+}
+function showInvoiceList() {
+  invDocHold = false; invPanelCtx = null;
+  const lb = document.getElementById('invListBox'); if (lb) lb.classList.remove('hidden');
+  const bb = document.getElementById('invBackBtn'); if (bb) bb.classList.add('hidden');
+  const box = document.getElementById('invoiceBuilderBox'); if (box) box.classList.add('hidden');
+  const pv = document.getElementById('printableInvoice'); if (pv) pv.classList.add('hidden');
+  renderInvPayPanel(); renderInvoiceList(); window.scrollTo({ top: 0 });
+}
+async function newInvoiceFromList() {
+  invDocHold = false; setInvoiceEditorVisible(true);
+  await populateInvoiceClientSelect(); await openNewInvoiceBuilder(); window.scrollTo({ top: 0 });
+}
+function invGapInfo(allClients) {   // 发票号缺号 / 重复（回收站里的客户也算，因为它们占用编号）
+  const years = {};
+  allClients.forEach(c => (c.jobs || []).forEach(j => { const m = j.invoice && String(j.invoice.invNumber || '').match(/^INV-(\d{4})-(\d+)$/); if (!m) return; const y = m[1], n = parseInt(m[2], 10); (years[y] = years[y] || {})[n] = (years[y][n] || 0) + 1; }));
+  const missing = [], dup = [];
+  Object.keys(years).sort().forEach(y => {
+    const nums = Object.keys(years[y]).map(Number).sort((a, b) => a - b), pad = (n) => `INV-${y}-${String(n).padStart(3, '0')}`;
+    for (let n = nums[0]; n <= nums[nums.length - 1]; n++) if (!years[y][n]) missing.push(pad(n));
+    nums.forEach(n => { if (years[y][n] > 1) dup.push(`${pad(n)}（${years[y][n]} 次）`); });
+  });
+  return { missing, dup };
+}
+async function renderInvoiceList() {
+  const g = (id) => document.getElementById(id), body = g('invListBody'); if (!body) return;
+  const all = await dbGetAllClients(), clients = all.filter(c => !c.deletedAt);
+  // 按钮高亮
+  const on = 'bg-sky-600 text-white border-sky-500', off = 'bg-slate-900 text-slate-300 border-slate-700';
+  g('invGrpMonth').className = 'px-3 py-1.5 ' + (invView.group === 'month' ? 'bg-sky-600 text-white' : 'bg-slate-900 text-slate-300');
+  g('invGrpWeek').className = 'px-3 py-1.5 ' + (invView.group === 'week' ? 'bg-sky-600 text-white' : 'bg-slate-900 text-slate-300');
+  ['all', 'unpaid', 'overdue', 'paid'].forEach(k => { g('invSt-' + k).className = 'px-3 py-1 rounded-full border ' + (invView.status === k ? on : off); });
+  // 缺号提示
+  const gap = invGapInfo(all), warn = g('invGapWarn'), parts = [];
+  if (gap.missing.length) parts.push(`发票号不连续，缺：${gap.missing.slice(0, 10).join('、')}${gap.missing.length > 10 ? ` 等 ${gap.missing.length} 个` : ''}。发票要按顺序编号，请确认是不是被删除了，或同步时被另一台设备的旧数据覆盖了。`);
+  if (gap.dup.length) parts.push(`发票号重复：${gap.dup.join('、')}。请检查是不是两台设备同时开了发票。`);
+  warn.innerHTML = parts.map(t => '⚠️ ' + escapeHtml(t)).join('<br>'); warn.classList.toggle('hidden', !parts.length);
+  // 数据
+  const q = (g('invSearch').value || '').trim().toLowerCase(), rows = [];
+  clients.forEach(c => (c.jobs || []).forEach(j => {
+    const inv = j.invoice; if (!inv || !inv.invNumber) return; const p = payInfo(j); if (!p) return;
+    if (invView.status === 'unpaid' && !(p.out > 0.005)) return;
+    if (invView.status === 'overdue' && p.state !== 'overdue') return;
+    if (invView.status === 'paid' && p.state !== 'paid') return;
+    if (q && !(String(inv.invNumber).toLowerCase().includes(q) || String(c.name || '').toLowerCase().includes(q))) return;
+    const outv = Math.max(0, p.out), ex = inv.subtotal != null ? r2(inv.subtotal) : r2(p.total / 1.15);
+    rows.push({ c, j, inv, p, ex, gst: r2(p.total - ex), paid: r2(p.total - outv), out: outv });
+  }));
+  rows.sort((a, b) => String(b.inv.invDate || '').localeCompare(String(a.inv.invDate || '')) || String(b.inv.invNumber).localeCompare(String(a.inv.invNumber)));
+  const stat = (arr) => ({ n: arr.length, ex: r2(arr.reduce((a, r) => a + r.ex, 0)), gst: r2(arr.reduce((a, r) => a + r.gst, 0)), total: r2(arr.reduce((a, r) => a + r.p.total, 0)), paid: r2(arr.reduce((a, r) => a + r.paid, 0)), out: r2(arr.reduce((a, r) => a + r.out, 0)) });
+  const statLine = (t) => `不含 GST ${salesMoney(t.ex)} · GST ${salesMoney(t.gst)} · 含 GST ${salesMoney(t.total)} · 已收 ${salesMoney(t.paid)} · <span class="text-amber-300">欠 ${salesMoney(t.out)}</span>`;
+  const tot = stat(rows);
+  g('invListSummary').innerHTML = rows.length ? `<div class="text-slate-400 font-sans mb-0.5">当前筛选：共 ${tot.n} 张</div>${statLine(tot)}` : '';
+  if (!rows.length) { body.innerHTML = `<div class="text-center text-slate-500 text-sm py-10">${(q || invView.status !== 'all') ? '没有符合条件的发票' : '还没有开出的发票'}</div>`; return; }
+  // 分组
+  const dm = (x) => x.slice(8, 10) + '/' + x.slice(5, 7), groups = {};
+  rows.forEach(r => {
+    const d = r.inv.invDate || '0000-00-00';
+    const key = invView.group === 'week' ? weekStartISO(d) : d.slice(0, 7);
+    (groups[key] = groups[key] || []).push(r);
+  });
+  const label = (k) => invView.group === 'week' ? `${dm(k)} – ${formatDateNZ(isoAddDays(k, 6))}` : `${k.slice(0, 4)} 年 ${Number(k.slice(5, 7))} 月`;
+  const chip = { overdue: 'bg-rose-500/20 text-rose-300 border-rose-500/40', partial: 'bg-amber-500/20 text-amber-300 border-amber-500/40', unpaid: 'bg-sky-500/20 text-sky-300 border-sky-500/40', paid: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' };
+  body.innerHTML = Object.keys(groups).sort().reverse().map((k, gi) => {
+    const arr = groups[k], t = stat(arr);
+    const cards = arr.map(({ c, j, inv, p, paid, out }) => `<div class="bg-slate-900 border ${p.state === 'overdue' ? 'border-rose-500/50' : 'border-slate-700'} rounded-xl p-3 space-y-1.5">
+      <div class="flex justify-between items-start gap-2 cursor-pointer" onclick="openInvoiceByIds('${c.id}','${j.id}',true)"><div><div class="font-bold text-white text-sm">${escapeHtml(c.name)}</div><div class="text-[11px] text-slate-400 font-mono">${escapeHtml(inv.invNumber)} · 开票 ${formatDateNZ(inv.invDate)} · 到期 ${formatDateNZ(p.due)}</div></div>
+      <span class="text-[11px] px-2 py-0.5 rounded-full border whitespace-nowrap ${chip[p.state]}">${p.state === 'overdue' ? '逾期 ' + p.overdue + ' 天' : p.state === 'partial' ? '部分已付' : p.state === 'paid' ? '已付清' : '未付款'}</span></div>
+      <div class="text-xs text-slate-300 font-mono">含 GST ${salesMoney(p.total)} · 已收 ${salesMoney(paid)} · <b class="${out > 0.005 ? 'text-amber-300' : 'text-white'}">欠 ${salesMoney(out)}</b></div>
+      <div class="flex flex-wrap gap-2"><button onclick="openInvoiceByIds('${c.id}','${j.id}',true)" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold">🖨 查看</button>${out > 0.005 ? `<button onclick="quickPayFull('${c.id}','${j.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold">✅ 收齐</button>` : ''}${p.state === 'overdue' ? `<button onclick="recvReminder('${c.id}','${j.id}')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold">📧 催款邮件</button>` : ''}</div></div>`).join('');
+    return `<details ${gi < 3 ? 'open' : ''} class="bg-slate-800 border border-slate-700 rounded-2xl p-3"><summary class="cursor-pointer list-none flex justify-between items-baseline gap-2"><span class="font-bold text-white text-sm">${label(k)}</span><span class="text-[11px] text-slate-400">${t.n} 张 ▾</span></summary>
+      <div class="mt-1 text-[11px] text-slate-400 font-mono leading-relaxed">${statLine(t)}</div><div class="mt-2 space-y-2">${cards}</div></details>`;
+  }).join('');
+}
+async function renderInvPayPanel() {
+  const box = document.getElementById('invPayPanel'); if (!box) return;
+  if (!invPanelCtx) { box.classList.add('hidden'); return; }
+  const c = (await dbGetAllClients()).find(x => String(x.id) === String(invPanelCtx.cid)), j = c && (c.jobs || []).find(x => x.id === invPanelCtx.jid), p = j && payInfo(j);
+  if (!p) { box.classList.add('hidden'); return; }
+  const chip = { overdue: 'bg-rose-500/20 text-rose-300 border-rose-500/40', partial: 'bg-amber-500/20 text-amber-300 border-amber-500/40', unpaid: 'bg-sky-500/20 text-sky-300 border-sky-500/40', paid: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' };
+  const pays = (j.payments || []).slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  box.innerHTML = `<div class="flex justify-between items-start gap-2"><div><div class="font-bold text-white">${escapeHtml(c.name)} · <span class="font-mono">${escapeHtml(j.invoice.invNumber)}</span></div><div class="text-xs text-slate-300 font-mono mt-0.5">含 GST ${salesMoney(p.total)} · 已收 ${salesMoney(p.paid)} · <b class="text-white">欠 ${salesMoney(Math.max(0, p.out))}</b></div></div>
+    <span class="text-[11px] px-2 py-0.5 rounded-full border whitespace-nowrap ${chip[p.state]}">${p.state === 'overdue' ? '逾期 ' + p.overdue + ' 天' : p.state === 'partial' ? '部分已付' : p.state === 'paid' ? '已付清' : '未付款'}</span></div>
+    <div class="text-xs text-slate-400">付款记录</div>
+    ${pays.length ? pays.map(x => `<div class="flex justify-between text-xs bg-slate-800 rounded-lg px-3 py-1.5"><span class="text-slate-300">${formatDateNZ(x.date)} · ${escapeHtml(x.method || '')}</span><span class="font-mono text-emerald-400">${salesMoney(x.amount)}</span></div>`).join('') : '<div class="text-xs text-slate-500">还没有付款记录</div>'}
+    <div class="flex flex-wrap gap-2 pt-1">${p.out > 0.005 ? `<button onclick="quickPayFull('${c.id}','${j.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold">✅ 已全额收款</button>` : ''}<button onclick="openPaymentModal('${c.id}','${j.id}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold">💲 记录付款</button>${p.state === 'overdue' ? `<button onclick="recvReminder('${c.id}','${j.id}')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold">📧 催款邮件</button>` : ''}</div>`;
+  box.classList.remove('hidden');
+}
 async function openInvoiceByIds(clientId, jobId, viewOnly) {
   if (!viewOnly && !(await prepareInvoiceSplit(clientId, jobId))) return;
   invDocHold = false;
@@ -1632,7 +1746,7 @@ async function openInvoiceByIds(clientId, jobId, viewOnly) {
   if (!select) return;
   select.value = clientId;
   await autoFillInvoiceClient(jobId);
-  if (viewOnly) { setInvoiceEditorVisible(false); await renderPrintableInvoice({ noSave: true }); invDocHold = true; window.scrollTo({ top: 0 }); }
+  if (viewOnly) { setInvoiceEditorVisible(false); await renderPrintableInvoice({ noSave: true }); invDocHold = true; invPanelCtx = { cid: String(clientId), jid: jobId }; await renderInvPayPanel(); window.scrollTo({ top: 0 }); }
   else setInvoiceEditorVisible(true);
 }
 
@@ -2044,7 +2158,7 @@ function salesCompute(clients, today) {
   clients.forEach(c => (c.jobs || []).forEach(j => {
     const inv = j.invoice; if (!inv || !inv.invDate || !(Number(inv.grandTotal) > 0)) return;
     const total = r2(inv.grandTotal), ex = inv.subtotal != null ? r2(inv.subtotal) : r2(total / 1.15), p = payInfo(j);
-    invs.push({ date: inv.invDate, ex, gst: r2(total - ex), total, out: Math.max(0, p ? p.out : 0) });
+    const outv = Math.max(0, p ? p.out : 0); invs.push({ date: inv.invDate, ex, gst: r2(total - ex), total, out: outv, paid: r2(total - outv) });
   }));
   const sum = (arr, k) => r2(arr.reduce((a, i) => a + i[k], 0));
   return salesPeriods(today).map(per => {
@@ -2053,7 +2167,7 @@ function salesCompute(clients, today) {
     before.forEach(i => { const k = i.date.slice(0, 7); carry[k] = carry[k] || { out: 0, n: 0 }; carry[k].out = r2(carry[k].out + i.out); carry[k].n++; });
     const carryList = Object.keys(carry).sort().reverse().map(k => ({ month: k, out: carry[k].out, n: carry[k].n }));
     const outNow = sum(inP, 'out'), outCarry = sum(before, 'out');
-    return { ...per, count: inP.length, ex: sum(inP, 'ex'), gst: sum(inP, 'gst'), total: sum(inP, 'total'), outNow, carryList, outCarry, outAll: r2(outNow + outCarry) };
+    return { ...per, count: inP.length, ex: sum(inP, 'ex'), gst: sum(inP, 'gst'), total: sum(inP, 'total'), paidNow: sum(inP, 'paid'), outNow, carryList, outCarry, outAll: r2(outNow + outCarry) };
   });
 }
 function salesRange(r) {
@@ -2072,7 +2186,7 @@ async function renderSales() {
   const line = (a, b, cls) => `<div class="flex justify-between gap-3 text-sm py-0.5"><span class="${cls || 'text-slate-300'}">${a}</span><span class="font-mono ${cls ? 'font-bold ' + cls : 'text-white'}">${b}</span></div>`;
   body.innerHTML = res.map(r => `<div class="bg-slate-800 border border-slate-700 rounded-2xl p-4">
     <div class="flex justify-between items-baseline gap-2 mb-2"><h3 class="font-bold text-white text-sm">${r.name}</h3><span class="text-[11px] text-slate-400">${salesRange(r)}</span></div>
-    ${line('销售额（不含 GST）', salesMoney(r.ex))}${line('GST', salesMoney(r.gst))}${line('含 GST 合计', salesMoney(r.total), 'text-emerald-300')}
+    ${line('销售额（不含 GST）', salesMoney(r.ex))}${line('GST', salesMoney(r.gst))}${line('含 GST 合计', salesMoney(r.total), 'text-emerald-300')}${line('其中已收款', salesMoney(r.paidNow))}
     <div class="text-[11px] text-slate-500 mt-0.5">共 ${r.count} 张发票</div>
     <div class="mt-3 pt-3 border-t border-slate-700">
       <div class="text-xs text-slate-400 mb-1">未收款（截至今天）</div>
@@ -3555,6 +3669,7 @@ function updateBankRefAuto() {
 function setInvoiceEditorVisible(show) {
   const box = document.getElementById('invoiceBuilderBox');
   if (box) box.classList.toggle('hidden', !show);
+  if (show) { invListHide(); invPanelCtx = null; renderInvPayPanel(); }
 }
 function showInvoiceEditor() {
   invDocHold = false;
