@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.6 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v14.7 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.6<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.7<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -322,6 +322,18 @@
             <input id="invSearch" type="search" placeholder="搜发票号或客户名" oninput="renderInvoiceList()" class="flex-1 min-w-[8rem] bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white">
           </div>
           <div class="flex flex-wrap gap-1.5 text-xs"><button id="invSt-all" onclick="setInvView('status','all')" class="px-3 py-1 rounded-full border">全部</button><button id="invSt-unpaid" onclick="setInvView('status','unpaid')" class="px-3 py-1 rounded-full border">未付清</button><button id="invSt-overdue" onclick="setInvView('status','overdue')" class="px-3 py-1 rounded-full border">已逾期</button><button id="invSt-paid" onclick="setInvView('status','paid')" class="px-3 py-1 rounded-full border">已付清</button></div>
+          <details id="invExportBox" ontoggle="if (this.open) renderExportPreview()" class="bg-slate-900 border border-slate-700 rounded-xl p-3">
+            <summary class="cursor-pointer text-xs font-bold text-white">📤 导出给会计</summary>
+            <div class="mt-3 space-y-2 text-xs">
+              <div class="flex flex-wrap gap-2 items-center">
+                <select id="expRange" onchange="expRangeChanged()" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-white"><option value="fy">本财年（4 月 1 日起）</option><option value="fyprev">上一财年</option><option value="month">本月</option><option value="monthprev">上月</option><option value="custom">自定义日期</option></select>
+                <span id="expCustom" class="hidden flex items-center gap-1"><input type="date" id="expStart" onchange="renderExportPreview()" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-white"> – <input type="date" id="expEnd" onchange="renderExportPreview()" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-white"></span>
+              </div>
+              <div id="expPreview" class="text-slate-300 font-mono leading-relaxed"></div>
+              <div class="flex flex-wrap gap-2"><button onclick="exportForAccountant('xlsx')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold">下载 Excel</button><button onclick="exportForAccountant('csv')" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 text-white rounded-lg font-bold">下载 CSV</button></div>
+              <p class="text-[11px] text-slate-500">每次下载两个文件：Bank transfer（含还没付款的发票）和 Cash。按开票日期统计，不含回收站里的客户。</p>
+            </div>
+          </details>
           <div id="invListSummary" class="text-xs text-slate-300 bg-slate-900 border border-slate-700 rounded-xl p-3 font-mono leading-relaxed"></div>
           <div id="invListBody" class="space-y-3"></div>
         </div>
@@ -989,7 +1001,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.6', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.7', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1722,6 +1734,88 @@ async function renderInvoiceList() {
     return `<details ${gi < 3 ? 'open' : ''} class="bg-slate-800 border border-slate-700 rounded-2xl p-3"><summary class="cursor-pointer list-none flex justify-between items-baseline gap-2"><span class="font-bold text-white text-sm">${label(k)}</span><span class="text-[11px] text-slate-400">${t.n} 张 ▾</span></summary>
       <div class="mt-1 text-[11px] text-slate-400 font-mono leading-relaxed">${statLine(t)}</div><div class="mt-2 space-y-2">${cards}</div></details>`;
   }).join('');
+}
+// ---- v14.7：导出给会计（Bank transfer 一个文件，Cash 一个文件）----
+const EXPORT_HEAD = ['Invoice Date', 'Invoice No.', 'Customer', 'Amount excl. GST', 'GST', 'Total incl. GST', 'Payment Date'];
+function exportRangeOf(key, today, cs, ce) {
+  const y = Number(today.slice(0, 4)), m = Number(today.slice(5, 7)), pad = (n) => String(n).padStart(2, '0'), last = (yy, mm) => new Date(yy, mm, 0).getDate();
+  if (key === 'fy' || key === 'fyprev') { let sy = m >= 4 ? y : y - 1; if (key === 'fyprev') sy -= 1; return { start: `${sy}-04-01`, end: `${sy + 1}-03-31` }; }   // 新西兰财年 4 月 1 日 – 3 月 31 日
+  if (key === 'month') return { start: `${y}-${pad(m)}-01`, end: `${y}-${pad(m)}-${pad(last(y, m))}` };
+  if (key === 'monthprev') { const py = m === 1 ? y - 1 : y, pm = m === 1 ? 12 : m - 1; return { start: `${py}-${pad(pm)}-01`, end: `${py}-${pad(pm)}-${pad(last(py, pm))}` }; }
+  return { start: cs || '', end: ce || '' };
+}
+function exportCurrentRange() {
+  const g = (id) => document.getElementById(id), key = g('expRange') ? g('expRange').value : 'fy';
+  return exportRangeOf(key, todayISO(), g('expStart') && g('expStart').value, g('expEnd') && g('expEnd').value);
+}
+function expRangeChanged() {
+  const key = document.getElementById('expRange').value, box = document.getElementById('expCustom');
+  box.classList.toggle('hidden', key !== 'custom');
+  if (key === 'custom') { const r = exportRangeOf('fy', todayISO()); if (!document.getElementById('expStart').value) document.getElementById('expStart').value = r.start; if (!document.getElementById('expEnd').value) document.getElementById('expEnd').value = todayISO(); }
+  renderExportPreview();
+}
+async function exportCollect(range) {   // 付款全是 Cash → cash；其余（转账、还没付款）→ bank
+  const clients = (await dbGetAllClients()).filter(c => !c.deletedAt), bank = [], cash = [], mixed = [];
+  clients.forEach(c => (c.jobs || []).forEach(j => {
+    const inv = j.invoice; if (!inv || !inv.invNumber || !inv.invDate) return;
+    if (inv.invDate < range.start || inv.invDate > range.end) return;
+    const p = payInfo(j), total = r2(inv.grandTotal || 0), ex = inv.subtotal != null ? r2(inv.subtotal) : r2(total / 1.15);
+    const pays = (j.payments || []).filter(x => Number(x.amount) > 0), hasCash = pays.some(x => x.method === 'Cash'), hasOther = pays.some(x => x.method !== 'Cash');
+    const paidFull = p && p.out <= 0.005 && pays.length > 0;
+    const row = { date: inv.invDate, num: String(inv.invNumber), name: c.name || '', ex, gst: r2(total - ex), total, payDate: paidFull ? pays.map(x => String(x.date || '')).sort().pop() : '' };
+    if (hasCash && !hasOther) cash.push(row); else { bank.push(row); if (hasCash && hasOther) mixed.push(row.num); }
+  }));
+  const cmp = (a, b) => a.date.localeCompare(b.date) || a.num.localeCompare(b.num);
+  return { bank: bank.sort(cmp), cash: cash.sort(cmp), mixed };
+}
+function exportRowsOf(list) {   // 表头 + 每张发票一行 + 合计行
+  const sum = (k) => r2(list.reduce((a, r) => a + r[k], 0));
+  return [EXPORT_HEAD, ...list.map(r => [formatDateNZ(r.date), r.num, r.name, r.ex, r.gst, r.total, r.payDate ? formatDateNZ(r.payDate) : '']), ['', '', 'Total', sum('ex'), sum('gst'), sum('total'), '']];
+}
+function exportCsvText(rows) {
+  const esc = (v) => { let t = typeof v === 'number' ? v.toFixed(2) : String(v == null ? '' : v); if (typeof v === 'string' && /^[=+\-@]/.test(t)) t = "'" + t; return /[",\r\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+  return '\ufeff' + rows.map(r => r.map(esc).join(',')).join('\r\n') + '\r\n';
+}
+function exportXlsxArray(XLSX, rows, sheetName) {
+  const ws = XLSX.utils.aoa_to_sheet(rows), n = rows.length - 2;   // n = 发票张数
+  ws['!cols'] = [{ wch: 12 }, { wch: 14 }, { wch: 28 }, { wch: 17 }, { wch: 12 }, { wch: 16 }, { wch: 13 }];
+  for (let r = 2; r <= rows.length; r++) ['D', 'E', 'F'].forEach(col => { const c = ws[col + r]; if (c && c.t === 'n') c.z = '#,##0.00'; });
+  if (n > 0) ['D', 'E', 'F'].forEach(col => { const c = ws[col + rows.length]; if (c) c.f = `SUM(${col}2:${col}${rows.length - 1})`; });   // 合计行用公式，会计改数字时会跟着变
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  return XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+}
+function loadXlsxLib() {
+  return new Promise((resolve, reject) => {
+    if (window.XLSX) return resolve(window.XLSX);
+    const urls = ['https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js']; let i = 0;
+    const next = () => { if (i >= urls.length) return reject(new Error('xlsx load failed')); const sc = document.createElement('script'); sc.src = urls[i++]; sc.onload = () => (window.XLSX ? resolve(window.XLSX) : next()); sc.onerror = () => { sc.remove(); next(); }; document.head.appendChild(sc); };
+    next();
+  });
+}
+function downloadBlob(blob, name) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+async function renderExportPreview() {
+  const box = document.getElementById('expPreview'); if (!box) return;
+  const range = exportCurrentRange();
+  if (!range.start || !range.end || range.start > range.end) { box.textContent = '请选好起止日期'; return; }
+  const d = await exportCollect(range), tot = (l) => salesMoney(r2(l.reduce((a, r) => a + r.total, 0)));
+  box.innerHTML = `${formatDateNZ(range.start)} – ${formatDateNZ(range.end)}<br>Bank transfer：${d.bank.length} 张 · 含 GST ${tot(d.bank)}<br>Cash：${d.cash.length} 张 · 含 GST ${tot(d.cash)}` + (d.mixed.length ? `<br><span class="text-amber-300">⚠️ ${escapeHtml(d.mixed.join('、'))} 同时有现金和转账付款，已放进 Bank transfer 文件，请检查</span>` : '');
+}
+async function exportForAccountant(fmt) {
+  const range = exportCurrentRange();
+  if (!range.start || !range.end || range.start > range.end) { showToast('请选好起止日期', true); return; }
+  const d = await exportCollect(range);
+  if (d.mixed.length && !confirm(`这几张发票同时有现金和转账付款：${d.mixed.join('、')}\n它们会放进 Bank transfer 文件，请自己检查。继续下载吗？`)) return;
+  let XLSX = null;
+  if (fmt === 'xlsx') { try { XLSX = await loadXlsxLib(); } catch (e) { showToast('Excel 组件没加载成功，改为下载 CSV', true); fmt = 'csv'; } }
+  const tag = `${range.start}_to_${range.end}`;
+  [['Bank-transfer', d.bank, 'Bank transfer'], ['Cash', d.cash, 'Cash']].forEach(([label, list, sheet], i) => setTimeout(() => {
+    const rows = exportRowsOf(list), name = `Bayview-Invoices_${label}_${tag}.${fmt}`;
+    downloadBlob(fmt === 'xlsx' ? new Blob([exportXlsxArray(XLSX, rows, sheet)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }) : new Blob([exportCsvText(rows)], { type: 'text/csv;charset=utf-8' }), name);
+  }, i * 700));
+  showToast(`已生成 2 个文件：Bank transfer ${d.bank.length} 张，Cash ${d.cash.length} 张`);
 }
 async function renderInvPayPanel() {
   const box = document.getElementById('invPayPanel'); if (!box) return;
