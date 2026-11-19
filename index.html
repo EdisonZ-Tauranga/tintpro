@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.7 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v14.8 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.7<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.8<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -217,7 +217,7 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div><label class="text-slate-400 block mb-1">膜卷宽度 (mm)</label><input type="number" id="optRollWidth" value="1524" oninput="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
-          <div><label class="text-slate-400 block mb-1">留边余量 (mm/每边)</label><input type="number" id="optMargin" value="10" min="0" oninput="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
+          <div><label class="text-slate-400 block mb-1">留边余量 (mm/每边)</label><input type="number" id="optMargin" value="10" min="0" oninput="optimizeRollLayout(); scheduleOptSave()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
           <div><label class="text-slate-400 block mb-1">每米成本 ($/m)</label><input type="number" id="optCostPerM" value="25" oninput="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
           <div><label class="text-slate-400 block mb-1">切口间距 (mm)</label><input type="number" id="optGap" value="0" min="0" oninput="optimizeRollLayout()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
           <label class="flex items-center gap-2 sm:col-span-2 pt-5 text-slate-300 cursor-pointer"><input type="checkbox" id="optRotate" checked onchange="optimizeRollLayout()" class="w-4 h-4"> 允许旋转 90°（自动尝试多种排法，选最短的）</label>
@@ -282,6 +282,7 @@
               <div><label id="oqValidLbl" class="text-slate-400 block mb-1">有效期（工作日）</label><input id="oqValid" type="number" value="10" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
               <div><label class="text-slate-400 block mb-1">上门费 $</label><input id="oqCallout" type="number" step="0.01" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
               <div><label class="text-slate-400 block mb-1">其他费用 $</label><input id="oqExtra" type="number" step="0.01" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
+              <div class="col-span-2"><label class="text-slate-400 block mb-1">其他费用的名称（英文，显示在报价单和发票上；不填就写 Additional charges）</label><input id="oqExtraLabel" type="text" placeholder="例如 Access equipment &amp; setup" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white"></div>
               <div><label class="text-slate-400 block mb-1">除旧膜 $/m²（不含GST）</label><input id="oqStripRate" type="number" step="0.01" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
               <div><label class="text-slate-400 block mb-1">面积取整</label><select id="oqAreaRound" onchange="oqChanged()" class="w-full min-w-0 bg-slate-800 border border-slate-700 rounded-lg p-2 text-white"></select></div>
             </div>
@@ -318,6 +319,7 @@
         <div id="invListBox" class="space-y-3">
           <div id="invGapWarn" class="hidden text-xs bg-amber-500/10 border border-amber-500/40 text-amber-200 rounded-xl p-3 leading-relaxed"></div>
           <div class="flex flex-wrap gap-2 items-center">
+            <div class="inline-flex rounded-xl overflow-hidden border border-slate-700 text-xs"><button id="invKindInv" onclick="setInvView('kind','inv')" class="px-3 py-1.5">发票</button><button id="invKindQuote" onclick="setInvView('kind','quote')" class="px-3 py-1.5">报价</button></div>
             <div class="inline-flex rounded-xl overflow-hidden border border-slate-700 text-xs"><button id="invGrpMonth" onclick="setInvView('group','month')" class="px-3 py-1.5">按月</button><button id="invGrpWeek" onclick="setInvView('group','week')" class="px-3 py-1.5">按周</button></div>
             <input id="invSearch" type="search" placeholder="搜发票号或客户名" oninput="renderInvoiceList()" class="flex-1 min-w-[8rem] bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white">
           </div>
@@ -423,6 +425,7 @@
               <h1 id="pDocTitle" class="text-2xl font-black text-slate-900 tracking-wider">TAX INVOICE</h1>
               <p class="text-sm font-mono font-bold text-sky-600" id="pInvNum">INV-2026-001</p>
               <p class="text-xs text-slate-600">Date: <span id="pInvDate">--/--/----</span></p>
+              <p id="pWorkLine" class="text-xs text-slate-600 inv-only hidden">Work Completed: <span id="pWorkDate"></span></p>
               <p class="text-xs font-bold text-slate-900 pt-1"><span id="pDueLabel">Payment Due:</span> <span id="pDueDate">Within 7 Days</span></p>
               <p id="pCopyBadge" class="hidden text-xs font-black text-rose-600 border-2 border-rose-600 rounded px-2 py-0.5 inline-block tracking-widest mt-1">COPY ONLY</p>
             </div>
@@ -584,7 +587,8 @@
       <div class="grid grid-cols-2 gap-2">
         <div data-for="invoice quote reminder quote_followup"><label class="text-[10px] text-slate-400 block">称呼 (Hi ___)</label><input type="text" id="emName" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"></div>
         <div data-for="invoice quote reminder quote_followup"><label class="text-[10px] text-slate-400 block">收件邮箱</label><input type="text" id="emTo" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"></div>
-        <div data-for="invoice quote quote_followup" class="col-span-2"><label class="text-[10px] text-slate-400 block">工作描述（用于句子 "…the recent ___ at your property"）</label><input type="text" id="emWork" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"></div>
+        <div data-for="invoice quote quote_followup" class="col-span-2"><label class="text-[10px] text-slate-400 block">工作描述（英文。发票邮件会写成 "for the ___ carried out at your property"；保持默认就写 window tinting）</label><input type="text" id="emWork" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"></div>
+        <div data-for="invoice" class="col-span-2"><label class="text-[10px] text-slate-400 block">施工日期（dd/mm/yyyy，会写进发票邮件；留空就不写）</label><input type="text" id="emWorkDate" oninput="renderEmailPreview()" placeholder="例如 17/11/2026" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
         <div data-for="invoice reminder"><label class="text-[10px] text-slate-400 block">发票编号</label><input type="text" id="emInv" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
         <div data-for="invoice quote reminder quote_followup"><label class="text-[10px] text-slate-400 block">金额 (含 GST)</label><input type="text" id="emTotal" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
         <div data-for="invoice reminder"><label class="text-[10px] text-slate-400 block">付款到期日</label><input type="text" id="emDue" oninput="renderEmailPreview()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white font-mono"></div>
@@ -1001,7 +1005,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.7', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.8', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1238,7 +1242,9 @@ function emFillDefaults(tpl) {
     el('emTotal').value = job && job.price ? r2(parseFloat(job.price) + gstOf(parseFloat(job.price))).toFixed(2) : '';
     el('emInv').value = '';
     el('emDue').value = '';
+    el('emWorkDate').value = '';
   } else {
+    el('emWorkDate').value = job && job.date ? formatDateNZ(job.date) : '';
     el('emInv').value = inv ? (inv.invNumber || '') : '';
     const pi = payInfo(job);
     el('emTotal').value = pi ? pi.out.toFixed(2) : '';
@@ -1301,6 +1307,7 @@ function renderEmailPreview() {
   const totalRaw = v('emTotal');
   const total = emMoney(totalRaw) || '[$ amount]';
   const due = escapeHtml(v('emDue') || '[due date]');
+  const workDate = escapeHtml((v('emWorkDate') || '').trim());
   const bankItems = `<li><b>Bank Name:</b> ${B.bank}</li>
 <li><b>Account Name:</b> ${B.accName}</li>
 <li><b>Account Number:</b> ${B.accNo}</li>
@@ -1357,7 +1364,7 @@ ${sig}`;
   } else {
     subject = `Tax Invoice ${v('emInv') || ''} - Bayview Window Tinting`.replace('  ', ' ');
     body = `<p>Hi ${name},</p>
-<p>Thank you for choosing Bayview Window Tinting. Please find attached Tax Invoice <b>${inv}</b> for the ${(!v('emWork') || /^window tinting application$/i.test(v('emWork').trim())) ? 'window tinting' : work} at your property.</p>
+<p>Thank you for choosing Bayview Window Tinting. Please find attached Tax Invoice <b>${inv}</b> for the ${(!v('emWork') || /^window tinting application$/i.test(v('emWork').trim())) ? 'window tinting' : work}${workDate ? ' carried out' : ''} at your property${workDate ? ' on <b>' + workDate + '</b>' : ''}.</p>
 <p><b>Payment Details:</b></p>
 <ul>
 ${hasPaid ? `<li><b>Invoice Total (Incl. GST):</b> ${emMoney(pay.total)}</li>
@@ -1655,9 +1662,9 @@ async function recvReminder(cid, jid) {
 }
 
 // ---- v14.6：发票列表（按月/按周分组、状态筛选、搜索、缺号提示、付款记录面板）----
-const invView = { group: 'month', status: 'all' };
+const invView = { group: 'month', status: 'all', kind: 'inv' };
 let invPanelCtx = null;
-function setInvView(k, v) { invView[k] = v; renderInvoiceList(); }
+function setInvView(k, v) { invView[k] = v; if (k === 'kind') invView.status = 'all'; renderInvoiceList(); }
 function invListHide() {
   const lb = document.getElementById('invListBox'); if (lb) lb.classList.add('hidden');
   const bb = document.getElementById('invBackBtn'); if (bb) bb.classList.remove('hidden');
@@ -1674,12 +1681,12 @@ async function newInvoiceFromList() {
   invDocHold = false; setInvoiceEditorVisible(true);
   await populateInvoiceClientSelect(); await openNewInvoiceBuilder(); window.scrollTo({ top: 0 });
 }
-function invGapInfo(allClients) {   // 发票号缺号 / 重复（回收站里的客户也算，因为它们占用编号）
-  const years = {};
-  allClients.forEach(c => (c.jobs || []).forEach(j => { const m = j.invoice && String(j.invoice.invNumber || '').match(/^INV-(\d{4})-(\d+)$/); if (!m) return; const y = m[1], n = parseInt(m[2], 10); (years[y] = years[y] || {})[n] = (years[y][n] || 0) + 1; }));
+function invGapInfo(allClients, kind) {   // 发票号/报价号缺号、重复（回收站里的客户也算，因为它们占用编号）
+  const years = {}, pre = kind === 'quote' ? 'QUO' : 'INV', re = new RegExp('^' + pre + '-(\\d{4})-(\\d+)$');
+  allClients.forEach(c => (c.jobs || []).forEach(j => { const m = String((kind === 'quote' ? (j.quote && j.quote.number) : (j.invoice && j.invoice.invNumber)) || '').match(re); if (!m) return; const y = m[1], n = parseInt(m[2], 10); (years[y] = years[y] || {})[n] = (years[y][n] || 0) + 1; }));
   const missing = [], dup = [];
   Object.keys(years).sort().forEach(y => {
-    const nums = Object.keys(years[y]).map(Number).sort((a, b) => a - b), pad = (n) => `INV-${y}-${String(n).padStart(3, '0')}`;
+    const nums = Object.keys(years[y]).map(Number).sort((a, b) => a - b), pad = (n) => `${pre}-${y}-${String(n).padStart(3, '0')}`;
     for (let n = nums[0]; n <= nums[nums.length - 1]; n++) if (!years[y][n]) missing.push(pad(n));
     nums.forEach(n => { if (years[y][n] > 1) dup.push(`${pad(n)}（${years[y][n]} 次）`); });
   });
@@ -1687,6 +1694,7 @@ function invGapInfo(allClients) {   // 发票号缺号 / 重复（回收站里�
 }
 async function renderInvoiceList() {
   const g = (id) => document.getElementById(id), body = g('invListBody'); if (!body) return;
+  invApplyKindUi(); if (invView.kind === 'quote') { await renderQuoteList(); return; }
   const all = await dbGetAllClients(), clients = all.filter(c => !c.deletedAt);
   // 按钮高亮
   const on = 'bg-sky-600 text-white border-sky-500', off = 'bg-slate-900 text-slate-300 border-slate-700';
@@ -1710,11 +1718,12 @@ async function renderInvoiceList() {
     rows.push({ c, j, inv, p, ex, gst: r2(p.total - ex), paid: r2(p.total - outv), out: outv });
   }));
   rows.sort((a, b) => String(b.inv.invDate || '').localeCompare(String(a.inv.invDate || '')) || String(b.inv.invNumber).localeCompare(String(a.inv.invNumber)));
+  const trashHtml = invTrashHtml(all, 'inv');
   const stat = (arr) => ({ n: arr.length, ex: r2(arr.reduce((a, r) => a + r.ex, 0)), gst: r2(arr.reduce((a, r) => a + r.gst, 0)), total: r2(arr.reduce((a, r) => a + r.p.total, 0)), paid: r2(arr.reduce((a, r) => a + r.paid, 0)), out: r2(arr.reduce((a, r) => a + r.out, 0)) });
   const statLine = (t) => `不含 GST ${salesMoney(t.ex)} · GST ${salesMoney(t.gst)} · 含 GST ${salesMoney(t.total)} · 已收 ${salesMoney(t.paid)} · <span class="text-amber-300">欠 ${salesMoney(t.out)}</span>`;
   const tot = stat(rows);
   g('invListSummary').innerHTML = rows.length ? `<div class="text-slate-400 font-sans mb-0.5">当前筛选：共 ${tot.n} 张</div>${statLine(tot)}` : '';
-  if (!rows.length) { body.innerHTML = `<div class="text-center text-slate-500 text-sm py-10">${(q || invView.status !== 'all') ? '没有符合条件的发票' : '还没有开出的发票'}</div>`; return; }
+  if (!rows.length) { body.innerHTML = `<div class="text-center text-slate-500 text-sm py-10">${(q || invView.status !== 'all') ? '没有符合条件的发票' : '还没有开出的发票'}</div>` + trashHtml; return; }
   // 分组
   const dm = (x) => x.slice(8, 10) + '/' + x.slice(5, 7), groups = {};
   rows.forEach(r => {
@@ -1733,7 +1742,73 @@ async function renderInvoiceList() {
       <div class="flex flex-wrap gap-2"><button onclick="openInvoiceByIds('${c.id}','${j.id}',true)" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold">🖨 查看</button>${out > 0.005 ? `<button onclick="quickPayFull('${c.id}','${j.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold">✅ 收齐</button>` : ''}${p.state === 'overdue' ? `<button onclick="recvReminder('${c.id}','${j.id}')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold">📧 催款邮件</button>` : ''}</div></div>`).join('');
     return `<details ${gi < 3 ? 'open' : ''} class="bg-slate-800 border border-slate-700 rounded-2xl p-3"><summary class="cursor-pointer list-none flex justify-between items-baseline gap-2"><span class="font-bold text-white text-sm">${label(k)}</span><span class="text-[11px] text-slate-400">${t.n} 张 ▾</span></summary>
       <div class="mt-1 text-[11px] text-slate-400 font-mono leading-relaxed">${statLine(t)}</div><div class="mt-2 space-y-2">${cards}</div></details>`;
-  }).join('');
+  }).join('') + trashHtml;
+}
+function invApplyKindUi() {
+  const g = (id) => document.getElementById(id), q = invView.kind === 'quote', on = 'bg-sky-600 text-white', off = 'bg-slate-900 text-slate-300';
+  g('invKindInv').className = 'px-3 py-1.5 ' + (q ? off : on); g('invKindQuote').className = 'px-3 py-1.5 ' + (q ? on : off);
+  const lab = q ? { all: '全部', unpaid: '有效中', overdue: '已过期', paid: '已开发票' } : { all: '全部', unpaid: '未付清', overdue: '已逾期', paid: '已付清' };
+  Object.keys(lab).forEach(k => { g('invSt-' + k).textContent = lab[k]; });
+  g('invSearch').placeholder = q ? '搜报价号或客户名' : '搜发票号或客户名';
+  g('invExportBox').classList.toggle('hidden', q);
+}
+function invTrashHtml(all, kind) {   // 回收站里客户的发票/报价：只列出来，方便查缺号；要用请先到回收站恢复客户
+  const items = [];
+  all.filter(c => c.deletedAt).forEach(c => (c.jobs || []).forEach(j => {
+    if (kind === 'quote') { if (j.quote && j.quote.number) items.push({ num: j.quote.number, name: c.name, date: j.quoteDate || j.quote.date || '' }); }
+    else if (j.invoice && j.invoice.invNumber) items.push({ num: j.invoice.invNumber, name: c.name, date: j.invoice.invDate || '' });
+  }));
+  if (!items.length) return '';
+  items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  return `<details class="bg-slate-900 border border-slate-700 rounded-2xl p-3"><summary class="cursor-pointer text-xs text-slate-400">🗑 回收站里的${kind === 'quote' ? '报价' : '发票'}（${items.length}）· 不计入上面的统计</summary><div class="mt-2 space-y-1">${items.map(x => `<div class="flex justify-between text-xs text-slate-400 font-mono"><span>${escapeHtml(x.num)} · ${escapeHtml(x.name)}</span><span>${x.date ? formatDateNZ(x.date) : ''}</span></div>`).join('')}<p class="text-[11px] text-slate-500 pt-1">要恢复，到“回收站”里恢复这个客户。</p></div></details>`;
+}
+function viewQuoteFromList(cid, jid) {   // 只查看，不保存、不改状态
+  dbGetAllClients().then(all => {
+    const c = all.find(x => String(x.id) === String(cid)), j = c && (c.jobs || []).find(x => x.id === jid);
+    if (!j || !j.quote) { showToast('找不到这张报价', true); return; }
+    switchTab('invoices', { keepInvoice: true }); setInvoiceEditorVisible(false); renderQuoteDocument(c, j); window.scrollTo({ top: 0 });
+  });
+}
+async function renderQuoteList() {
+  const g = (id) => document.getElementById(id), body = g('invListBody'), all = await dbGetAllClients(), clients = all.filter(c => !c.deletedAt), today = todayISO();
+  const on = 'bg-sky-600 text-white border-sky-500', off = 'bg-slate-900 text-slate-300 border-slate-700';
+  g('invGrpMonth').className = 'px-3 py-1.5 ' + (invView.group === 'month' ? 'bg-sky-600 text-white' : 'bg-slate-900 text-slate-300');
+  g('invGrpWeek').className = 'px-3 py-1.5 ' + (invView.group === 'week' ? 'bg-sky-600 text-white' : 'bg-slate-900 text-slate-300');
+  ['all', 'unpaid', 'overdue', 'paid'].forEach(k => { g('invSt-' + k).className = 'px-3 py-1 rounded-full border ' + (invView.status === k ? on : off); });
+  const gap = invGapInfo(all, 'quote'), warn = g('invGapWarn'), parts = [];
+  if (gap.missing.length) parts.push(`报价号不连续，缺：${gap.missing.slice(0, 10).join('、')}${gap.missing.length > 10 ? ` 等 ${gap.missing.length} 个` : ''}。报价号是在点“生成报价单”时分配并马上保存的，所以缺号一般是那张报价所在的工作或客户被删了，或同步时被另一台设备的旧数据覆盖了。请先看列表最下面“回收站里的报价”，也可以在另一台设备上点同步后再看。`);
+  if (gap.dup.length) parts.push(`报价号重复：${gap.dup.join('、')}。请检查是不是两台设备同时开了报价。`);
+  warn.innerHTML = parts.map(t => '⚠️ ' + escapeHtml(t)).join('<br>'); warn.classList.toggle('hidden', !parts.length);
+  const q = (g('invSearch').value || '').trim().toLowerCase(), rows = [];
+  clients.forEach(c => (c.jobs || []).forEach(j => {
+    const qt = j.quote; if (!qt || !qt.number) return;
+    const qd = j.quoteDate || qt.date || '', exp = qd ? quoteExpiryISO(qd, qt) : '', st = j.status || '';
+    const state = j.invoice ? 'invoiced' : (st.startsWith('Confirmed') || st.startsWith('Scheduled') || st.startsWith('Completed')) ? 'booked' : (exp && exp < today ? 'expired' : 'active');
+    if (invView.status === 'unpaid' && state !== 'active') return;
+    if (invView.status === 'overdue' && state !== 'expired') return;
+    if (invView.status === 'paid' && state !== 'invoiced') return;
+    if (q && !(String(qt.number).toLowerCase().includes(q) || String(c.name || '').toLowerCase().includes(q))) return;
+    let total = Number(qt.total); if (!(total > 0)) { try { total = Number(jobQuoteCalc(j, qt).total) || 0; } catch (e) { total = 0; } }
+    rows.push({ c, j, qt, qd, exp, state, total: r2(total) });
+  }));
+  rows.sort((a, b) => String(b.qd).localeCompare(String(a.qd)) || String(b.qt.number).localeCompare(String(a.qt.number)));
+  const trashHtml = invTrashHtml(all, 'quote'), sum = (arr) => r2(arr.reduce((a, r) => a + r.total, 0));
+  g('invListSummary').innerHTML = rows.length ? `<div class="text-slate-400 font-sans mb-0.5">当前筛选：共 ${rows.length} 张报价</div>含 GST 合计 ${salesMoney(sum(rows))}（已开发票 ${rows.filter(r => r.state === 'invoiced').length} 张）` : '';
+  if (!rows.length) { body.innerHTML = `<div class="text-center text-slate-500 text-sm py-10">${(q || invView.status !== 'all') ? '没有符合条件的报价' : '还没有生成过报价单'}</div>` + trashHtml; return; }
+  const dm = (x) => x.slice(8, 10) + '/' + x.slice(5, 7), groups = {};
+  rows.forEach(r => { const d = r.qd || '0000-00-00', key = invView.group === 'week' ? weekStartISO(d) : d.slice(0, 7); (groups[key] = groups[key] || []).push(r); });
+  const label = (k) => invView.group === 'week' ? `${dm(k)} – ${formatDateNZ(isoAddDays(k, 6))}` : `${k.slice(0, 4)} 年 ${Number(k.slice(5, 7))} 月`;
+  const chip = { active: 'bg-sky-500/20 text-sky-300 border-sky-500/40', expired: 'bg-slate-500/20 text-slate-300 border-slate-500/40', booked: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', invoiced: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' };
+  const txt = { active: '有效中', expired: '已过期', booked: '已确认/已预约', invoiced: '已开发票' };
+  body.innerHTML = Object.keys(groups).sort().reverse().map((k, gi) => {
+    const arr = groups[k];
+    const cards = arr.map(({ c, j, qt, qd, exp, state, total }) => `<div class="bg-slate-900 border border-slate-700 rounded-xl p-3 space-y-1.5">
+      <div class="flex justify-between items-start gap-2 cursor-pointer" onclick="viewQuoteFromList('${c.id}','${j.id}')"><div><div class="font-bold text-white text-sm">${escapeHtml(c.name)}</div><div class="text-[11px] text-slate-400 font-mono">${escapeHtml(qt.number)} · 报价 ${qd ? formatDateNZ(qd) : '—'} · 有效至 ${exp ? formatDateNZ(exp) : '—'}</div><div class="text-[11px] text-slate-500 truncate max-w-[16rem]">${escapeHtml(String(j.title || '').split('\n')[0])}</div></div>
+      <span class="text-[11px] px-2 py-0.5 rounded-full border whitespace-nowrap ${chip[state]}">${txt[state]}</span></div>
+      <div class="text-xs text-slate-300 font-mono">含 GST ${total > 0 ? salesMoney(total) : '—'}</div>
+      <div class="flex flex-wrap gap-2"><button onclick="viewQuoteFromList('${c.id}','${j.id}')" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold">🖨 查看报价单</button></div></div>`).join('');
+    return `<details ${gi < 3 ? 'open' : ''} class="bg-slate-800 border border-slate-700 rounded-2xl p-3"><summary class="cursor-pointer list-none flex justify-between items-baseline gap-2"><span class="font-bold text-white text-sm">${label(k)}</span><span class="text-[11px] text-slate-400">${arr.length} 张 · ${salesMoney(sum(arr))} ▾</span></summary><div class="mt-2 space-y-2">${cards}</div></details>`;
+  }).join('') + trashHtml;
 }
 // ---- v14.7：导出给会计（Bank transfer 一个文件，Cash 一个文件）----
 const EXPORT_HEAD = ['Invoice Date', 'Invoice No.', 'Customer', 'Amount excl. GST', 'GST', 'Total incl. GST', 'Payment Date'];
@@ -2160,6 +2235,7 @@ async function onOptJobChange() {
   const c = (await dbGetActiveClients()).find(x => String(x.id) === cid);
   const job = c && (c.jobs || []).find(j => j.id === jid); if (!job) return;
   optLoading = true;
+  { const mi = document.getElementById('optMargin'); if (mi) mi.value = job.margin != null ? job.margin : 10; }   // 没记过的工作回到默认 10
   optLoadTable(job.panels || [], jobZones(job) ? JSON.parse(JSON.stringify(job.zones)) : null);
   optLinked = { clientId: cid, jobId: jid }; optLoading = false;
   oqLoadFromJob(job); optSyncButtons();
@@ -2184,6 +2260,7 @@ async function saveOptToJob() {
   const j = c && (c.jobs || []).find(x => x.id === link.jobId);
   if (!j) { setOptState('保存失败：找不到该工作'); return; }
   j.panels = panels; if (optZones) j.zones = JSON.parse(JSON.stringify(optZones));
+  { const mv = parseFloat(document.getElementById('optMargin').value); j.margin = isNaN(mv) ? 10 : Math.max(0, mv); }   // v14.8：留边余量跟着这个工作走
   if (jobZones(j) && j.quote && Number(j.quote.rate) > 0 && j.quote.basis !== 'film') { const cc = jobQuoteCalc(j); j.quote.subtotal = cc.subtotal; j.quote.gst = cc.gst; j.quote.total = cc.total; j.price = cc.subtotal; }
   c.updatedAt = Date.now();
   if (await dbSaveClient(c)) { setOptState('✅ 已保存 ' + new Date().toTimeString().slice(0, 5)); renderJobsList(); if (accessToken) syncToCloud(false); }
@@ -2555,7 +2632,7 @@ const money2 = (n) => '$' + Number(n || 0).toFixed(2);
 function oqRead() {
   const v = (id) => document.getElementById(id).value;
   if (!optQuote) optQuote = newQuote();
-  const q = optQuote; q.basis = v('oqBasis'); q.rate = v('oqRate'); q.callout = Number(v('oqCallout')) || 0; q.extra = Number(v('oqExtra')) || 0;
+  const q = optQuote; q.basis = v('oqBasis'); q.rate = v('oqRate'); q.callout = Number(v('oqCallout')) || 0; q.extra = Number(v('oqExtra')) || 0; q.extraLabel = String(v('oqExtraLabel') || '').trim();
   q.stripRate = Number(v('oqStripRate')) || 0; q.jobType = v('oqType'); q.lblFilm = v('oqLblFilm'); q.lblStrip = v('oqLblStrip');
   const ar = v('oqAreaRound'); if (ar === 'legacy') delete q.areaRound; else if (ar) q.areaRound = ar;
   q.display = v('oqDisplay'); const vd = Math.max(1, parseInt(v('oqValid'), 10) || (q.validUnit === 'work' ? 10 : 30));
@@ -2565,7 +2642,7 @@ function oqRead() {
 }
 function oqWrite() {
   const q = optQuote, set = (id, v) => { document.getElementById(id).value = v; };
-  set('oqBasis', q.basis); set('oqRate', q.rate === undefined ? '' : q.rate); set('oqCallout', q.callout || ''); set('oqExtra', q.extra || '');
+  set('oqBasis', q.basis); set('oqRate', q.rate === undefined ? '' : q.rate); set('oqCallout', q.callout || ''); set('oqExtra', q.extra || ''); set('oqExtraLabel', q.extraLabel || '');
   set('oqType', q.jobType || ''); set('oqStripRate', stripRateOf(q)); set('oqLblFilm', q.lblFilm || LBL_FILM); set('oqLblStrip', q.lblStrip || LBL_STRIP);
   document.getElementById('oqAreaRound').innerHTML = areaRoundOptions(q);
   oqEditKey = null; { const mo = document.getElementById('oqMore'); if (mo) { const open = !!(Number(q.callout) || Number(q.extra)); mo.classList.toggle('hidden', !open); const mb = document.getElementById('oqMoreBtn'); if (mb) mb.textContent = mb.textContent.replace(/^[▾▸]/, open ? '▾' : '▸'); } }
@@ -2810,7 +2887,7 @@ function renderQuoteDocument(c, j) {
     if (r.lines.length > 1) h += `<tr><td class="p-2.5 py-1 pl-5 text-right text-xs text-slate-500">Area total</td><td class="p-2.5 py-1 text-right font-mono font-bold">${money2(r.amount)}</td></tr>`;
   });
   if (calc.callout) h += row('Call-out fee', calc.callout);
-  if (calc.extra) h += row('Additional charges', calc.extra);
+  if (calc.extra) h += row(escapeHtml(q.extraLabel || 'Additional charges'), calc.extra);
   if (lowSet.size) h += `<tr><td colspan="2" class="p-2.5 pt-3 text-xs text-slate-600">* Areas marked with an asterisk are priced below our minimum charge. If you choose to proceed with only some areas, a minimum charge of $${fmtMin(minAmt)} + GST per visit applies.</td></tr>`;
   g('pInvoiceTbody').innerHTML = h;
   g('pSubtotal').textContent = money2(calc.subtotal); g('pGst').textContent = money2(calc.gst); g('pTotal').textContent = money2(calc.total);
@@ -2854,7 +2931,7 @@ async function quoteToInvoice(cid, jid) {
     r.lines.forEach(l => { const dsc = l.kind === 'strip' ? lineDesc(r.stripItems, r.stripOther) : lineDesc(r.items, r.other); lines.push([`${lead} - ${r.name}\n${lblOf(j.quote, l.kind)}${dsc ? ': ' + dsc : ''}`, l.amount]); });
   });
   if (calc.callout) lines.push(['Call-out fee', calc.callout]);
-  if (calc.extra) lines.push(['Additional charges', calc.extra]);
+  if (calc.extra) lines.push([j.quote.extraLabel || 'Additional charges', calc.extra]);
   document.getElementById('invoiceItemsContainer').innerHTML = '';
   lines.forEach(([d, a]) => addInvoiceItemRow(d, 'fixed', 1, 0, 0, a));
   recalcInvoiceTotals(); showToast('✅ 已按报价单带入发票，请核对后预览或保存');
@@ -3990,6 +4067,7 @@ async function renderPrintableInvoice(opts = {}) {
   const printable = document.getElementById('printableInvoice');
   printable.classList.remove('hidden');
   setDocMode('invoice');
+  { const cj = (await dbGetAllClients()).find(c => String(c.id) === String(document.getElementById('invClientSelect').value)), wj = cj && (cj.jobs || []).find(j => j.id === activeInvoiceJobId), wl = document.getElementById('pWorkLine'); document.getElementById('pWorkDate').textContent = wj && wj.date ? formatDateNZ(wj.date) : ''; wl.classList.toggle('hidden', !(wj && wj.date)); }
   const invNum = document.getElementById('invNumber').value;
   const rawDate = document.getElementById('invDate').value;
   document.getElementById('pInvNum').textContent = invNum;
