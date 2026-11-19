@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.8 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v14.9 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.8<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.9<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -278,6 +278,7 @@
           <button type="button" id="oqMoreBtn" onclick="oqToggleMore()" class="text-sky-400 text-xs py-1">▸ 更多报价设置（日期、上门费、其他费、除膜单价、面积取整、措辞、条款）</button>
           <div id="oqMore" class="hidden space-y-3">
             <div class="grid grid-cols-2 gap-2">
+              <div class="col-span-2"><label class="text-slate-400 block mb-1">报价号（点“生成报价单”时自动分配；需要时可以手动改，留空就不改）</label><input id="oqNumber" type="text" placeholder="例如 QUO-2026-010" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
               <div><label class="text-slate-400 block mb-1">报价日期</label><input id="oqDate" type="date" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white"></div>
               <div><label id="oqValidLbl" class="text-slate-400 block mb-1">有效期（工作日）</label><input id="oqValid" type="number" value="10" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
               <div><label class="text-slate-400 block mb-1">上门费 $</label><input id="oqCallout" type="number" step="0.01" oninput="oqChanged()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
@@ -659,6 +660,7 @@
   <p class="text-[11px] text-slate-400">这些信息只保存在这台设备里，并同步到你自己的 Google Drive，不写在网页代码里。留空的项目不会印出来。</p>
   <label class="flex items-start gap-2 text-xs text-slate-300 pt-2 border-t border-slate-700"><input id="stAutoConn" type="checkbox" class="mt-0.5 w-4 h-4 shrink-0"><span>打开软件时自动连接 Google（只在这台设备上生效，默认关闭）。关闭时，需要同步就点“同步”。</span></label>
   <button type="button" onclick="closePriceSettings(); openStorage()" class="w-full px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold">💾 存储与照片清理</button>
+  <button type="button" onclick="closePriceSettings(); openRecover()" class="w-full px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold">🛟 找回丢失的发票/报价 · 同步记录</button>
   <div class="flex justify-end gap-2 pt-1"><button type="button" onclick="closePriceSettings()" class="px-3 py-2 rounded-lg bg-slate-600 text-white text-xs">取消</button><button type="button" onclick="savePriceSettings()" class="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold">保存</button></div>
 </div></div>
 
@@ -666,6 +668,12 @@
 <div id="storageModal" class="hidden fixed inset-0 bg-slate-950/80 flex items-start sm:items-center justify-center p-3 overflow-y-auto" style="z-index:80;"><div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl my-4 p-5 space-y-3 text-sm text-slate-200">
   <div class="flex justify-between items-center"><h3 class="font-bold text-white">💾 存储与照片清理</h3><button onclick="closeStorage()" class="text-slate-400 hover:text-white">✕</button></div>
   <div id="storageBody" class="space-y-3"></div>
+</div></div>
+
+<!-- v14.9 找回丢失的发票/报价 + 同步记录 -->
+<div id="recoverModal" class="hidden fixed inset-0 bg-slate-950/80 flex items-start sm:items-center justify-center p-3 overflow-y-auto" style="z-index:80;"><div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl my-4 p-5 space-y-3 text-sm text-slate-200">
+  <div class="flex justify-between items-center"><h3 class="font-bold text-white">🛟 找回丢失的发票/报价</h3><button onclick="closeRecover()" class="text-slate-400 hover:text-white">✕</button></div>
+  <div id="recoverBody" class="space-y-3"></div>
 </div></div>
 
 <!-- v13.3 手机底部导航 -->
@@ -685,7 +693,7 @@ let accessToken = null;
 let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth();
 let currentPhotos = [];
-let currentClientJobs = [];
+let currentClientJobs = [], modalOpenJobIds = new Set(), modalRemovedJobIds = new Set();
 let activeInvoiceJobId = null;
 let invDocHold = false;   // 报价单/发票预览显示期间，后台刷新不去重置页面
 let autoFillSeq = 0;   // 防止连续触发时旧的载入覆盖新的   // 发票模块当前对应的工作 ID
@@ -908,7 +916,27 @@ function addTombstone(id) {
   saveTombstones(t);
 }
 
-// 合并本地与云端：同一客户取"最后修改"的那份；被删除的客户靠"删除记录"同步
+// v14.9：同一客户两边都改过时，按“工作”合并，不再整个客户被较新的那份覆盖
+function jobScore(j) { return (j && j.invoice ? 2 : 0) + (j && j.quote && j.quote.number ? 1 : 0); }
+function mergeClientPair(l, c) {
+  const lt = l.updatedAt || 0, ct = c.updatedAt || 0, newer = ct > lt ? 'cloud' : (lt > ct ? 'local' : 'same');
+  const base = newer === 'cloud' ? c : l, other = newer === 'cloud' ? l : c, tomb = {};
+  [base.deletedJobs, other.deletedJobs].forEach(src => Object.keys(src || {}).forEach(k => { tomb[k] = Math.max(tomb[k] || 0, Number(src[k]) || 0); }));
+  const byId = new Map(), order = []; let added = 0, swapped = 0, dropped = 0;
+  (base.jobs || []).forEach(j => { if (tomb[j.id]) { dropped++; return; } byId.set(j.id, j); order.push(j.id); });
+  (other.jobs || []).forEach(j => {
+    if (tomb[j.id]) return;
+    const b = byId.get(j.id);
+    if (!b) { byId.set(j.id, j); order.push(j.id); added++; }      // 只在一边有的工作：保留
+    else if (jobScore(j) > jobScore(b)) { byId.set(j.id, j); swapped++; }   // 一边有发票/报价号、另一边没有：保留有的
+  });
+  const tombDiff = Object.keys(tomb).length !== Object.keys(base.deletedJobs || {}).length;
+  if (!added && !swapped && !dropped && !tombDiff) return { win: base, from: newer, added, swapped, dropped };
+  const win = Object.assign({}, base, { jobs: order.map(id => byId.get(id)), updatedAt: Math.max(lt, ct) + 1 });
+  if (Object.keys(tomb).length) win.deletedJobs = tomb;
+  return { win, from: 'merged', added, swapped, dropped };
+}
+// 合并本地与云端：同一客户按工作合并；被删除的客户靠"删除记录"同步
 function mergeClientSets(localList, localDel, cloudList, cloudDel) {
   const now = Date.now();
   const del = {};
@@ -919,29 +947,65 @@ function mergeClientSets(localList, localDel, cloudList, cloudDel) {
   const L = new Map(localList.map(c => [String(c.id), c]));
   const C = new Map(cloudList.map(c => [String(c.id), c]));
   const ids = new Set([...L.keys(), ...C.keys()]);
-  const merged = [];
+  const merged = [], localWrites = [], localRemoves = [], localBefore = [], merges = [];
   let toLocal = 0, toCloud = 0, removedLocal = 0, removedCloud = 0;
   ids.forEach(id => {
     const l = L.get(id), c = C.get(id);
     let win, from;
-    if (l && c) {
-      const lt = l.updatedAt || 0, ct = c.updatedAt || 0;
-      if (ct > lt) { win = c; from = 'cloud'; } else if (lt > ct) { win = l; from = 'local'; } else { win = l; from = 'same'; }
-    } else if (l) { win = l; from = 'local'; } else { win = c; from = 'cloud'; }
+    if (l && c) { const r = mergeClientPair(l, c); win = r.win; from = r.from; if (from === 'merged') merges.push({ name: win.name, added: r.added, swapped: r.swapped, dropped: r.dropped }); }
+    else if (l) { win = l; from = 'local'; } else { win = c; from = 'cloud'; }
     if (del[id] !== undefined) {
       if ((win.updatedAt || 0) > del[id]) { delete del[id]; }          // 删除之后又被修改过：保留
-      else { if (l) removedLocal++; if (c) removedCloud++; return; }
+      else { if (l) { removedLocal++; localRemoves.push(l.id); localBefore.push(l); } if (c) removedCloud++; return; }
     }
     merged.push(win);
-    if (from === 'cloud') toLocal++;
-    if (from === 'local') toCloud++;
+    if (from === 'cloud' || from === 'merged') { toLocal++; localWrites.push(win); if (l) localBefore.push(l); }
+    if (from === 'local' || from === 'merged') toCloud++;
   });
   const cloudDelKeys = Object.keys(cloudDel || {});
   const delKeys = Object.keys(del);
   const tombDiff = delKeys.length !== cloudDelKeys.length || delKeys.some(k => !(k in (cloudDel || {})));
-  return { merged, del, toLocal, toCloud, removedLocal, removedCloud,
+  return { merged, del, toLocal, toCloud, removedLocal, removedCloud, localWrites, localRemoves, localBefore, merges,
            localChanged: toLocal > 0 || removedLocal > 0,
            cloudChanged: toCloud > 0 || removedCloud > 0 || tombDiff };
+}
+
+// v14.9：只写有变化的客户（不再“先清空整个数据库再写回”）；写之前核对一遍，同步期间你改过的客户不动
+async function dbApplyMerge(m, localSnapshot) {
+  if (!db) return { ok: false, skipped: 0 };
+  const snap = new Map(localSnapshot.map(c => [String(c.id), c.updatedAt || 0]));
+  const fresh = await dbGetAllClients(), freshMap = new Map(fresh.map(c => [String(c.id), c]));
+  let skipped = 0;
+  const writes = m.localWrites.filter(w => {
+    const f = freshMap.get(String(w.id)), k = String(w.id);
+    if (f && (f.updatedAt || 0) !== (snap.has(k) ? snap.get(k) : -1)) { skipped++; return false; }
+    if (!f && snap.has(k)) { skipped++; return false; }
+    return true;
+  });
+  const removes = [];
+  m.localRemoves.forEach(id => { const f = freshMap.get(String(id)), k = String(id); if (!f) return; if ((f.updatedAt || 0) === (snap.get(k) || 0)) removes.push(f.id); else skipped++; });
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction('clients', 'readwrite'), st = tx.objectStore('clients');
+      writes.forEach(c => st.put(c)); removes.forEach(id => st.delete(id));
+      tx.oncomplete = () => resolve({ ok: true, skipped });
+      tx.onerror = () => resolve({ ok: false, skipped }); tx.onabort = () => resolve({ ok: false, skipped });
+    } catch (e) { resolve({ ok: false, skipped }); }
+  });
+}
+// v14.9：同步要改本机数据之前，先把被改的客户留一份（不含照片，最近 3 次）；同步记录（最近 30 条）
+const SNAP_KEY = 'tintpro_presync_v1', SLOG_KEY = 'tintpro_synclog_v1';
+function saveSyncSnapshot(list) {
+  if (!list || !list.length) return;
+  try {
+    const arr = JSON.parse(localStorage.getItem(SNAP_KEY) || '[]');
+    arr.push({ t: Date.now(), clients: list.map(c => Object.assign({}, c, { photos: [] })) });
+    while (arr.length > 3) arr.shift();
+    try { localStorage.setItem(SNAP_KEY, JSON.stringify(arr)); } catch (e) { localStorage.setItem(SNAP_KEY, JSON.stringify(arr.slice(-1))); }
+  } catch (e) { /* 空间不够就算了，不影响同步 */ }
+}
+function addSyncLog(entry) {
+  try { const a = JSON.parse(localStorage.getItem(SLOG_KEY) || '[]'); a.push(Object.assign({ t: Date.now() }, entry)); while (a.length > 30) a.shift(); localStorage.setItem(SLOG_KEY, JSON.stringify(a)); } catch (e) {}
 }
 
 function dbReplaceAll(list) {
@@ -995,8 +1059,10 @@ async function syncToCloud(showAlert = false) {
 
     const m = mergeClientSets(localClients, localDel, cloudClients, cloudDel);
     if (m.localChanged) {
-      const ok = await dbReplaceAll(m.merged);
-      if (!ok) throw new Error('写入本机数据失败');
+      saveSyncSnapshot(m.localBefore);
+      const ap = await dbApplyMerge(m, localClients);
+      if (!ap.ok) throw new Error('写入本机数据失败');
+      if (ap.skipped) syncAgain = true;   // 同步期间你改过的客户，下一轮再合并
     }
     saveTombstones(m.del);
     let settingsOut = loadSettings(), settingsCloudChanged = false;
@@ -1005,7 +1071,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.8', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.9', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1028,11 +1094,13 @@ async function syncToCloud(showAlert = false) {
       const invTab = document.getElementById('tab-invoices');
       if (invTab && invTab.classList.contains('hidden')) populateInvoiceClientSelect();
     }
+    if (m.toLocal || m.toCloud || m.removedLocal) addSyncLog({ toLocal: m.toLocal, toCloud: m.toCloud, removed: m.removedLocal, merges: m.merges });
     if (showAlert || m.localChanged) {
       showToast(`☁️ 同步完成：从云端更新 ${m.toLocal} 位客户，上传 ${m.toCloud} 位客户` + (m.removedLocal ? `，移除 ${m.removedLocal} 位已删除客户` : ''));
     }
+    if (m.merges.length) showToast(`⚠️ ${m.merges.length} 位客户在两台设备上都改过，已自动合并：${m.merges.slice(0, 4).map(x => x.name).join('、')}${m.merges.length > 4 ? ' 等' : ''}。请核对一下他们的工作和发票`, true);
   } catch (err) {
-    console.error(err);
+    console.error(err); addSyncLog({ error: String(err && err.message ? err.message : err) });
     showToast('云同步失败：' + (err && err.message ? err.message : err) + '（本机数据未受影响）', true);
   } finally {
     syncRunning = false; lastSyncAt = Date.now();
@@ -1892,6 +1960,42 @@ async function exportForAccountant(fmt) {
   }, i * 700));
   showToast(`已生成 2 个文件：Bank transfer ${d.bank.length} 张，Cash ${d.cash.length} 张`);
 }
+// ---- v14.9：找回丢失的发票/报价（来自同步前快照）+ 同步记录 ----
+let recoverItems = [];
+function closeRecover() { document.getElementById('recoverModal').classList.add('hidden'); }
+async function recoverFindMissing() {
+  let snaps = []; try { snaps = JSON.parse(localStorage.getItem(SNAP_KEY) || '[]'); } catch (e) {}
+  const all = await dbGetAllClients(), cur = new Map(all.map(c => [String(c.id), c])), out = [], seen = new Set();
+  snaps.slice().reverse().forEach(sn => (sn.clients || []).forEach(sc => (sc.jobs || []).forEach(j => {
+    if (!(j.invoice || (j.quote && j.quote.number))) return;
+    const key = sc.id + '|' + j.id; if (seen.has(key)) return;
+    const cc = cur.get(String(sc.id));
+    if (cc) { if (cc.deletedAt) return; if ((cc.jobs || []).some(x => x.id === j.id)) return; if (cc.deletedJobs && cc.deletedJobs[j.id]) return; }
+    seen.add(key); out.push({ t: sn.t, sc, job: j, clientMissing: !cc });
+  })));
+  return out;
+}
+async function openRecover() {
+  document.getElementById('recoverModal').classList.remove('hidden');
+  recoverItems = await recoverFindMissing();
+  let log = []; try { log = JSON.parse(localStorage.getItem(SLOG_KEY) || '[]'); } catch (e) {}
+  const tf = (t) => { const d = new Date(t), p = (n) => String(n).padStart(2, '0'); return `${p(d.getDate())}/${p(d.getMonth() + 1)} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+  const rows = recoverItems.map((it, i) => `<div class="bg-slate-900 border border-slate-700 rounded-xl p-3 space-y-1"><div class="font-bold text-white text-sm">${escapeHtml(it.sc.name || '')}${it.clientMissing ? ' <span class="text-[11px] text-amber-300">（这个客户现在也不在了）</span>' : ''}</div><div class="text-xs text-slate-300 font-mono">${it.job.invoice ? '发票 ' + escapeHtml(it.job.invoice.invNumber || '') + (it.job.invoice.grandTotal ? ' · 含GST ' + salesMoney(it.job.invoice.grandTotal) : '') : ''}${it.job.invoice && it.job.quote && it.job.quote.number ? ' · ' : ''}${it.job.quote && it.job.quote.number ? '报价 ' + escapeHtml(it.job.quote.number) : ''}</div><div class="text-[11px] text-slate-500">快照时间 ${tf(it.t)}</div><button onclick="recoverRestore(${i})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold">恢复这个工作</button></div>`).join('');
+  const logHtml = log.slice().reverse().map(e => e.error ? `<div class="text-xs text-rose-300">${tf(e.t)} · 同步失败：${escapeHtml(e.error)}</div>` : `<div class="text-xs text-slate-300">${tf(e.t)} · 从云端更新 ${e.toLocal || 0} 位，上传 ${e.toCloud || 0} 位${e.removed ? '，移除 ' + e.removed + ' 位' : ''}${(e.merges || []).length ? '<br><span class="text-amber-300">两边都改过、已合并：' + e.merges.map(x => escapeHtml(x.name) + (x.added ? '（补回 ' + x.added + ' 个工作）' : '')).join('、') + '</span>' : ''}</div>`).join('');
+  document.getElementById('recoverBody').innerHTML = `<p class="text-xs text-slate-400">软件每次要用云端数据改本机之前，会先留一份被改客户的快照（不含照片，最近 3 次）。下面列出快照里有发票或报价号、但现在这台设备上找不到的工作。</p>
+    ${rows || '<div class="text-xs text-slate-500 bg-slate-900 rounded-xl p-3">没有发现丢失的发票或报价。</div>'}
+    <div class="pt-2 border-t border-slate-700"><div class="text-xs font-bold text-white mb-1">最近的同步记录</div><div class="space-y-1.5">${logHtml || '<div class="text-xs text-slate-500">还没有记录。</div>'}</div></div>`;
+}
+async function recoverRestore(i) {
+  const it = recoverItems[i]; if (!it) return;
+  if (!confirm(`把 [${it.sc.name}] 的这个工作恢复回来？${it.clientMissing ? '\n这个客户现在不在了，会连客户一起恢复（照片不会恢复）。' : ''}`)) return;
+  const all = await dbGetAllClients(); let c = all.find(x => String(x.id) === String(it.sc.id));
+  if (c) { if ((c.jobs || []).some(x => x.id === it.job.id)) { showToast('这个工作已经在了', true); return; } c.jobs = (c.jobs || []).concat([JSON.parse(JSON.stringify(it.job))]); c.updatedAt = Date.now(); }
+  else { c = Object.assign({}, JSON.parse(JSON.stringify(it.sc)), { updatedAt: Date.now(), photos: [] }); delete c.deletedAt; }
+  if (!(await dbSaveClient(c))) { showToast('恢复失败，请先 Export 备份', true); return; }
+  refreshAllLists(); showToast('✅ 已恢复：' + (it.job.invoice ? it.job.invoice.invNumber : it.job.quote.number)); if (accessToken) syncToCloud(false);
+  openRecover();
+}
 async function renderInvPayPanel() {
   const box = document.getElementById('invPayPanel'); if (!box) return;
   if (!invPanelCtx) { box.classList.add('hidden'); return; }
@@ -2642,7 +2746,7 @@ function oqRead() {
 }
 function oqWrite() {
   const q = optQuote, set = (id, v) => { document.getElementById(id).value = v; };
-  set('oqBasis', q.basis); set('oqRate', q.rate === undefined ? '' : q.rate); set('oqCallout', q.callout || ''); set('oqExtra', q.extra || ''); set('oqExtraLabel', q.extraLabel || '');
+  set('oqBasis', q.basis); set('oqRate', q.rate === undefined ? '' : q.rate); set('oqCallout', q.callout || ''); set('oqExtra', q.extra || ''); set('oqExtraLabel', q.extraLabel || ''); set('oqNumber', q.number || '');
   set('oqType', q.jobType || ''); set('oqStripRate', stripRateOf(q)); set('oqLblFilm', q.lblFilm || LBL_FILM); set('oqLblStrip', q.lblStrip || LBL_STRIP);
   document.getElementById('oqAreaRound').innerHTML = areaRoundOptions(q);
   oqEditKey = null; { const mo = document.getElementById('oqMore'); if (mo) { const open = !!(Number(q.callout) || Number(q.extra)); mo.classList.toggle('hidden', !open); const mb = document.getElementById('oqMoreBtn'); if (mb) mb.textContent = mb.textContent.replace(/^[▾▸]/, open ? '▾' : '▸'); } }
@@ -2734,9 +2838,14 @@ async function saveOptQuote(silent) {
   const j = c && (c.jobs || []).find(x => x.id === optLinked.jobId);
   if (!j) { showToast('找不到该工作', true); return false; }
   const prev = j.quote || {};
+  let num = String(document.getElementById('oqNumber').value || '').trim(); if (!num) num = prev.number;   // 留空：保持原来的
+  if (num && num !== prev.number) {
+    let dup = null; (await dbGetAllClients()).forEach(cc => (cc.jobs || []).forEach(jj => { if (!(String(cc.id) === String(c.id) && jj.id === j.id) && jj.quote && jj.quote.number === num) dup = cc.name; }));
+    if (dup && !confirm(`报价号 ${num} 已经用在客户 [${dup}] 的报价上了。\n同一个号不能重复使用，确定仍要用吗？`)) return false;
+  }
   j.quoteDate = document.getElementById('oqDate').value || j.quoteDate || (prev.date) || todayISO();
   j.panels = panels; if (optZones) j.zones = JSON.parse(JSON.stringify(optZones));
-  j.quote = Object.assign({}, prev, JSON.parse(JSON.stringify(optQuote)), { number: prev.number, date: j.quoteDate, snapshot: { glassArea: r2(d.glassArea * 1e4) / 1e4, filmArea: r2(d.filmArea * 1e4) / 1e4, length: Math.round(d.L), rollW: d.rollW }, sig: panelsSig(panels, optZones), subtotal: calc.subtotal, gst: calc.gst, total: calc.total, updatedAt: Date.now() });
+  j.quote = Object.assign({}, prev, JSON.parse(JSON.stringify(optQuote)), { number: num, date: j.quoteDate, snapshot: { glassArea: r2(d.glassArea * 1e4) / 1e4, filmArea: r2(d.filmArea * 1e4) / 1e4, length: Math.round(d.L), rollW: d.rollW }, sig: panelsSig(panels, optZones), subtotal: calc.subtotal, gst: calc.gst, total: calc.total, updatedAt: Date.now() });
   j.price = calc.subtotal; c.updatedAt = Date.now();
   if (!(await dbSaveClient(c))) { showToast('保存失败，请先 Export 备份', true); return false; }
   refreshAllLists(); if (!silent) showToast(`✅ 报价已保存：含税 ${money2(calc.total)}`); document.getElementById('oqState').textContent = j.quote.number ? `已保存 · ${j.quote.number}` : '已保存';
@@ -3187,6 +3296,7 @@ async function openClientModal(id = null) {
         panels: [{ id: newPanelId(), label: '', w: '', h: '', qty: 1, zone: zid0 }]
       }];
     }
+    modalOpenJobIds = new Set(currentClientJobs.map(j => j.id)); modalRemovedJobIds = new Set();
     renderClientJobsList();
     renderPhotoPreviews();
     document.getElementById('clientModal').classList.remove('hidden');
@@ -3268,7 +3378,7 @@ function removeClientJob(jobId) {
   const j = currentClientJobs.find(x => x.id === jobId);
   const hasData = j && (j.invoice || j.quote || Number(j.price) || String(j.title || '').trim() || (j.panels || []).some(p => Number(p.w) || Number(p.h)));
   if (hasData && !confirm(j.invoice ? '这个工作已经有发票。删除后，它的尺寸、报价和发票记录都会消失，不能恢复。确定删除吗？' : '删除这个工作和它的尺寸、报价记录？不能恢复。')) return;
-  currentClientJobs = currentClientJobs.filter(x => x.id !== jobId);
+  modalRemovedJobIds.add(jobId); currentClientJobs = currentClientJobs.filter(x => x.id !== jobId);
   clientModalDirty = true; renderClientJobsList();
 }
 
@@ -3349,6 +3459,19 @@ function closeLightbox() {
   if (box) box.classList.add('hidden');
 }
 
+// v14.9：保存客户档案前，核对数据库里的最新版本：弹窗打开期间别处新增的工作/发票/报价不被旧副本覆盖；删除的工作记一条“删除记录”
+async function modalGuardJobs(clientId) {
+  const existing = (await dbGetAllClients()).find(c => String(c.id) === String(clientId));
+  const deletedJobs = Object.assign({}, existing && existing.deletedJobs);
+  modalRemovedJobIds.forEach(id => { deletedJobs[id] = Date.now(); });
+  if (existing) {
+    const exMap = new Map((existing.jobs || []).map(j => [j.id, j]));
+    currentClientJobs.forEach(j => { const ex = exMap.get(j.id); if (!ex) return; if (ex.invoice && !j.invoice) j.invoice = ex.invoice; if (ex.quote && ex.quote.number && !(j.quote && j.quote.number)) j.quote = ex.quote; });
+    const have = new Set(currentClientJobs.map(j => j.id));
+    (existing.jobs || []).forEach(ex => { if (!have.has(ex.id) && !modalOpenJobIds.has(ex.id) && !deletedJobs[ex.id]) currentClientJobs.push(JSON.parse(JSON.stringify(ex))); });
+  }
+  return deletedJobs;
+}
 async function saveClientModal() {
   try {
     const nameEl = document.getElementById('custName');
@@ -3358,6 +3481,7 @@ async function saveClientModal() {
     
     const clientId = rawEditingId !== '' ? isNaN(rawEditingId) ? rawEditingId : Number(rawEditingId) : Date.now();
     
+    const deletedJobs = await modalGuardJobs(clientId);
     const clientData = {
       id: clientId,
       name,
@@ -3370,6 +3494,7 @@ async function saveClientModal() {
       photos: [...currentPhotos],
       jobs: currentClientJobs
     };
+    if (Object.keys(deletedJobs).length) clientData.deletedJobs = deletedJobs;
     const saved = await dbSaveClient(clientData);
     if (!saved) {
       alert('保存失败！数据没有写入浏览器（可能是存储空间已满）。请先点 Export 备份数据，并减少照片后再试。');
@@ -4200,6 +4325,7 @@ async function autoSaveClientModal() {
   try {
     const raw = document.getElementById('editingClientId').value;
     const clientId = raw !== '' ? (isNaN(raw) ? raw : Number(raw)) : Date.now();
+    const deletedJobs = await modalGuardJobs(clientId);
     const clientData = {
       id: clientId, name,
       phone: document.getElementById('custPhone').value.trim(),
@@ -4211,6 +4337,7 @@ async function autoSaveClientModal() {
       photos: [...currentPhotos],
       jobs: currentClientJobs
     };
+    if (Object.keys(deletedJobs).length) clientData.deletedJobs = deletedJobs;
     clientModalDirty = false;   // 先清掉；保存过程中如果又有改动，会重新变成 true，下一轮再存
     const ok = await dbSaveClient(clientData);
     if (!ok) { clientModalDirty = true; setAutoSaveState('⚠️ 自动保存失败（存储空间可能已满），请先 Export 备份', true); return; }
