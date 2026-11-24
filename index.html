@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.9 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v14.10 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.9<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.10<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -117,6 +117,7 @@
       <button type="button" onclick="closeMobileMenu(); openPriceSettings()" class="flex items-center gap-2 px-3 h-11 rounded-xl bg-slate-700 active:bg-slate-600 text-sm text-slate-200"><span>⚙️</span><span>设置</span></button>
       <button type="button" onclick="closeMobileMenu(); switchTab('receivables')" class="flex items-center gap-2 px-3 h-11 rounded-xl bg-slate-700 active:bg-slate-600 text-sm text-slate-200"><span>💲</span><span>应收款</span></button>
       <button type="button" onclick="closeMobileMenu(); switchTab('sales')" class="flex items-center gap-2 px-3 h-11 rounded-xl bg-slate-700 active:bg-slate-600 text-sm text-slate-200"><span>📊</span><span>销售汇总</span></button>
+      <button type="button" onclick="closeMobileMenu(); switchTab('workload')" class="flex items-center gap-2 px-3 h-11 rounded-xl bg-slate-700 active:bg-slate-600 text-sm text-slate-200"><span>📐</span><span>工作量</span></button>
     </div>
   </div>
 </header>
@@ -140,6 +141,7 @@
       </button>
       <button onclick="switchTab('receivables')" id="nav-receivables" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/60 font-medium text-sm transition"><span class="w-5 text-center">💲</span><span>应收款</span></button>
       <button onclick="switchTab('sales')" id="nav-sales" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/60 font-medium text-sm transition"><span class="w-5 text-center">📊</span><span>销售汇总</span></button>
+      <button onclick="switchTab('workload')" id="nav-workload" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/60 font-medium text-sm transition"><span class="w-5 text-center">📐</span><span>工作量</span></button>
     </nav>
   </aside>
 
@@ -267,6 +269,7 @@
             <div><label class="text-slate-400 block mb-1 whitespace-nowrap">类型</label><select id="oqType" onchange="oqTypeChanged()" class="min-w-0 w-full h-10 bg-slate-800 border border-slate-700 rounded-lg px-2 text-white"><option value="">未选择</option><option value="res">住宅</option><option value="com">商业</option></select></div>
           </div>
           <p class="text-[11px] text-slate-500 -mt-1">单价、一口价都不含 GST；含税合计看上方。</p>
+          <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-3 space-y-1"><label class="text-slate-300 text-xs block">客人要的含税总价 $（填了就以它为准，上门费和其他费用已包含在内；清空 = 恢复自动计算）</label><input id="oqTarget" type="number" step="0.01" inputmode="decimal" placeholder="例如 598.00" oninput="oqChanged()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
           <div><div class="text-slate-400 mb-1">各区域金额（自动计算，一般不用改。点 ✎ 才能手动改，改的是该区域的总金额，不是单价）</div><div id="oqRooms" class="space-y-1"></div></div>
           <div id="oqSummary" class="text-[11px] text-slate-300 leading-relaxed bg-slate-800/60 rounded-xl p-3"></div>
           <div id="oqCompare" class="text-[11px] text-slate-400"></div>
@@ -395,6 +398,8 @@
               <div class="flex justify-between text-slate-300"><span>小计（不含 GST）：</span><span id="invCalcSubtotal" class="font-mono font-bold">$0.00</span></div>
               <div class="flex justify-between text-slate-300"><span>GST 15%：</span><span id="invCalcGst" class="font-mono font-bold">$0.00</span></div>
               <div class="flex justify-between text-base font-bold text-emerald-400 pt-2 border-t border-slate-700"><span>合计（含 GST）：</span><span id="invCalcTotal" class="font-mono">$0.00</span></div>
+              <div class="flex flex-wrap items-end gap-2 pt-2 border-t border-slate-700"><div class="flex-1 min-w-[10rem]"><label class="text-[11px] text-slate-400 block mb-1">客人要的含税总价 $（让合计正好等于这个数）</label><input id="invTargetGross" type="number" step="0.01" inputmode="decimal" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></div><button type="button" onclick="invApplyTargetGross()" class="px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold">应用</button></div>
+              <p class="text-[11px] text-slate-500 font-sans">会在发票里加一行价格调整（Discount 或 Price adjustment，可以改名字或删掉）。再点“应用”会替换上次加的那一行。</p>
             </div>
           </div>
 
@@ -494,6 +499,10 @@
 <section id="tab-sales" class="hidden space-y-4">
   <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><h2 class="text-base font-bold text-white">销售汇总</h2><p class="text-xs text-slate-400 mt-1">按发票日期统计 · 每周从周一算起 · 财年从 4 月 1 日算起</p></div>
   <div id="salesBody" class="space-y-4"></div>
+</section>
+<section id="tab-workload" class="hidden space-y-4">
+  <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><h2 class="text-base font-bold text-white">工作量（玻璃面积）</h2><p class="text-xs text-slate-400 mt-1">已完工的工作 · 按施工日期 · 每周从周一算起 · 财年从 4 月 1 日算起</p></div>
+  <div id="workloadBody" class="space-y-4"></div>
 </section>
 </main>
 </div>
@@ -1071,7 +1080,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.9', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.10', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1189,8 +1198,9 @@ function switchTab(tab, opts = {}) {
   try {
     if (tab === 'receivables') renderReceivables();
     if (tab === 'sales') renderSales();
+    if (tab === 'workload') renderWorkload();
     if (tab === 'dashboard') renderDashboard();
-    ['dashboard', 'jobs', 'calendar', 'optimizer', 'invoices', 'receivables', 'sales'].forEach(t => {
+    ['dashboard', 'jobs', 'calendar', 'optimizer', 'invoices', 'receivables', 'sales', 'workload'].forEach(t => {
       const el = document.getElementById('tab-' + t);
       const nav = document.getElementById('nav-' + t);
       if (el) el.classList.add('hidden');
@@ -1729,6 +1739,53 @@ async function recvReminder(cid, jid) {
   if (j) openEmailModal({ name: c.name, email: c.email || '', job: j, template: 'reminder' });
 }
 
+// ---- v14.10：每个工作的玻璃面积、单价、总价；已完工累计；工作量页 ----
+function jobGlassInfo(j) {   // 面积按你输入的尺寸（已勾选的区域），不取整；总价不含 GST
+  const zones = jobZones(j); let area = 0;
+  (j.panels || []).forEach(p => {
+    const w = Number(p.w) || 0, h = Number(p.h) || 0, qn = Number(p.qty) || 1; if (!(w > 0 && h > 0)) return;
+    if (zones) { const z = zones.find(x => x.id === panelZoneId(p, zones)); if (z && z.active === false) return; }
+    area += w * h * qn / 1e6;
+  });
+  area = r2(area);
+  const inv = j.invoice, price = r2(inv && inv.subtotal != null ? inv.subtotal : (Number(j.price) || 0)), q = j.quote;
+  const quoted = q && q.basis !== 'fixed' && Number(q.rate) > 0 && !(Number(q.targetGross) > 0) && !q.extra && !q.callout && !inv;
+  const rate = quoted ? Number(q.rate) : (area > 0 && price > 0 ? r2(price / area) : 0);
+  return { area, price, rate, quoted };
+}
+function jobGlassText(j, withTitle) {
+  const g = jobGlassInfo(j); if (!(g.area > 0) && !(g.price > 0)) return '';
+  const title = withTitle ? String(j.title || '').split('\n')[0].trim().slice(0, 22) : '';
+  const m = (x) => '$' + Number(x).toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const body = g.area > 0 ? `${g.area.toFixed(2)} m² ${g.quoted ? '×' : '·'} ${g.rate > 0 ? m(g.rate) + '/m²' + (g.quoted ? '' : '（折算）') : ''} ${g.price > 0 ? '= ' + m(g.price) : ''}` : `总价 ${m(g.price)}（没有尺寸）`;
+  return (title ? title + ' · ' : '') + body.replace(/\s+/g, ' ').trim() + (isJobDone(j) ? '' : '（未完工，不计入累计）');
+}
+function isJobDone(j) { const st = j.status || ''; return !st || st.startsWith('Completed') || st.startsWith('Warranty'); }   // 没有状态的旧工作当作已完工
+function clientDoneArea(c) { let area = 0, n = 0; (c.jobs || []).forEach(j => { if (!isJobDone(j)) return; const g = jobGlassInfo(j); if (g.area > 0) { area += g.area; n++; } }); return { area: r2(area), n }; }
+function jobGlassLineHtml(j) { const t = jobGlassText(j, false); return t ? `<div class="text-[11px] text-emerald-300 font-mono bg-slate-800/70 rounded-lg px-2 py-1">玻璃面积 · 单价 · 总价（不含 GST）：${escapeHtml(t)}</div>` : ''; }
+async function renderWorkload() {
+  const body = document.getElementById('workloadBody'); if (!body) return;
+  const clients = await dbGetActiveClients(), today = todayISO(), ws = weekStartISO(today), fy = exportRangeOf('fy', today), fyp = exportRangeOf('fyprev', today);
+  const jobs = []; let undated = 0;
+  clients.forEach(c => (c.jobs || []).forEach(j => {
+    if (!isJobDone(j)) return; const g = jobGlassInfo(j); if (!(g.area > 0)) return;
+    const d = j.date || (j.invoice && j.invoice.invDate) || ''; if (!d) { undated++; return; }
+    jobs.push({ d, area: g.area, price: g.price });
+  }));
+  const stat = (a, b) => { const l = jobs.filter(x => x.d >= a && x.d <= b), area = r2(l.reduce((s0, x) => s0 + x.area, 0)), rev = r2(l.reduce((s0, x) => s0 + x.price, 0)); return { n: l.length, area, rev, avg: area > 0 ? r2(rev / area) : 0 }; };
+  const m = (x) => '$' + Number(x).toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const line = (k, v, cls) => `<div class="flex justify-between text-sm py-0.5 ${cls || 'text-slate-300'}"><span>${k}</span><span class="font-mono font-bold">${v}</span></div>`;
+  const card = (title, range, st) => `<div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-baseline mb-1"><span class="font-bold text-white text-sm">${title}</span><span class="text-[11px] text-slate-500">${range}</span></div>${line('玻璃面积', st.area.toFixed(2) + ' m²', 'text-emerald-300')}${line('已完工工作', st.n + ' 个')}${line('收入（不含 GST）', m(st.rev))}${line('平均每平方米', st.avg > 0 ? m(st.avg) : '—', 'text-amber-300')}</div>`;
+  const dm = (x) => x.slice(8, 10) + '/' + x.slice(5, 7), rg = (a, b) => `${dm(a)}/${a.slice(0, 4)} – ${dm(b)}/${b.slice(0, 4)}`;
+  const monthEnd = (y, mo) => `${y}-${String(mo).padStart(2, '0')}-${String(new Date(y, mo, 0).getDate()).padStart(2, '0')}`;
+  const rows = []; let y = Number(fy.start.slice(0, 4)), mo = 4; const cy = Number(today.slice(0, 4)), cm = Number(today.slice(5, 7));
+  while (y < cy || (y === cy && mo <= cm)) { const a = `${y}-${String(mo).padStart(2, '0')}-01`, st = stat(a, monthEnd(y, mo)); rows.push(`<tr class="border-t border-slate-700"><td class="py-1.5">${y} 年 ${mo} 月</td><td class="text-right font-mono">${st.area.toFixed(2)}</td><td class="text-right font-mono">${st.n}</td><td class="text-right font-mono">${st.avg > 0 ? m(st.avg) : '—'}</td></tr>`); mo++; if (mo > 12) { mo = 1; y++; } }
+  const wrows = []; for (let i = 0; i < 12; i++) { const a = isoAddDays(ws, -7 * i), b = isoAddDays(a, 6), st = stat(a, b); wrows.push(`<tr class="border-t border-slate-700"><td class="py-1.5">${dm(a)} – ${dm(b)}</td><td class="text-right font-mono">${st.area.toFixed(2)}</td><td class="text-right font-mono">${st.n}</td><td class="text-right font-mono">${st.avg > 0 ? m(st.avg) : '—'}</td></tr>`); }
+  const tbl = (title, head, rs) => `<div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="font-bold text-white text-sm mb-2">${title}</div><table class="w-full text-xs text-slate-300"><thead><tr class="text-slate-500"><th class="text-left font-normal pb-1">${head}</th><th class="text-right font-normal">m²</th><th class="text-right font-normal">工作</th><th class="text-right font-normal">平均 $/m²</th></tr></thead><tbody>${rs.join('')}</tbody></table></div>`;
+  body.innerHTML = card('本周', rg(ws, isoAddDays(ws, 6)), stat(ws, isoAddDays(ws, 6))) + card('本月', rg(today.slice(0, 8) + '01', monthEnd(cy, cm)), stat(today.slice(0, 8) + '01', monthEnd(cy, cm))) + card('本财年（4 月 1 日起）', rg(fy.start, fy.end), stat(fy.start, fy.end)) + card('上一财年', rg(fyp.start, fyp.end), stat(fyp.start, fyp.end))
+    + tbl('本财年 · 按月', '月份', rows.reverse()) + tbl('最近 12 周 · 按周（周一起）', '周', wrows)
+    + `<p class="text-[11px] text-slate-500 px-1">只统计已完工（含售后/争议中、没有状态的旧工作）的工作，按施工日期归入周/月（没有施工日期的用发票日期）。面积是你输入的尺寸，已勾选的区域，不取整。平均每平方米 = 不含 GST 收入 ÷ 面积（含上门费和其他费用）。${undated ? `<br>有 ${undated} 个已完工工作没有任何日期，没有计入。` : ''}</p>`;
+}
 // ---- v14.6：发票列表（按月/按周分组、状态筛选、搜索、缺号提示、付款记录面板）----
 const invView = { group: 'month', status: 'all', kind: 'inv' };
 let invPanelCtx = null;
@@ -2606,14 +2663,17 @@ const QUOTE_TERMS = (d, unit) => `This quote is valid for ${d} ${unit === 'work'
 const LBL_FILM = 'Supply & install new film', LBL_STRIP = 'Remove existing film';
 function lblOf(q, kind) { const v = String((q && (kind === 'strip' ? q.lblStrip : q.lblFilm)) || '').trim(); return v || (kind === 'strip' ? LBL_STRIP : LBL_FILM); }
 function stripRateOf(q) { const v = Number(q && q.stripRate); return v > 0 ? v : priceSettings().strip; }
-function areaModeOf(q) { return !q || q.areaRound === undefined ? 'legacy' : (['round', 'floor', 'none'].includes(q.areaRound) ? q.areaRound : 'round'); }   // legacy = v12.37 及以前的报价（按金额取整，不取整面积）
+const TOT_MODES = { tceil05: { step: 0.5, f: (x) => Math.ceil(x * 2 - 1e-9) / 2 }, tceil1: { step: 1, f: (x) => Math.ceil(x - 1e-9) }, tround05: { step: 0.5, f: (x) => Math.round(x * 2 + 1e-9) / 2 }, tround1: { step: 1, f: (x) => Math.round(x + 1e-9) }, tfloor1: { step: 1, f: (x) => Math.floor(x + 1e-9) } };   // v14.10：所有区域的面积加起来，只取整一次
+const TOT_NAMES = { tceil05: '向上取整到 0.5', tceil1: '向上取整到 1', tround05: '四舍五入到 0.5', tround1: '四舍五入到整数', tfloor1: '向下取整' };
+function totRound(x, mode) { const t = TOT_MODES[mode]; if (!(x > 0)) return 0; return Math.max(t.step, t.f(x)); }
+function areaModeOf(q) { return !q || q.areaRound === undefined ? 'legacy' : (['round', 'floor', 'none', ...Object.keys(TOT_MODES)].includes(q.areaRound) ? q.areaRound : 'round'); }   // legacy = v12.37 及以前的报价（按金额取整，不取整面积）
 function areaRoundOptions(q) {
-  const m = areaModeOf(q), list = [['round', '四舍五入'], ['floor', '向下取整'], ['none', '不取整']];
+  const m = areaModeOf(q), list = [['tceil05', '整体向上取整到 0.5'], ['tceil1', '整体向上取整到 1'], ['tround05', '整体四舍五入到 0.5'], ['tround1', '整体四舍五入到整数'], ['tfloor1', '整体向下取整'], ['none', '不取整'], ['round', '各区域分别四舍五入（旧）'], ['floor', '各区域分别向下取整（旧）']];
   if (m === 'legacy') list.push(['legacy', '旧方式（' + (Number(q.round) ? '区域金额取整 $' + Number(q.round) : '不取整') + '）']);
   return list.map(([v, t]) => `<option value="${v}"${m === v ? ' selected' : ''}>${t}</option>`).join('');
 }
 function fmtArea(x) { x = Number(x) || 0; return Number.isInteger(x) ? String(x) : x.toFixed(2); }
-function newQuote() { return { basis: 'glass', rate: '', round: 0, areaRound: 'round', jobType: '', stripRate: priceSettings().strip, lblFilm: LBL_FILM, lblStrip: LBL_STRIP, callout: 0, extra: 0, display: 'rooms', validDays: 10, validUnit: 'work', overrides: {}, terms: QUOTE_TERMS(10, 'work'), termsAuto: true, minNotice: false, minAmount: priceSettings().min }; }
+function newQuote() { return { basis: 'glass', rate: '', round: 0, areaRound: 'tceil05', jobType: '', stripRate: priceSettings().strip, lblFilm: LBL_FILM, lblStrip: LBL_STRIP, callout: 0, extra: 0, display: 'rooms', validDays: 10, validUnit: 'work', overrides: {}, terms: QUOTE_TERMS(10, 'work'), termsAuto: true, minNotice: false, minAmount: priceSettings().min }; }
 function panelsSig(ps, zones) {
   const on = zones && zones.length ? Object.fromEntries(zones.map(z => [z.id, z.active !== false])) : null;
   return JSON.stringify((ps || []).map(p => { const a = [String(p.label || '').trim(), Number(p.w) || 0, Number(p.h) || 0, Number(p.qty) || 1]; if (on) { const zid = panelZoneId(p, zones); a.push(zid, on[zid]); if (p.strip) a.push('s'); } return a; }));
@@ -2666,14 +2726,15 @@ function allocate(total, refs, unit) {   // 按参考金额的比例把总价拆
 }
 function quoteCalc(q, panels, areas, zones) {
   const rate = Number(q.rate) || 0, fixed = q.basis === 'fixed', zoneMode = Array.isArray(zones) && zones.length > 0;
-  const mode = areaModeOf(q), legacy = mode === 'legacy', sRate = stripRateOf(q), pr = priceSettings();
+  const mode = areaModeOf(q), legacy = mode === 'legacy', tot = !!TOT_MODES[mode], sRate = stripRateOf(q), pr = priceSettings();
   const all = zoneMode ? zoneRooms(panels, zones) : quoteRooms(panels);
   const rooms = all.filter(r => r.active !== false), inactive = all.filter(r => r.active === false);
   const step = legacy && [1, 5, 10].includes(Number(q.round)) ? Number(q.round) : 0, toStep = (x) => step ? r2(Math.round(x / step + 1e-9) * step) : r2(x);   // 旧报价的“区域金额取整”
-  const ra = (x) => { if (!(x > 0)) return 0; if (mode === 'floor') return Math.max(1, Math.floor(x + 1e-9)); if (mode === 'round') return Math.max(1, Math.round(x + 1e-9)); return r2(x); };   // 面积取整；有玻璃但取整后是 0 的按 1 m² 算
-  all.forEach(r => { r.filmArea = legacy ? r2(r.weight) : ra(r.weight); r.stripArea = ra(r.stripWeight || 0); r.lines = []; });
+  const ra = (x) => { if (!(x > 0)) return 0; if (tot) return totRound(x, mode); if (mode === 'floor') return Math.max(1, Math.floor(x + 1e-9)); if (mode === 'round') return Math.max(1, Math.round(x + 1e-9)); return r2(x); };   // 面积取整；有玻璃但取整后是 0 的按 1 m² 算
+  all.forEach(r => { r.filmArea = legacy || tot ? r2(r.weight) : ra(r.weight); r.stripArea = tot ? r2(r.stripWeight || 0) : ra(r.stripWeight || 0); r.lines = []; });
   const mk = (r, kind, auto) => { const key = kind === 'strip' ? r.key + '|strip' : r.key, ov = (q.overrides || {})[key], manual = ov !== undefined && ov !== '' && !isNaN(Number(ov)); return { kind, key, auto, manual, amount: manual ? r2(ov) : auto }; };
   const pool = fixed ? all : rooms; let base, basisArea = 0;
+  const stripTot = () => { const SW = pool.reduce((a, r) => a + (r.stripWeight || 0), 0); if (!(SW > 0)) return; const ST = totRound(SW, mode), sm = allocate(r2(ST * sRate), pool.map(r => r.stripWeight || 0), 0.01); pool.forEach((r, i) => { r.stripArea = r2(ST * (r.stripWeight || 0) / SW); if (r.stripWeight > 0) r.lines.push(mk(r, 'strip', sm[i])); }); };   // 除旧膜面积也是整体取整一次
   if (fixed) {   // 一口价：rate 字段存的就是不含 GST 的总价；按“贴膜面积×单价、除膜面积×除膜单价”的比例拆到各区域的各行
     base = r2(rate);
     const fr = Number(q.unitRate) > 0 ? Number(q.unitRate) : (pr[q.jobType] || pr.res), refs = [], who = [];
@@ -2688,8 +2749,13 @@ function quoteCalc(q, panels, areas, zones) {
     pool.forEach(r => { r.lines.push(mk(r, 'film', r.auto)); if (r.stripWeight > 0) r.lines.push(mk(r, 'strip', toStep(r.stripArea * sRate))); });
   } else if (q.basis === 'film') {   // 按膜面积：整卷用膜面积（取整后）×单价，再按玻璃面积比例分到各区域
     basisArea = ra(areas.filmArea || 0); base = r2(basisArea * rate);
-    const am = allocate(base, pool.map(r => r.weight), mode === 'none' ? 0.01 : 1);
-    pool.forEach((r, i) => { r.lines.push(mk(r, 'film', am[i])); if (r.stripWeight > 0) r.lines.push(mk(r, 'strip', r2(r.stripArea * sRate))); });
+    const am = allocate(base, pool.map(r => r.weight), mode === 'none' || tot ? 0.01 : 1);
+    pool.forEach((r, i) => { r.lines.push(mk(r, 'film', am[i])); if (!tot && r.stripWeight > 0) r.lines.push(mk(r, 'strip', r2(r.stripArea * sRate))); });
+    if (tot) stripTot();
+  } else if (tot) {   // v14.10 按玻璃面积（整体取整）：总面积取整一次 × 单价，再按各区域真实面积的比例分到每个区域
+    const W = pool.reduce((a, r) => a + r.weight, 0), T = totRound(W, mode), am = allocate(r2(T * rate), pool.map(r => r.weight), 0.01);
+    pool.forEach((r, i) => { r.filmArea = W > 0 ? r2(T * r.weight / W) : 0; r.lines.push(mk(r, 'film', am[i])); });
+    stripTot(); basisArea = T; base = r2(am.reduce((a, b) => a + b, 0));
   } else {   // 按玻璃面积：每个区域的面积取整后 × 单价
     pool.forEach(r => { r.lines.push(mk(r, 'film', r2(r.filmArea * rate))); if (r.stripWeight > 0) r.lines.push(mk(r, 'strip', r2(r.stripArea * sRate))); });
     basisArea = r2(pool.reduce((a, r) => a + r.filmArea, 0)); base = r2(pool.reduce((a, r) => a + r.lines[0].auto, 0));
@@ -2699,6 +2765,19 @@ function quoteCalc(q, panels, areas, zones) {
     v.lines.push(mk(v, 'film', base)); rooms.push(v);
   }
   rooms.forEach(r => { const f = r.lines.find(l => l.kind === 'film'); r.auto = f ? f.auto : 0; r.manual = !!(f && f.manual); r.amount = r2(r.lines.reduce((a, l) => a + l.amount, 0)); });
+  let targetInfo = null; const tg = Number(q.targetGross) > 0 ? r2(q.targetGross) : 0;   // v14.10：客人要的含税总价（上门费、其他费用已包含在内）
+  if (tg > 0) {
+    let S = null; const c0 = Math.round(tg * 100 / 1.15);
+    for (const d of [0, -1, 1, -2, 2]) { const t = r2((c0 + d) / 100); if (Math.abs(r2(t + gstOf(t)) - tg) < 0.004) { S = t; break; } }
+    const exact = S !== null; if (!exact) S = r2(c0 / 100);
+    const co = r2(q.callout || 0), ex = r2(q.extra || 0), lines = []; rooms.forEach(r => r.lines.forEach(l => lines.push(l)));
+    const roomPart = r2(S - co - ex), cur = lines.reduce((a, l) => a + l.amount, 0);
+    if (lines.length && cur > 0 && roomPart > 0) {
+      const am = allocate(roomPart, lines.map(l => l.amount), 0.01); lines.forEach((l, i) => { l.amount = am[i]; l.targeted = true; });
+      rooms.forEach(r => { r.amount = r2(r.lines.reduce((a, l) => a + l.amount, 0)); });
+      targetInfo = { target: tg, subtotal: S, exact, off: r2(tg - r2(S + gstOf(S))) };
+    } else targetInfo = { target: tg, failed: true };
+  }
   const sumL = (kind, f) => r2(rooms.reduce((a, r) => a + r.lines.filter(l => l.kind === kind).reduce((x, l) => x + f(l), 0), 0));
   const filmSum = sumL('film', l => l.amount), stripSum = sumL('strip', l => l.amount), stripAuto = sumL('strip', l => l.auto);
   const callout = r2(q.callout || 0), extra = r2(q.extra || 0), roomsSum = r2(filmSum + stripSum);
@@ -2711,7 +2790,7 @@ function quoteCalc(q, panels, areas, zones) {
     const refFilm = q.unitBasis === 'film' ? (inactive.length ? 0 : (legacy ? r2(areas.filmArea || 0) : ra(areas.filmArea || 0)) * ur) : (legacy ? allArea * ur : all.reduce((a, r) => a + r.filmArea, 0) * ur);
     ref = refFilm > 0 ? r2(refFilm + all.reduce((a, r) => a + (r.stripArea || 0) * sRate, 0)) : 0;
   }
-  return { rooms, inactive, partial: fixed && inactive.length > 0, base, basisArea, fixed, step, mode, ref, refRate: ur, refFilm: q.unitBasis === 'film', callout, extra, roomsSum, filmSum, stripSum, stripAuto, stripBilled, stripActual, filmActual, stripRate: sRate, subtotal, gst, total: r2(subtotal + gst) };
+  return { rooms, inactive, partial: fixed && inactive.length > 0, base, basisArea, fixed, step, mode, tot, targetInfo, ref, refRate: ur, refFilm: q.unitBasis === 'film', callout, extra, roomsSum, filmSum, stripSum, stripAuto, stripBilled, stripActual, filmActual, stripRate: sRate, subtotal, gst, total: r2(subtotal + gst) };
 }
 function jobAreas(job) {
   const sn = (job.quote && job.quote.snapshot) || {};
@@ -2736,7 +2815,7 @@ const money2 = (n) => '$' + Number(n || 0).toFixed(2);
 function oqRead() {
   const v = (id) => document.getElementById(id).value;
   if (!optQuote) optQuote = newQuote();
-  const q = optQuote; q.basis = v('oqBasis'); q.rate = v('oqRate'); q.callout = Number(v('oqCallout')) || 0; q.extra = Number(v('oqExtra')) || 0; q.extraLabel = String(v('oqExtraLabel') || '').trim();
+  const q = optQuote; q.basis = v('oqBasis'); q.rate = v('oqRate'); q.callout = Number(v('oqCallout')) || 0; q.extra = Number(v('oqExtra')) || 0; q.extraLabel = String(v('oqExtraLabel') || '').trim(); q.targetGross = Number(v('oqTarget')) > 0 ? r2(Number(v('oqTarget'))) : 0;
   q.stripRate = Number(v('oqStripRate')) || 0; q.jobType = v('oqType'); q.lblFilm = v('oqLblFilm'); q.lblStrip = v('oqLblStrip');
   const ar = v('oqAreaRound'); if (ar === 'legacy') delete q.areaRound; else if (ar) q.areaRound = ar;
   q.display = v('oqDisplay'); const vd = Math.max(1, parseInt(v('oqValid'), 10) || (q.validUnit === 'work' ? 10 : 30));
@@ -2746,7 +2825,7 @@ function oqRead() {
 }
 function oqWrite() {
   const q = optQuote, set = (id, v) => { document.getElementById(id).value = v; };
-  set('oqBasis', q.basis); set('oqRate', q.rate === undefined ? '' : q.rate); set('oqCallout', q.callout || ''); set('oqExtra', q.extra || ''); set('oqExtraLabel', q.extraLabel || ''); set('oqNumber', q.number || '');
+  set('oqBasis', q.basis); set('oqRate', q.rate === undefined ? '' : q.rate); set('oqCallout', q.callout || ''); set('oqExtra', q.extra || ''); set('oqExtraLabel', q.extraLabel || ''); set('oqNumber', q.number || ''); set('oqTarget', q.targetGross || '');
   set('oqType', q.jobType || ''); set('oqStripRate', stripRateOf(q)); set('oqLblFilm', q.lblFilm || LBL_FILM); set('oqLblStrip', q.lblStrip || LBL_STRIP);
   document.getElementById('oqAreaRound').innerHTML = areaRoundOptions(q);
   oqEditKey = null; { const mo = document.getElementById('oqMore'); if (mo) { const open = !!(Number(q.callout) || Number(q.extra)); mo.classList.toggle('hidden', !open); const mb = document.getElementById('oqMoreBtn'); if (mb) mb.textContent = mb.textContent.replace(/^[▾▸]/, open ? '▾' : '▸'); } }
@@ -2819,10 +2898,10 @@ function renderOptQuote(keepRows) {
   const wEl = document.getElementById('oqWarn');
   if (manual.length) { wEl.classList.remove('hidden'); wEl.innerHTML = `⚠️ 有 ${manual.length} 项金额是手动填写的，不会跟着单价和尺寸变化。<button type="button" onclick="oqResetAll()" class="ml-1 px-2 py-1 rounded-lg bg-amber-600 text-white font-bold">金额恢复自动计算</button>`; } else wEl.classList.add('hidden');
   const baseName = optQuote.basis === 'film' ? '消耗膜面积' : '玻璃净面积';
-  const roundNote = (act, per) => rounded ? `（实际 ${act.toFixed(2)} m²，${per ? '各区域分别' : ''}${modeName}）` : '';
+  const roundNote = (act, per) => rounded ? `（实际 ${act.toFixed(2)} m²，${per ? '各区域分别' : ''}${modeName}）` : (c.tot && act > 0 ? `（实际 ${act.toFixed(2)} m²，整体${TOT_NAMES[c.mode]}）` : '');
   const sumHead = c.fixed ? `一口价 <b>${money2(c.base)}</b>` + (d.glassArea > 0 && c.base > 0 ? `（折合玻璃净面积约 ${money2(c.base / d.glassArea)}/m²）` : '') + (c.stripSum > 0 ? `<br>其中除旧膜约 ${money2(c.stripSum)}（按面积比例分摊）` : '')
     : `${baseName} ${fmtArea(c.basisArea)} m²${roundNote(c.filmActual, optQuote.basis !== 'film')} × ${money2(optQuote.rate)} = <b>${money2(c.base)}</b>` + (c.step ? `（各区域取整到 $${c.step}）` : '') + (c.stripBilled > 0 ? `<br>除旧膜 ${fmtArea(c.stripBilled)} m²${roundNote(c.stripActual, true)} × ${money2(c.stripRate)} = <b>${money2(c.stripAuto)}</b>` : '');
-  document.getElementById('oqSummary').innerHTML = sumHead + (c.partial ? '<br><span class="text-amber-300">⚠️ 一口价是全部区域的价格；只做已勾选的部分需要重新定价，出发票前会提示你填金额</span>' : '') + (c.subtotal > 0 && c.subtotal < minAmountOf(optQuote) ? `<br><span class="text-amber-300">⚠️ 不含GST合计 ${money2(c.subtotal)}，低于每次上门最低收费 ${money2(minAmountOf(optQuote))}。只做这部分的话，请手动把金额改到最低收费</span>` : '');
+  document.getElementById('oqSummary').innerHTML = sumHead + (c.targetInfo ? (c.targetInfo.failed ? '<br><span class="text-amber-300">⚠️ 含税总价没法套用：先填好尺寸和单价，并且总价要大于上门费和其他费用</span>' : `<br><span class="text-emerald-300">已按客人要的含税总价 ${money2(c.targetInfo.target)} 倒推：不含GST ${money2(c.targetInfo.subtotal)}，各区域金额已按比例调整</span>` + (c.targetInfo.exact ? '' : `<br><span class="text-amber-300">⚠️ 因为 GST 按分取整，这个总价凑不出来，实际合计差 ${money2(Math.abs(c.targetInfo.off))}</span>`)) : '') + (c.partial ? '<br><span class="text-amber-300">⚠️ 一口价是全部区域的价格；只做已勾选的部分需要重新定价，出发票前会提示你填金额</span>' : '') + (c.subtotal > 0 && c.subtotal < minAmountOf(optQuote) ? `<br><span class="text-amber-300">⚠️ 不含GST合计 ${money2(c.subtotal)}，低于每次上门最低收费 ${money2(minAmountOf(optQuote))}。只做这部分的话，请手动把金额改到最低收费</span>` : '');
   const rate = Number(optQuote.rate) || 0, filmCost = d.L / 1000 * (parseFloat(document.getElementById('optCostPerM').value) || 0), rev = c.subtotal - c.stripSum, profit = rev - filmCost;
   const calcAs = (b) => quoteCalc(Object.assign({}, optQuote, { basis: b, overrides: {} }), panels, areas, optZones).subtotal;
   const profTxt = `膜成本约 ${money2(filmCost)}，${c.stripSum > 0 ? '贴膜部分（不含除膜收入）' : '本报价'}预计毛利 ${money2(profit)}（${rev > 0 ? (profit / rev * 100).toFixed(0) : 0}%）`;
@@ -3117,6 +3196,8 @@ async function renderJobsList() {
       mid.appendChild(createSafeElement('span', '', `📞 ${c.phone || '未填电话'}`));
       mid.appendChild(createSafeElement('span', '', `📁 工作 ${jobsCount} | 🖼️ 照片 ${photoCount}`));
 
+      const gl = createSafeElement('div', 'text-[11px] text-slate-300 space-y-0.5 pt-2 border-t border-slate-700/60 hidden');
+      { const gj = (c.jobs || []).filter(j => jobGlassText(j, true)); if (gj.length) { gl.classList.remove('hidden'); gj.slice(0, 3).forEach(j => gl.appendChild(createSafeElement('div', 'font-mono truncate', jobGlassText(j, true)))); if (gj.length > 3) gl.appendChild(createSafeElement('div', 'text-slate-500', `…另有 ${gj.length - 3} 个工作`)); const da = clientDoneArea(c); if (da.n) gl.appendChild(createSafeElement('div', 'text-emerald-300 font-semibold', `已完工累计 ${da.area.toFixed(2)} m²（${da.n} 个工作）`)); } }
       const btm = createSafeElement('div', 'flex justify-between items-center pt-1');
       btm.appendChild(createSafeElement('span', 'text-sky-400 text-xs font-medium hover:underline', '编辑档案 ➔'));
       const delBtn = createSafeElement('button', 'px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-lg transition', '删除');
@@ -3132,7 +3213,7 @@ async function renderJobsList() {
       const sel = document.createElement('select'); sel.className = 'bg-slate-900 border border-slate-600 rounded-lg text-xs text-white px-1.5 py-1';
       JOB_STATUSES.forEach(st => { const o = document.createElement('option'); o.value = st; o.textContent = statusZh(st); if ((c.status || '') === st) o.selected = true; sel.appendChild(o); });
       sel.onclick = stop; sel.onchange = () => quickSetStatus(c.id, sel.value); act.appendChild(sel);
-      card.appendChild(top); card.appendChild(mid); card.appendChild(act); card.appendChild(btm);
+      card.appendChild(top); card.appendChild(mid); card.appendChild(gl); card.appendChild(act); card.appendChild(btm);
       frag.appendChild(card);
     });
 
@@ -3340,6 +3421,7 @@ function renderClientJobsList() {
         <div><label class="text-[10px] text-slate-400 block">价格 $（不含 GST）</label><input type="number" step="0.01" value="${job.price || ''}" oninput="updateJobField('${job.id}', 'price', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white font-mono"></div>
         <div><label class="text-[10px] text-slate-400 block">状态</label><select onchange="updateJobField('${job.id}', 'status', this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white">${JOB_STATUSES.map(st => `<option value="${st}"${(job.status || 'Completed 已完工') === st ? ' selected' : ''}>${statusZh(st)}</option>`).join('')}</select></div>
       </div>
+      ${jobGlassLineHtml(job)}
       ${panelsHtml(job)}
       ${quoteHtml(job)}
       <div class="flex justify-between items-center gap-2 pt-1">
@@ -4056,6 +4138,20 @@ function toggleItemMode(rowId) {
   recalcInvoiceTotals();
 }
 
+function invApplyTargetGross() {   // 让发票的含税合计正好等于客人要的价格：加（或替换）一行价格调整
+  const tg = r2(parseFloat(document.getElementById('invTargetGross').value) || 0);
+  if (!(tg > 0)) { showToast('请先填客人要的含税总价', true); return; }
+  document.querySelectorAll('#invoiceItemsContainer > div').forEach(row => { const m = row.querySelector('.item-mode'), d = row.querySelector('.item-desc'); if (m && d && m.value === 'fixed' && /^(Discount|Price adjustment)$/.test(d.value.trim())) row.remove(); });
+  recalcInvoiceTotals();
+  const cur = parseFloat(document.getElementById('invCalcSubtotal').textContent.replace('$', '')) || 0;
+  let S = null; const c0 = Math.round(tg * 100 / 1.15);
+  for (const d of [0, -1, 1, -2, 2]) { const t = r2((c0 + d) / 100); if (Math.abs(r2(t + gstOf(t)) - tg) < 0.004) { S = t; break; } }
+  const exact = S !== null; if (!exact) S = r2(c0 / 100);
+  const adj = r2(S - cur);
+  if (Math.abs(adj) < 0.005) { showToast('现在的合计已经是这个价格了'); return; }
+  addInvoiceItemRow(adj < 0 ? 'Discount' : 'Price adjustment', 'fixed', 1, 0, 0, adj); recalcInvoiceTotals();
+  showToast(`已加一行价格调整 ${money2(adj)}：不含GST ${money2(S)}，合计 ${money2(r2(S + gstOf(S)))}` + (exact ? '' : '（GST 按分取整，凑不出这个总价，差几分钱）'), !exact);
+}
 function recalcInvoiceTotals() {
   let subtotal = 0;
   document.querySelectorAll('#invoiceItemsContainer > div').forEach(row => {
@@ -4072,7 +4168,7 @@ function recalcInvoiceTotals() {
       amt = area * rate * qty;
     }
     const amtSpan = row.querySelector('.row-amount');
-    if (amtSpan) amtSpan.textContent = `$${amt.toFixed(2)}`;
+    if (amtSpan) amtSpan.textContent = amt < 0 ? `-$${Math.abs(amt).toFixed(2)}` : `$${amt.toFixed(2)}`;
     subtotal += amt;
   });
   const gst = gstOf(subtotal);
@@ -4239,16 +4335,16 @@ async function renderPrintableInvoice(opts = {}) {
     if (mode === 'fixed') {
       amt = parseFloat(row.querySelector('.item-price').value) || 0;
       if (hasAreaMode) {
-        ptr.innerHTML = `<td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${desc}</td><td class="p-2.5 text-center font-mono">-</td><td class="p-2.5 text-right font-mono">-</td><td class="p-2.5 text-right font-mono font-bold">$${amt.toFixed(2)}</td>`;
+        ptr.innerHTML = `<td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${desc}</td><td class="p-2.5 text-center font-mono">-</td><td class="p-2.5 text-right font-mono">-</td><td class="p-2.5 text-right font-mono font-bold">${amt < 0 ? '-$' + Math.abs(amt).toFixed(2) : '$' + amt.toFixed(2)}</td>`;
       } else {
-        ptr.innerHTML = `<td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${desc}</td><td class="p-2.5 text-right font-mono font-bold">$${amt.toFixed(2)}</td>`;
+        ptr.innerHTML = `<td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${desc}</td><td class="p-2.5 text-right font-mono font-bold">${amt < 0 ? '-$' + Math.abs(amt).toFixed(2) : '$' + amt.toFixed(2)}</td>`;
       }
     } else {
       const area = parseFloat(row.querySelector('.item-area').value) || 0;
       const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
       const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
       amt = area * rate * qty;
-      ptr.innerHTML = `<td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${desc}</td><td class="p-2.5 text-center font-mono">${qty}</td><td class="p-2.5 text-right font-mono">${area}m² @ $${rate}/m²</td><td class="p-2.5 text-right font-mono font-bold">$${amt.toFixed(2)}</td>`;
+      ptr.innerHTML = `<td class="p-2.5 font-medium text-slate-800 whitespace-pre-line">${desc}</td><td class="p-2.5 text-center font-mono">${qty}</td><td class="p-2.5 text-right font-mono">${area}m² @ $${rate}/m²</td><td class="p-2.5 text-right font-mono font-bold">${amt < 0 ? '-$' + Math.abs(amt).toFixed(2) : '$' + amt.toFixed(2)}</td>`;
     }
     subtotal += amt;
     pTbody.appendChild(ptr);
