@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.11 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v14.12 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.11<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.12<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -149,6 +149,7 @@
     <!-- TAB 1: 客户与项目列表 -->
     <section id="tab-dashboard" class="space-y-4">
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">💰 本周营业额 <span id="dashSalesRange" class="text-slate-400 font-normal text-xs"></span></h2><button onclick="switchTab('sales')" class="text-xs text-sky-400">汇总 ➔</button></div><div id="dashSales" class="grid grid-cols-3 gap-2"></div></div>
+      <div id="dashTargetBox" class="space-y-3"></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📅 本周安排（未来 7 天）</h2></div><div id="dashWeek" class="space-y-2"></div></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">💬 咨询中 <span id="dashInqCount" class="text-slate-400 font-normal"></span></h2></div><div id="dashInquiry" class="space-y-2"></div></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📝 已报价 <span id="dashQuoCount" class="text-slate-400 font-normal"></span></h2></div><div id="dashQuotes" class="space-y-2"></div></div>
@@ -660,6 +661,14 @@
   <label class="block text-xs text-slate-400">商业贴膜 $/m²<input id="prCom" type="number" step="0.01" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label>
   <label class="block text-xs text-slate-400">除旧膜 $/m²<input id="prStrip" type="number" step="0.01" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label>
   <label class="block text-xs text-slate-400">每次上门最低收费 $（不含 GST，报价单提示用）<input id="prMin" type="number" step="0.01" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label>
+  <p class="text-xs font-bold text-white pt-2">🎯 本财年目标（税后收入）</p>
+  <p class="text-[11px] text-slate-500">税后收入 = 客人付的钱去掉 GST 后你拿到的金额，没有扣膜等成本，所以不是利润。财年 4 月 1 日起，周一为一周开始。每次修改会记一条，从修改那天起新目标生效，之前的超前或落后保持不变。</p>
+  <label class="block text-xs text-slate-400">目标金额 $（不含 GST）：从下面的开始日到 3 月 31 日要达到的税后收入<input id="prTarget" type="number" step="1" inputmode="numeric" placeholder="例如 50000" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label>
+  <label class="block text-xs text-slate-400">从哪一天开始计算（默认今天；填 4 月 1 日 = 整个财年都算）<input id="prTargetStart" type="date" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white"></label>
+  <p class="text-[11px] text-slate-500">开始日之前完成的工作不计入。你是中途接手的，建议用默认的今天，这样每周的数字才是按剩下的周数平分。</p>
+  <div class="grid grid-cols-2 gap-2"><label class="block text-xs text-slate-400">休息开始（月-日）<input id="prRestStart" type="text" placeholder="12-25" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label><label class="block text-xs text-slate-400">休息结束（月-日）<input id="prRestEnd" type="text" placeholder="01-07" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label></div>
+  <p class="text-[11px] text-slate-500">休息期间每天的基准是 0，不计入剩余工作日。每年重复。</p>
+  <div id="prTargetLog" class="text-[11px] text-slate-400 space-y-0.5"></div>
   <p class="text-xs font-bold text-white pt-2">膜的价格表（$/m²，不含 GST）</p>
   <p class="text-[11px] text-slate-500">报价里选了膜，单价就自动变成这里的价格；商业价留空 = 这款膜还没定商业价，选它做商业报价时请手动填单价。价格都可以随时改，已经保存的报价不会变。</p>
   <div class="flex gap-1.5 text-[10px] text-slate-500 px-0.5"><span class="flex-1">名称</span><span class="w-16 text-center">住宅</span><span class="w-16 text-center">商业</span><span class="w-6"></span></div>
@@ -1087,7 +1096,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.11', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.12', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1770,7 +1779,107 @@ function jobGlassText(j, withTitle) {
 function isJobDone(j) { const st = j.status || ''; return !st || st.startsWith('Completed') || st.startsWith('Warranty'); }   // 没有状态的旧工作当作已完工
 function clientDoneArea(c) { let area = 0, n = 0; (c.jobs || []).forEach(j => { if (!isJobDone(j)) return; const g = jobGlassInfo(j); if (g.area > 0) { area += g.area; n++; } }); return { area: r2(area), n }; }
 function jobGlassLineHtml(j) { const t = jobGlassText(j, false); return t ? `<div class="text-[11px] text-emerald-300 font-mono bg-slate-800/70 rounded-lg px-2 py-1">玻璃面积 · 单价 · 总价（不含 GST）：${escapeHtml(t)}</div>` : ''; }
-async function renderWorkload() {
+// ---- v14.12：目标（税后收入 = 不含 GST 的金额），按完工日期统计；多做的、少做的都直接滚入后面的周和月 ----
+const TGT_REST_DEFAULT = { start: '12-25', end: '01-07' };
+let tgtCache = null;
+function tgtFyYear(today) { const y = Number(today.slice(0, 4)), m = Number(today.slice(5, 7)); return m >= 4 ? y : y - 1; }
+function isoDiffDays(a, b) { const p = (x) => { const t = x.split('-').map(Number); return Date.UTC(t[0], t[1] - 1, t[2]); }; return Math.round((p(b) - p(a)) / 86400000); }
+function tgtConfig() { const c = loadSettings().targets || {}; const rs = c.rest && /^\d\d-\d\d$/.test(c.rest.start || '') && /^\d\d-\d\d$/.test(c.rest.end || ''); return { fy: c.fy || {}, rest: rs ? c.rest : TGT_REST_DEFAULT }; }
+function tgtEntries(fyY) { return ((tgtConfig().fy[String(fyY)]) || []).filter(e => e && e.date && Number(e.amount) > 0).map(e => ({ date: e.date, amount: Number(e.amount) })).sort((a, b) => a.date.localeCompare(b.date)); }
+function buildTargetModel(fyY, entries, rest, upTo) {   // upTo：只用这个日期之前（含）设置的目标，用来评价“当时”的成绩
+  const start = `${fyY}-04-01`, end = `${fyY + 1}-03-31`, n = isoDiffDays(start, end) + 1, pre = new Array(n + 1).fill(0);
+  const inRest = (iso) => { const md = iso.slice(5); return rest.start <= rest.end ? (md >= rest.start && md <= rest.end) : (md >= rest.start || md <= rest.end); };
+  for (let i = 0; i < n; i++) pre[i + 1] = pre[i] + (inRest(isoAddDays(start, i)) ? 0 : 1);
+  const idx = (iso) => Math.max(0, Math.min(n - 1, isoDiffDays(start, iso)));
+  const W = (a, b) => (b < a || b < start || a > end) ? 0 : pre[idx(b) + 1] - pre[idx(a)];
+  const es = entries.filter(e => !upTo || e.date <= upTo), segs = es.map((e) => ({ from: e.date < start ? start : e.date, amount: e.amount })), from0 = segs.length ? segs[0].from : start;
+  const planCum = (D) => {   // 到 D 这天结束，累计应该完成多少；改目标后，之前的计划保持不变，新目标只管剩下的日子
+    if (!segs.length || D < start) return 0; if (D > end) D = end;
+    let P = 0;
+    for (let i = 0; i < segs.length; i++) {
+      const sg = segs[i], segEnd = i + 1 < segs.length ? isoAddDays(segs[i + 1].from, -1) : end; if (segEnd < sg.from) continue; if (D < sg.from) return P;
+      const wTot = W(sg.from, end), upto = D < segEnd ? D : segEnd, ratio = wTot > 0 ? W(sg.from, upto) / wTot : 1;
+      if (D <= segEnd) return r2(P + (sg.amount - P) * ratio);
+      P = P + (sg.amount - P) * ratio;
+    }
+    return r2(P);
+  };
+  return { start, end, from0, W, planCum, total: segs.length ? segs[segs.length - 1].amount : 0, has: segs.length > 0 };
+}
+function jobIncome(j) { const inv = j.invoice; return r2(inv && inv.subtotal != null ? inv.subtotal : (Number(j.price) || (j.quote && Number(j.quote.subtotal)) || 0)); }
+function tgtEvents(clients) {   // 已完工的按完工日期；已确认/已预约且有施工日期的算“已预约”
+  const done = [], booked = []; let rev = 0, area = 0;
+  clients.forEach(c => (c.jobs || []).forEach(j => {
+    const v = jobIncome(j); if (!(v > 0)) return;
+    if (isJobDone(j)) { const d = j.date || (j.invoice && j.invoice.invDate) || ''; if (d) { done.push({ d, v }); const g = jobGlassInfo(j); if (g.area > 0) { rev += v; area += g.area; } } }
+    else if (/^(Confirmed|Scheduled)/.test(j.status || '') && j.date) booked.push({ d: j.date, v });
+  }));
+  return { done, booked, avgRate: area > 0 ? r2(rev / area) : 0 };
+}
+const evSum = (arr, a, b) => r2(arr.filter(x => x.d >= a && (!b || x.d <= b)).reduce((s0, x) => s0 + x.v, 0));
+function tgtPeriod(model, ev, a, b, today) {   // 一个周或月：需要 = 到期末累计应完成 − 期初前实际已完成
+  const aa = a < model.from0 ? model.from0 : a, bb = b > model.end ? model.end : b, dayBefore = isoAddDays(aa, -1);
+  const base = r2(model.planCum(bb) - model.planCum(dayBefore)), doneBefore = evSum(ev.done, model.from0, dayBefore), carry = r2(model.planCum(dayBefore) - doneBefore);
+  const need = Math.max(0, r2(model.planCum(bb) - doneBefore)), done = evSum(ev.done, aa, bb), booked = evSum(ev.booked, aa, bb), ref = today < aa ? aa : (today > bb ? bb : today);
+  return { a: aa, b: bb, base, carry, need, done, booked, remaining: Math.max(0, r2(need - done)), toSchedule: Math.max(0, r2(need - done - booked)), toNow: Math.max(0, r2(model.planCum(ref) - doneBefore)) };
+}
+function tgtStatus(lag, weekBase) {   // lag > 0 = 落后
+  if (lag <= 0.005) return { c: 'emerald', label: lag < -0.005 ? `超前 ${salesMoney(-lag)}` : '不落后' };
+  if (lag >= 2 * weekBase) return { c: 'rose', label: `落后 ${salesMoney(lag)}（两周以上）` };
+  return { c: 'amber', label: `落后 ${salesMoney(lag)}` };
+}
+function tgtCardHtml(title, range, p, st, line1, line2) {
+  const scale = Math.max(p.need, p.done + p.booked, 1), dp = Math.min(100, p.done / scale * 100), bp = Math.min(100 - dp, p.booked / scale * 100), mk = Math.min(100, p.toNow / scale * 100);
+  return `<div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-baseline gap-2"><span class="font-bold text-white text-sm">${title}</span><span class="text-[11px] text-slate-500">${range}</span></div>
+    <div class="flex justify-between items-baseline mt-1 gap-2"><span class="text-xl font-bold text-white font-mono">${salesMoney(p.done)} <span class="text-xs font-normal text-slate-400">/ ${salesMoney(p.need)}</span></span><span class="text-[11px] px-2 py-0.5 rounded-md bg-${st.c}-500/15 text-${st.c}-300 border border-${st.c}-500/30 whitespace-nowrap">${st.label}</span></div>
+    <div class="relative h-3 rounded-full bg-slate-900 mt-2 overflow-hidden"><div class="absolute inset-y-0 left-0 bg-${st.c}-500" style="width:${dp}%"></div><div class="absolute inset-y-0 bg-${st.c}-500/25 border-l border-${st.c}-500/50" style="left:${dp}%;width:${bp}%"></div><div class="absolute -inset-y-0.5 w-0.5 bg-white" style="left:${mk}%"></div></div>
+    <div class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">${line1}</div><div class="text-[11px] text-slate-300 leading-relaxed">${line2}</div></div>`;
+}
+function renderDashTargets(clients, today) {
+  const box = document.getElementById('dashTargetBox'); if (!box) return;
+  const fyY = tgtFyYear(today), es = tgtEntries(fyY), cfg = tgtConfig();
+  if (!es.length) { tgtCache = null; box.innerHTML = `<div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex justify-between items-center gap-3"><div><div class="font-bold text-white text-sm">🎯 目标</div><div class="text-xs text-slate-400 mt-0.5">还没有设置本财年目标。设好以后，这里会显示本周、本月、本财年的进度和排期参考。</div></div><button onclick="openPriceSettings()" class="px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold whitespace-nowrap">设置目标</button></div>`; return; }
+  const model = buildTargetModel(fyY, es, cfg.rest), ev = tgtEvents(clients); tgtCache = { model, ev, today };
+  const dm = (x) => x.slice(8, 10) + '/' + x.slice(5, 7), ws = weekStartISO(today), we = isoAddDays(ws, 6), ms = today.slice(0, 8) + '01', me = (() => { const y = Number(today.slice(0, 4)), mo = Number(today.slice(5, 7)); return `${y}-${String(mo).padStart(2, '0')}-${String(new Date(y, mo, 0).getDate()).padStart(2, '0')}`; })();
+  const weekAvg = model.total / Math.max(1, model.W(model.from0, model.end) / 7), lagNow = r2(model.planCum(today) - evSum(ev.done, model.from0, today)), st = tgtStatus(lagNow, weekAvg);
+  const rate = (x) => ev.avgRate > 0 && x > 0 ? `，约 ${(x / ev.avgRate).toFixed(1)} m²` : '';
+  const carryTxt = (p, unit) => p.carry > 0.5 ? `${unit}以前落后 ${salesMoney(p.carry)}` : p.carry < -0.5 ? `已超前 ${salesMoney(-p.carry)}` : '没有落后';
+  const mk = (title, range, a, b, unit) => { const p = tgtPeriod(model, ev, a, b, today); const l2 = p.remaining <= 0.005 ? `<span class="text-emerald-300">${unit}已达标，可以休息，或把新活排到后面</span>` : `已预约 ${salesMoney(p.booked)} · 还需安排 <b class="text-white">${salesMoney(p.toSchedule)}</b>${rate(p.toSchedule)}`; return tgtCardHtml(title, range, p, st, `原定${unit}基准 ${salesMoney(p.base)} · ${carryTxt(p, unit)} → ${unit}需要 ${salesMoney(p.need)}`, l2); };
+  const yp = { need: model.total, done: evSum(ev.done, model.from0, model.end), booked: evSum(ev.booked, today, model.end), toNow: model.planCum(today) };
+  const yearCard = tgtCardHtml('本财年（4 月 1 日起）', `目标 ${salesMoney(model.total)} · 从 ${formatDateNZ(model.from0)} 起算`, yp, st, `按计划到今天应完成 ${salesMoney(model.planCum(today))} · 剩余约 ${(model.W(isoAddDays(today, 1), model.end) / 7).toFixed(1)} 个工作周（已扣除休息）`, `已预约 ${salesMoney(yp.booked)} · 离目标还差 ${salesMoney(Math.max(0, r2(model.total - yp.done)))}`);
+  box.innerHTML = mk('本周', `${dm(ws)} – ${dm(we)}`, ws, we, '本周') + mk('本月', `${Number(today.slice(5, 7))} 月`, ms, me, '本月') + yearCard
+    + `<details class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><summary class="cursor-pointer font-bold text-white text-sm list-none">📅 排期参考：接到新活，放哪一周 ▾</summary><div class="mt-2 space-y-2"><label class="block text-xs text-slate-400">新活金额 $（不含 GST，可以不填）<input id="dashNewJob" type="number" step="1" inputmode="numeric" oninput="renderPlannerBody()" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label><div id="dashPlannerBody"></div></div></details>`;
+  renderPlannerBody();
+}
+function renderPlannerBody() {
+  const el = document.getElementById('dashPlannerBody'); if (!el || !tgtCache) return;
+  const { model, ev, today } = tgtCache, X = Number((document.getElementById('dashNewJob') || {}).value) || 0, ws0 = weekStartISO(today), doneAll = evSum(ev.done, model.from0, today), rows = [];
+  for (let k = 0; k < 6; k++) {
+    const ws = isoAddDays(ws0, 7 * k), we = isoAddDays(ws, 6), rest = model.W(ws, we) === 0 && ws >= model.start && we <= model.end;
+    const projBefore = doneAll + evSum(ev.booked, ws0, isoAddDays(ws, -1)), need = rest ? 0 : Math.max(0, r2(model.planCum(we) - projBefore)), booked = evSum(ev.booked, ws, we);
+    rows.push({ ws, we, rest, need, booked, gap: rest ? 0 : Math.max(0, r2(need - booked)) });
+  }
+  let rec = -1; if (X > 0) { rec = rows.findIndex(r => !r.rest && r.gap >= X * 0.5); if (rec < 0) { let best = 0; rows.forEach((r, i) => { if (!r.rest && r.gap > best) { best = r.gap; rec = i; } }); } }
+  const dm = (x) => x.slice(8, 10) + '/' + x.slice(5, 7);
+  el.innerHTML = `<table class="w-full text-xs text-slate-300"><thead><tr class="text-slate-500"><th class="text-left font-normal pb-1">周</th><th class="text-right font-normal">需要</th><th class="text-right font-normal">已预约</th><th class="text-right font-normal">缺口</th>${X > 0 ? '<th class="text-right font-normal">放入后</th>' : ''}</tr></thead><tbody>`
+    + rows.map((r, i) => `<tr class="border-t border-slate-700"><td class="py-1.5">${dm(r.ws)} – ${dm(r.we)}${i === rec ? ' <span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300">建议放这周</span>' : ''}</td>` + (r.rest ? `<td colspan="${X > 0 ? 4 : 3}" class="text-right text-slate-500">休息</td>` : `<td class="text-right font-mono">${salesMoney(r.need)}</td><td class="text-right font-mono">${salesMoney(r.booked)}</td><td class="text-right font-mono ${r.gap > 0.005 ? 'text-amber-300' : 'text-emerald-300'}">${r.gap > 0.005 ? salesMoney(r.gap) : '已排满'}</td>` + (X > 0 ? `<td class="text-right font-mono">${r.gap >= X ? salesMoney(r.gap - X) : '超出 ' + salesMoney(X - r.gap)}</td>` : '')) + '</tr>').join('') + '</tbody></table>'
+    + `<p class="text-[11px] text-slate-500 mt-2 leading-relaxed">需要 = 到那周结束累计应完成 − 已完成和更早已预约的；缺口 = 需要 − 那周已预约。已预约只算状态是“已确认/已预约”并且填了施工日期的工作。前面周的缺口没排满，会滚到后面的周。${X > 0 ? '“建议放这周”：缺口够放下新活一半以上的第一周，没有就选缺口最大的周。' : ''}</p>`;
+}
+function targetHistoryHtml(clients, today) {   // 过去的周和月：按“当时有效的目标”评价
+  const fyNow = tgtFyYear(today), es = tgtEntries(fyNow); if (!es.length) return '';
+  const ev = tgtEvents(clients), rest = tgtConfig().rest, dm = (x) => x.slice(8, 10) + '/' + x.slice(5, 7), ws0 = weekStartISO(today), rows = [];
+  const line = (label, a, b) => {
+    const fy = tgtFyYear(a), e2 = tgtEntries(fy); if (!e2.length) return null;
+    const model = buildTargetModel(fy, e2, rest, b); if (b < model.from0) return null;
+    const p = tgtPeriod(model, ev, a, b, b), lagEnd = r2(model.planCum(b < model.end ? b : model.end) - evSum(ev.done, model.from0, b)), ok = p.need <= 0.005 || p.done >= p.need - 0.005;
+    return { label, p, lagEnd, ok };
+  };
+  const wk = []; for (let i = 1; i <= 12; i++) { const a = isoAddDays(ws0, -7 * i), l = line(`${dm(a)} – ${dm(isoAddDays(a, 6))}`, a, isoAddDays(a, 6)); if (l && isoAddDays(a, 6) >= `${tgtFyYear(a)}-04-01`) wk.push(l); }
+  const mo = []; { const y0 = fyNow, cy = Number(today.slice(0, 4)), cm = Number(today.slice(5, 7)); let y = y0, m = 4; while (y < cy || (y === cy && m < cm)) { const a = `${y}-${String(m).padStart(2, '0')}-01`, b = `${y}-${String(m).padStart(2, '0')}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`, l = line(`${y} 年 ${m} 月`, a, b); if (l) mo.push(l); m++; if (m > 12) { m = 1; y++; } } }
+  const tbl = (title, list) => !list.length ? '' : `<div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-baseline mb-2"><span class="font-bold text-white text-sm">${title}</span><span class="text-[11px] text-slate-400">达标 ${list.filter(x => x.ok).length} / ${list.length}</span></div><table class="w-full text-xs text-slate-300"><thead><tr class="text-slate-500"><th class="text-left font-normal pb-1">期间</th><th class="text-right font-normal">需要</th><th class="text-right font-normal">实际</th><th class="text-right font-normal">累计</th></tr></thead><tbody>${list.map(x => `<tr class="border-t border-slate-700"><td class="py-1.5">${x.ok ? '✓' : '✗'} ${x.label}</td><td class="text-right font-mono">${salesMoney(x.p.need)}</td><td class="text-right font-mono">${salesMoney(x.p.done)}</td><td class="text-right font-mono ${x.lagEnd > 0.005 ? 'text-amber-300' : 'text-emerald-300'}">${x.lagEnd > 0.005 ? '落后 ' + salesMoney(x.lagEnd) : '超前 ' + salesMoney(-x.lagEnd)}</td></tr>`).join('')}</tbody></table></div>`;
+  return tbl('目标达成记录 · 最近 12 周', wk) + tbl('目标达成记录 · 本财年各月', mo.reverse()) + `<p class="text-[11px] text-slate-500 px-1">税后收入（不含 GST），按完工日期；“需要”是那一期开始时，按当时有效的目标算出来的数字（含以前的超前或落后）；“累计”是那一期结束时的总超前或落后。</p>`;
+}
+async function renderWorkloadBase() {
   const body = document.getElementById('workloadBody'); if (!body) return;
   const clients = await dbGetActiveClients(), today = todayISO(), ws = weekStartISO(today), fy = exportRangeOf('fy', today), fyp = exportRangeOf('fyprev', today);
   const jobs = []; let undated = 0;
@@ -1793,6 +1902,7 @@ async function renderWorkload() {
     + tbl('本财年 · 按月', '月份', rows.reverse()) + tbl('最近 12 周 · 按周（周一起）', '周', wrows)
     + `<p class="text-[11px] text-slate-500 px-1">只统计已完工（含售后/争议中、没有状态的旧工作）的工作，按施工日期归入周/月（没有施工日期的用发票日期）。面积是你输入的尺寸，已勾选的区域，不取整。平均每平方米 = 不含 GST 收入 ÷ 面积（含上门费和其他费用）。${undated ? `<br>有 ${undated} 个已完工工作没有任何日期，没有计入。` : ''}</p>`;
 }
+async function renderWorkload() { await renderWorkloadBase(); const b = document.getElementById('workloadBody'); if (b) b.insertAdjacentHTML('beforeend', targetHistoryHtml(await dbGetActiveClients(), todayISO())); }
 // ---- v14.6：发票列表（按月/按周分组、状态筛选、搜索、缺号提示、付款记录面板）----
 const invView = { group: 'month', status: 'all', kind: 'inv' };
 let invPanelCtx = null;
@@ -2459,6 +2569,7 @@ async function renderDashboard() {
   document.getElementById('dashDue').innerHTML = due.slice(0, 5).map(({ c, j, p }) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0"><div class="text-sm text-white truncate">${escapeHtml(c.name)} · ${escapeHtml(j.invoice.invNumber)}</div><div class="text-[11px] ${p.overdue ? 'text-rose-400' : 'text-amber-300'}">${p.overdue ? '逾期 ' + p.overdue + ' 天 · ' : ''}欠 $${p.out.toFixed(2)}</div></div><div class="flex gap-1 shrink-0"><button onclick="quickPayFull('${c.id}','${j.id}')" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-xs">✅ 收齐</button><button onclick="openPaymentModal('${c.id}','${j.id}')" class="px-2.5 py-1 bg-amber-600 text-white rounded-lg text-xs">💲 记录付款</button></div></div>`).join('') || '<p class="text-xs text-slate-500">没有待收款 🎉</p>';
   renderDashGroups(clients, today, one);
   renderDashSales(clients, today);
+  renderDashTargets(clients, today);
 }
 function renderDashGroups(clients, today, one) {
   const row = (c, j, follow) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0 text-sm text-white truncate">${escapeHtml(c.name)} · ${one(j)}</div><div class="flex gap-1 shrink-0">${follow ? `<button onclick="dashFollowUp('${c.id}','${j.id}')" class="px-2.5 py-1 bg-amber-600 text-white rounded-lg text-xs">📧 跟进</button>` : ''}<button onclick="openClientModal('${c.id}')" class="px-2.5 py-1 bg-slate-600 text-white rounded-lg text-xs">打开</button></div></div>`;
@@ -2592,6 +2703,8 @@ function readFilmRows() {   // 返回 { list, error }
 }
 function openPriceSettings() {
   document.getElementById('prFilms').innerHTML = ''; filmList().forEach(f => addFilmRow(f));
+  { const cfg = tgtConfig(), fyY = tgtFyYear(todayISO()), es = tgtEntries(fyY); document.getElementById('prTarget').value = es.length ? es[es.length - 1].amount : ''; document.getElementById('prTargetStart').value = es.length ? es[0].date : todayISO(); document.getElementById('prRestStart').value = cfg.rest.start; document.getElementById('prRestEnd').value = cfg.rest.end;
+    document.getElementById('prTargetLog').innerHTML = es.length ? '修改记录：' + es.map((e, i) => `<div>${i === 0 ? '开始 ' + formatDateNZ(e.date) : '改于 ' + formatDateNZ(e.date)} · ${salesMoney(e.amount)}</div>`).join('') : ''; }
   const p = priceSettings(), b = bizSettings();
   document.getElementById('prRes').value = p.res; document.getElementById('prCom').value = p.com; document.getElementById('prStrip').value = p.strip; document.getElementById('prMin').value = p.min;
   document.getElementById('stAutoConn').checked = autoConnectOn();
@@ -2604,7 +2717,17 @@ function savePriceSettings() {
   if (!(res > 0) || !(com > 0) || !(strip > 0)) { showToast('三个单价都要大于 0', true); return; }
   if (!(min > 0)) { showToast('最低收费要大于 0', true); return; }
   const fr = readFilmRows(); if (fr.error) { showToast(fr.error, true); return; }
+  const mdOk = (x) => /^\d\d-\d\d$/.test(x) && Number(x.slice(0, 2)) >= 1 && Number(x.slice(0, 2)) <= 12 && Number(x.slice(3)) >= 1 && Number(x.slice(3)) <= 31;
+  const rs0 = document.getElementById('prRestStart').value.trim() || TGT_REST_DEFAULT.start, re0 = document.getElementById('prRestEnd').value.trim() || TGT_REST_DEFAULT.end;
+  if (!mdOk(rs0) || !mdOk(re0)) { showToast('休息日期要写成 月-日，例如 12-25', true); return; }
   const st = loadSettings(); st.prices = { res, com, strip, min }; st.films = fr.list;
+  { const tg = Number(document.getElementById('prTarget').value) || 0, T = st.targets || {}; T.fy = T.fy || {}; T.rest = { start: rs0, end: re0 };
+    const fyY = tgtFyYear(todayISO()), arr = (T.fy[fyY] || []).slice(), cur = arr.length ? Number(arr[arr.length - 1].amount) : 0;
+    const sd = document.getElementById('prTargetStart').value || todayISO();
+    if (arr.length && sd !== arr[0].date && (arr.length === 1 || sd <= arr[1].date)) arr[0] = { date: sd, amount: arr[0].amount };   // 改开始日期
+    if (tg > 0 && !arr.length) arr.push({ date: sd, amount: tg });   // 第一次设置：从开始日算起
+    else if (tg > 0 && tg !== cur) arr.push({ date: todayISO(), amount: tg });   // 修改目标：记一条，从今天起生效
+    T.fy[fyY] = arr; st.targets = T; }
   st.biz = {}; Object.keys(BIZ_KEYS).forEach(k => { st.biz[k] = document.getElementById(BIZ_KEYS[k]).value.trim(); });
   st.updatedAt = Date.now(); saveSettings(st); refreshBizEditor(); markLocalChange();
   try { localStorage.setItem(AUTOCONN_KEY, document.getElementById('stAutoConn').checked ? '1' : '0'); } catch(e) {}
