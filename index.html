@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.10 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v14.11 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.10<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.11<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -268,6 +268,8 @@
             <div><label id="oqRateLabel" class="text-slate-400 block mb-1 whitespace-nowrap">单价 $/m²</label><input id="oqRate" type="number" step="0.01" oninput="oqChanged()" class="w-full min-w-0 h-10 bg-slate-800 border border-slate-700 rounded-lg px-2 text-white font-mono"></div>
             <div><label class="text-slate-400 block mb-1 whitespace-nowrap">类型</label><select id="oqType" onchange="oqTypeChanged()" class="min-w-0 w-full h-10 bg-slate-800 border border-slate-700 rounded-lg px-2 text-white"><option value="">未选择</option><option value="res">住宅</option><option value="com">商业</option></select></div>
           </div>
+          <div class="flex items-center gap-2"><label class="text-slate-400 whitespace-nowrap text-xs">膜</label><select id="oqFilm" onchange="oqFilmChanged()" class="min-w-0 flex-1 h-10 bg-slate-800 border border-slate-700 rounded-lg px-2 text-white"></select></div>
+          <div id="oqFilmHint" class="text-[11px] leading-relaxed"></div>
           <p class="text-[11px] text-slate-500 -mt-1">单价、一口价都不含 GST；含税合计看上方。</p>
           <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-3 space-y-1"><label class="text-slate-300 text-xs block">客人要的含税总价 $（填了就以它为准，上门费和其他费用已包含在内；清空 = 恢复自动计算）</label><input id="oqTarget" type="number" step="0.01" inputmode="decimal" placeholder="例如 598.00" oninput="oqChanged()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></div>
           <div><div class="text-slate-400 mb-1">各区域金额（自动计算，一般不用改。点 ✎ 才能手动改，改的是该区域的总金额，不是单价）</div><div id="oqRooms" class="space-y-1"></div></div>
@@ -658,6 +660,11 @@
   <label class="block text-xs text-slate-400">商业贴膜 $/m²<input id="prCom" type="number" step="0.01" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label>
   <label class="block text-xs text-slate-400">除旧膜 $/m²<input id="prStrip" type="number" step="0.01" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label>
   <label class="block text-xs text-slate-400">每次上门最低收费 $（不含 GST，报价单提示用）<input id="prMin" type="number" step="0.01" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label>
+  <p class="text-xs font-bold text-white pt-2">膜的价格表（$/m²，不含 GST）</p>
+  <p class="text-[11px] text-slate-500">报价里选了膜，单价就自动变成这里的价格；商业价留空 = 这款膜还没定商业价，选它做商业报价时请手动填单价。价格都可以随时改，已经保存的报价不会变。</p>
+  <div class="flex gap-1.5 text-[10px] text-slate-500 px-0.5"><span class="flex-1">名称</span><span class="w-16 text-center">住宅</span><span class="w-16 text-center">商业</span><span class="w-6"></span></div>
+  <div id="prFilms" class="space-y-1.5"></div>
+  <button type="button" onclick="addFilmRow()" class="w-full px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold">＋ 添加一款膜</button>
   <p class="text-[11px] text-slate-400">只影响以后新建的报价，或在报价里重新选择类型时。已经保存的报价金额不会自动变化；最低收费数字每张报价可以单独改。</p>
   <p class="text-xs font-bold text-white pt-2 border-t border-slate-700">收款与联系信息（印在发票、报价单和邮件上）</p>
   <label class="block text-xs text-slate-400">银行名称<input id="bzBank" type="text" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white"></label>
@@ -1080,7 +1087,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.10', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.11', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1749,7 +1756,7 @@ function jobGlassInfo(j) {   // 面积按你输入的尺寸（已勾选的区域
   });
   area = r2(area);
   const inv = j.invoice, price = r2(inv && inv.subtotal != null ? inv.subtotal : (Number(j.price) || 0)), q = j.quote;
-  const quoted = q && q.basis !== 'fixed' && Number(q.rate) > 0 && !(Number(q.targetGross) > 0) && !q.extra && !q.callout && !inv;
+  const quoted = q && q.basis !== 'fixed' && Number(q.rate) > 0 && !(Number(q.targetGross) > 0) && !q.extra && !q.callout && !inv && !(q.zoneFilm && Object.keys(q.zoneFilm).length);
   const rate = quoted ? Number(q.rate) : (area > 0 && price > 0 ? r2(price / area) : 0);
   return { area, price, rate, quoted };
 }
@@ -2542,6 +2549,11 @@ function priceSettings() {
   const p = loadSettings().prices || {}, g = (k) => Number(p[k]) > 0 ? Number(p[k]) : DEFAULT_PRICES[k];
   return { res: g('res'), com: g('com'), strip: g('strip'), min: g('min') };
 }
+// ---- v14.11：膜的价格表（住宅 / 商业，不含 GST）；价格都能在设置里改。商业价 0 = 还没定，选它做商业报价时手动填单价 ----
+const FILM_DEFAULTS = [{ id: 'sv25', name: 'SV25', res: 75, com: 68 }, { id: 'sv10', name: 'SV10', res: 75, com: 68 }, { id: 'sun70', name: 'SUN70', res: 95, com: 0 }, { id: 'cq15r', name: 'CQ Dual 15R', res: 75, com: 68 }, { id: 'frosty', name: 'Frosty', res: 75, com: 68 }, { id: 'dn60', name: 'DN60', res: 75, com: 68 }, { id: 'dn35r', name: 'DN35R', res: 75, com: 68 }];
+function filmList() { const f = loadSettings().films; return Array.isArray(f) && f.length ? f.map(x => ({ id: String(x.id), name: String(x.name || ''), res: Number(x.res) > 0 ? Number(x.res) : 0, com: Number(x.com) > 0 ? Number(x.com) : 0 })) : FILM_DEFAULTS.map(x => Object.assign({}, x)); }
+function filmPrice(id, type) { const f = filmList().find(x => x.id === id); if (!f) return 0; const p = f[type === 'com' ? 'com' : 'res']; return p > 0 ? p : 0; }
+function filmName(id) { const f = filmList().find(x => x.id === id); return f ? f.name : ''; }
 const BIZ_KEYS = { bank: 'bzBank', accName: 'bzAccName', accNo: 'bzAccNo', email: 'bzEmail', phone: 'bzPhone', gst: 'bzGst' };
 function bizSettings() { const b = loadSettings().biz || {}, o = {}; Object.keys(BIZ_KEYS).forEach(k => { o[k] = String(b[k] || '').trim(); }); return o; }
 function applyBizToDoc(mode) {   // 把设置页的信息填进打印版（发票 / 报价单）
@@ -2559,7 +2571,27 @@ function refreshBizEditor() {   // 发票编辑页里的付款信息
   set('edBankLine', b.bank ? 'Bank: ' + b.bank : ''); set('edBankAccLine', b.accNo ? 'Account: ' + b.accNo : ''); set('edBankNameLine', b.accName ? 'Name: ' + b.accName : '');
   const w = document.getElementById('edBankWarn'); if (w) w.classList.toggle('hidden', !!b.accNo);
 }
+function addFilmRow(f) {
+  f = f || { id: '', name: '', res: '', com: '' }; const row = document.createElement('div'); row.className = 'flex gap-1.5 items-center film-row'; row.dataset.id = f.id || '';
+  const mk = (cls, ph, val, w, type) => { const i = document.createElement('input'); i.className = cls + ' ' + w + ' min-w-0 bg-slate-900 border border-slate-700 rounded-lg p-1.5 text-white ' + (type ? 'font-mono text-center' : ''); i.placeholder = ph; if (type) { i.type = 'number'; i.step = '0.01'; } i.value = val ? val : ''; return i; };
+  row.appendChild(mk('fm-name', '膜的名称', f.name, 'flex-1')); row.appendChild(mk('fm-res', '住宅', f.res, 'w-16', true)); row.appendChild(mk('fm-com', '商业', f.com, 'w-16', true));
+  const del = document.createElement('button'); del.type = 'button'; del.className = 'w-6 text-slate-500 hover:text-rose-400'; del.textContent = '✕'; del.onclick = () => row.remove(); row.appendChild(del);
+  document.getElementById('prFilms').appendChild(row);
+}
+function readFilmRows() {   // 返回 { list, error }
+  const list = [], used = new Set();
+  for (const row of document.querySelectorAll('#prFilms .film-row')) {
+    const name = row.querySelector('.fm-name').value.trim(), res = Number(row.querySelector('.fm-res').value) || 0, com = Number(row.querySelector('.fm-com').value) || 0;
+    if (!name && !res && !com) continue;
+    if (!name) return { error: '有一行填了价格但没填膜的名称' };
+    if (!(res > 0)) return { error: `${name} 的住宅价要大于 0` };
+    let id = row.dataset.id || ('f' + Date.now().toString(36) + list.length); while (used.has(id)) id += 'x'; used.add(id);
+    list.push({ id, name, res, com });
+  }
+  return { list };
+}
 function openPriceSettings() {
+  document.getElementById('prFilms').innerHTML = ''; filmList().forEach(f => addFilmRow(f));
   const p = priceSettings(), b = bizSettings();
   document.getElementById('prRes').value = p.res; document.getElementById('prCom').value = p.com; document.getElementById('prStrip').value = p.strip; document.getElementById('prMin').value = p.min;
   document.getElementById('stAutoConn').checked = autoConnectOn();
@@ -2571,7 +2603,8 @@ function savePriceSettings() {
   const v = (id) => Number(document.getElementById(id).value), res = v('prRes'), com = v('prCom'), strip = v('prStrip'), min = v('prMin');
   if (!(res > 0) || !(com > 0) || !(strip > 0)) { showToast('三个单价都要大于 0', true); return; }
   if (!(min > 0)) { showToast('最低收费要大于 0', true); return; }
-  const st = loadSettings(); st.prices = { res, com, strip, min };
+  const fr = readFilmRows(); if (fr.error) { showToast(fr.error, true); return; }
+  const st = loadSettings(); st.prices = { res, com, strip, min }; st.films = fr.list;
   st.biz = {}; Object.keys(BIZ_KEYS).forEach(k => { st.biz[k] = document.getElementById(BIZ_KEYS[k]).value.trim(); });
   st.updatedAt = Date.now(); saveSettings(st); refreshBizEditor(); markLocalChange();
   try { localStorage.setItem(AUTOCONN_KEY, document.getElementById('stAutoConn').checked ? '1' : '0'); } catch(e) {}
@@ -2673,7 +2706,7 @@ function areaRoundOptions(q) {
   return list.map(([v, t]) => `<option value="${v}"${m === v ? ' selected' : ''}>${t}</option>`).join('');
 }
 function fmtArea(x) { x = Number(x) || 0; return Number.isInteger(x) ? String(x) : x.toFixed(2); }
-function newQuote() { return { basis: 'glass', rate: '', round: 0, areaRound: 'tceil05', jobType: '', stripRate: priceSettings().strip, lblFilm: LBL_FILM, lblStrip: LBL_STRIP, callout: 0, extra: 0, display: 'rooms', validDays: 10, validUnit: 'work', overrides: {}, terms: QUOTE_TERMS(10, 'work'), termsAuto: true, minNotice: false, minAmount: priceSettings().min }; }
+function newQuote() { return { basis: 'glass', rate: '', round: 0, areaRound: 'tceil05', jobType: '', stripRate: priceSettings().strip, lblFilm: LBL_FILM, lblStrip: LBL_STRIP, callout: 0, extra: 0, display: 'rooms', validDays: 10, validUnit: 'work', overrides: {}, film: '', terms: QUOTE_TERMS(10, 'work'), termsAuto: true, minNotice: false, minAmount: priceSettings().min }; }
 function panelsSig(ps, zones) {
   const on = zones && zones.length ? Object.fromEntries(zones.map(z => [z.id, z.active !== false])) : null;
   return JSON.stringify((ps || []).map(p => { const a = [String(p.label || '').trim(), Number(p.w) || 0, Number(p.h) || 0, Number(p.qty) || 1]; if (on) { const zid = panelZoneId(p, zones); a.push(zid, on[zid]); if (p.strip) a.push('s'); } return a; }));
@@ -2725,7 +2758,7 @@ function allocate(total, refs, unit) {   // 按参考金额的比例把总价拆
   return out;
 }
 function quoteCalc(q, panels, areas, zones) {
-  const rate = Number(q.rate) || 0, fixed = q.basis === 'fixed', zoneMode = Array.isArray(zones) && zones.length > 0;
+  const rate = Number(q.rate) || 0, zoneFilmMap = q.zoneFilm || {}, filmMissing = [], rateOf = (r) => { const fid = zoneFilmMap[r.key]; if (!fid) return rate; const p = filmPrice(fid, q.jobType); if (p > 0) return p; const nm = filmName(fid); if (nm && !filmMissing.includes(nm)) filmMissing.push(nm); return rate; }, fixed = q.basis === 'fixed', zoneMode = Array.isArray(zones) && zones.length > 0;
   const mode = areaModeOf(q), legacy = mode === 'legacy', tot = !!TOT_MODES[mode], sRate = stripRateOf(q), pr = priceSettings();
   const all = zoneMode ? zoneRooms(panels, zones) : quoteRooms(panels);
   const rooms = all.filter(r => r.active !== false), inactive = all.filter(r => r.active === false);
@@ -2752,12 +2785,16 @@ function quoteCalc(q, panels, areas, zones) {
     const am = allocate(base, pool.map(r => r.weight), mode === 'none' || tot ? 0.01 : 1);
     pool.forEach((r, i) => { r.lines.push(mk(r, 'film', am[i])); if (!tot && r.stripWeight > 0) r.lines.push(mk(r, 'strip', r2(r.stripArea * sRate))); });
     if (tot) stripTot();
-  } else if (tot) {   // v14.10 按玻璃面积（整体取整）：总面积取整一次 × 单价，再按各区域真实面积的比例分到每个区域
-    const W = pool.reduce((a, r) => a + r.weight, 0), T = totRound(W, mode), am = allocate(r2(T * rate), pool.map(r => r.weight), 0.01);
-    pool.forEach((r, i) => { r.filmArea = W > 0 ? r2(T * r.weight / W) : 0; r.lines.push(mk(r, 'film', am[i])); });
-    stripTot(); basisArea = T; base = r2(am.reduce((a, b) => a + b, 0));
+  } else if (tot) {   // v14.10 按玻璃面积（整体取整）：总面积取整一次 × 单价，再按各区域真实面积的比例分到每个区域；v14.11：每种单价（每款膜）各自取整一次
+    const groups = new Map(); pool.forEach(r => { r.rate = rateOf(r); if (!groups.has(r.rate)) groups.set(r.rate, []); groups.get(r.rate).push(r); });
+    let baseSum = 0, areaSum = 0;
+    groups.forEach((rs, rt) => {
+      const W = rs.reduce((a, r) => a + r.weight, 0), T = totRound(W, mode), am = allocate(r2(T * rt), rs.map(r => r.weight), 0.01);
+      rs.forEach((r, i) => { r.filmArea = W > 0 ? r2(T * r.weight / W) : 0; r.lines.push(mk(r, 'film', am[i])); }); baseSum += am.reduce((a, b) => a + b, 0); areaSum += T;
+    });
+    stripTot(); basisArea = r2(areaSum); base = r2(baseSum);
   } else {   // 按玻璃面积：每个区域的面积取整后 × 单价
-    pool.forEach(r => { r.lines.push(mk(r, 'film', r2(r.filmArea * rate))); if (r.stripWeight > 0) r.lines.push(mk(r, 'strip', r2(r.stripArea * sRate))); });
+    pool.forEach(r => { r.rate = rateOf(r); r.lines.push(mk(r, 'film', r2(r.filmArea * r.rate))); if (r.stripWeight > 0) r.lines.push(mk(r, 'strip', r2(r.stripArea * sRate))); });
     basisArea = r2(pool.reduce((a, r) => a + r.filmArea, 0)); base = r2(pool.reduce((a, r) => a + r.lines[0].auto, 0));
   }
   if (fixed && !all.length && base > 0) {   // 没有尺寸的小活：一口价单独成一行
@@ -2790,7 +2827,9 @@ function quoteCalc(q, panels, areas, zones) {
     const refFilm = q.unitBasis === 'film' ? (inactive.length ? 0 : (legacy ? r2(areas.filmArea || 0) : ra(areas.filmArea || 0)) * ur) : (legacy ? allArea * ur : all.reduce((a, r) => a + r.filmArea, 0) * ur);
     ref = refFilm > 0 ? r2(refFilm + all.reduce((a, r) => a + (r.stripArea || 0) * sRate, 0)) : 0;
   }
-  return { rooms, inactive, partial: fixed && inactive.length > 0, base, basisArea, fixed, step, mode, tot, targetInfo, ref, refRate: ur, refFilm: q.unitBasis === 'film', callout, extra, roomsSum, filmSum, stripSum, stripAuto, stripBilled, stripActual, filmActual, stripRate: sRate, subtotal, gst, total: r2(subtotal + gst) };
+  const rateSet = new Set(pool.map(r => r.rate !== undefined ? r.rate : rate)), pickedRates = new Set(pool.filter(r => zoneFilmMap[r.key]).map(r => rateOf(r)));
+  const mixedRates = !fixed && !legacy && q.basis !== 'film' && rateSet.size > 1, mixedIgnored = (fixed || q.basis === 'film') && [...pickedRates].some(x => x !== rate);
+  return { rooms, inactive, partial: fixed && inactive.length > 0, base, basisArea, fixed, step, mode, tot, targetInfo, mixedRates, mixedIgnored, filmMissing, ref, refRate: ur, refFilm: q.unitBasis === 'film', callout, extra, roomsSum, filmSum, stripSum, stripAuto, stripBilled, stripActual, filmActual, stripRate: sRate, subtotal, gst, total: r2(subtotal + gst) };
 }
 function jobAreas(job) {
   const sn = (job.quote && job.quote.snapshot) || {};
@@ -2816,15 +2855,20 @@ function oqRead() {
   const v = (id) => document.getElementById(id).value;
   if (!optQuote) optQuote = newQuote();
   const q = optQuote; q.basis = v('oqBasis'); q.rate = v('oqRate'); q.callout = Number(v('oqCallout')) || 0; q.extra = Number(v('oqExtra')) || 0; q.extraLabel = String(v('oqExtraLabel') || '').trim(); q.targetGross = Number(v('oqTarget')) > 0 ? r2(Number(v('oqTarget'))) : 0;
-  q.stripRate = Number(v('oqStripRate')) || 0; q.jobType = v('oqType'); q.lblFilm = v('oqLblFilm'); q.lblStrip = v('oqLblStrip');
+  q.stripRate = Number(v('oqStripRate')) || 0; q.jobType = v('oqType'); q.film = v('oqFilm'); q.lblFilm = v('oqLblFilm'); q.lblStrip = v('oqLblStrip');
   const ar = v('oqAreaRound'); if (ar === 'legacy') delete q.areaRound; else if (ar) q.areaRound = ar;
   q.display = v('oqDisplay'); const vd = Math.max(1, parseInt(v('oqValid'), 10) || (q.validUnit === 'work' ? 10 : 30));
   if (vd !== q.validDays) { const byUser = q.validDays !== undefined; q.validDays = vd; if (byUser && !q.validUnit) q.validUnit = 'work'; if (q.termsAuto) { q.terms = QUOTE_TERMS(vd, q.validUnit); document.getElementById('oqTerms').value = q.terms; } }   // 旧报价（按日历天）一改有效期，就转成按工作日
   { const vl = document.getElementById('oqValidLbl'); if (vl) vl.textContent = q.validUnit === 'work' ? '有效期（工作日）' : '有效期（天）'; }
   q.minNotice = !!document.getElementById('oqMinOn').checked; { const ma = Number(v('oqMinAmt')); q.minAmount = ma > 0 ? ma : priceSettings().min; }
 }
+function oqFillFilmOptions(sel) {
+  const el = document.getElementById('oqFilm'); el.innerHTML = '<option value="">— 请选膜 —</option>' + filmList().map(f => `<option value="${escapeHtml(f.id)}">${escapeHtml(f.name)}</option>`).join(''); el.value = sel || '';
+  if (sel && el.value !== sel) el.value = '';
+}
 function oqWrite() {
   const q = optQuote, set = (id, v) => { document.getElementById(id).value = v; };
+  oqFillFilmOptions(q.film);
   set('oqBasis', q.basis); set('oqRate', q.rate === undefined ? '' : q.rate); set('oqCallout', q.callout || ''); set('oqExtra', q.extra || ''); set('oqExtraLabel', q.extraLabel || ''); set('oqNumber', q.number || ''); set('oqTarget', q.targetGross || '');
   set('oqType', q.jobType || ''); set('oqStripRate', stripRateOf(q)); set('oqLblFilm', q.lblFilm || LBL_FILM); set('oqLblStrip', q.lblStrip || LBL_STRIP);
   document.getElementById('oqAreaRound').innerHTML = areaRoundOptions(q);
@@ -2851,10 +2895,28 @@ function oqChanged() {
   }
   oqRead(); oqSyncLabels(); renderOptQuote();
 }
-function oqTypeChanged() {   // 选了住宅/商业，自动填入对应的贴膜单价（一口价时不动总价）
+function oqFilmChanged() {   // 选了膜：单价自动变成这款膜的价格（可以再手动改）；一口价时不动总价
   if (!optQuote) optQuote = newQuote();
-  const t = document.getElementById('oqType').value, pr = priceSettings();
-  if ((t === 'res' || t === 'com') && document.getElementById('oqBasis').value !== 'fixed') document.getElementById('oqRate').value = pr[t];
+  const id = document.getElementById('oqFilm').value, t = document.getElementById('oqType').value;
+  if (id && document.getElementById('oqBasis').value !== 'fixed') {
+    const p = filmPrice(id, t);
+    if (p > 0) document.getElementById('oqRate').value = p;
+    else showToast(`${filmName(id)} 还没有${t === 'com' ? '商业' : '住宅'}价，单价请手动填（或到设置里的价格表填好）`, true);
+  }
+  oqChanged();
+}
+function oqZoneFilm(i, val) {   // 某个区域单独用另一款膜；留空 = 跟随上面选的膜
+  if (!optQuote) optQuote = newQuote(); const key = oqRoomNames[i]; if (key === undefined) return;
+  optQuote.zoneFilm = optQuote.zoneFilm || {}; if (val) optQuote.zoneFilm[key] = val; else delete optQuote.zoneFilm[key];
+  if (!Object.keys(optQuote.zoneFilm).length) delete optQuote.zoneFilm; oqChanged();
+}
+function oqTypeChanged() {   // 选了住宅/商业，自动填入对应的贴膜单价（一口价时不动总价）；选了膜就按这款膜的住宅/商业价
+  if (!optQuote) optQuote = newQuote();
+  const t = document.getElementById('oqType').value, pr = priceSettings(), fid = document.getElementById('oqFilm').value;
+  if ((t === 'res' || t === 'com') && document.getElementById('oqBasis').value !== 'fixed') {
+    if (fid) { const p = filmPrice(fid, t); if (p > 0) document.getElementById('oqRate').value = p; else showToast(`${filmName(fid)} 还没有${t === 'com' ? '商业' : '住宅'}价，单价请手动填`, true); }
+    else document.getElementById('oqRate').value = pr[t];
+  }
   oqChanged();
 }
 function oqTermsEdited() { if (!optQuote) optQuote = newQuote(); optQuote.terms = document.getElementById('oqTerms').value; optQuote.termsAuto = false; }
@@ -2888,10 +2950,19 @@ function renderOptQuote(keepRows) {
       const title = `${escapeHtml(r.name)}${hasStrip && !r.virtual ? (strip ? ' · 除膜' : ' · 贴膜') : ''}${cnt ? ' · ' + cnt + ' 块' : ''}`;
       if (oqEditKey === l.key) return `<div class="bg-amber-500/10 border border-amber-500/40 rounded-lg p-2 space-y-1.5"><div class="text-amber-300 text-[11px]">${title}：请填这个区域的<b>总金额</b>（不是每平方米的单价）。留空 = 恢复自动</div><div class="flex gap-2"><input id="oqEditInput" type="number" step="0.01" inputmode="decimal" placeholder="自动 ${l.auto.toFixed(2)}" value="${l.manual ? l.amount : ''}" onkeydown="if(event.key==='Enter'){this.blur()}" onblur="oqCommitLine(${i}, this.value)" class="flex-1 min-w-0 bg-slate-800 border border-amber-500/50 rounded-lg p-2 text-white font-mono"><button type="button" onmousedown="event.preventDefault()" onclick="oqCommitLine(${i}, document.getElementById('oqEditInput').value)" class="px-4 rounded-lg bg-emerald-600 text-white font-bold">确定</button></div></div>`;
       const low = l.manual && l.auto > 0 && l.amount < l.auto * 0.6;
-      return `<div class="py-1.5 border-b border-slate-800"><div class="text-slate-200 leading-snug break-words">${title}</div><div class="flex items-center gap-2 mt-1"><span class="flex-1 min-w-0 text-[11px] text-slate-500">${areaTxt}</span><span class="font-mono ${l.manual ? 'text-amber-300 font-bold' : 'text-white'}">${money2(l.amount)}</span>${l.manual ? `<button type="button" onclick="oqResetLine(${i})" class="px-2 h-9 rounded-lg bg-amber-600/30 text-amber-200 text-[11px] whitespace-nowrap">↺ 自动</button>` : ''}<button type="button" onclick="oqEditLine(${i})" class="w-10 h-9 rounded-lg bg-slate-700 text-slate-200">✎</button></div></div>${low ? `<div class="text-[11px] text-rose-300">⚠️ 这个手动金额比自动计算（${money2(l.auto)}）低了很多，请确认没有填错</div>` : ''}`;
+      const zf = (!strip && !r.virtual && optZones && optZones.length && optQuote.basis !== 'fixed') ? `<select onchange="oqZoneFilm(${i}, this.value)" class="mt-1 h-8 max-w-full bg-slate-800 border border-slate-700 rounded-lg px-1 text-[11px] text-slate-200"><option value="">膜：跟随上面选的</option>${filmList().map(f => `<option value="${escapeHtml(f.id)}" ${(optQuote.zoneFilm || {})[l.key] === f.id ? 'selected' : ''}>${escapeHtml(f.name)}</option>`).join('')}</select>${(optQuote.zoneFilm || {})[l.key] && r.rate ? ` <span class="text-[11px] text-amber-300 font-mono">${money2(r.rate)}/m²</span>` : ''}` : '';
+      return `<div class="py-1.5 border-b border-slate-800"><div class="text-slate-200 leading-snug break-words">${title}</div>${zf}<div class="flex items-center gap-2 mt-1"><span class="flex-1 min-w-0 text-[11px] text-slate-500">${areaTxt}</span><span class="font-mono ${l.manual ? 'text-amber-300 font-bold' : 'text-white'}">${money2(l.amount)}</span>${l.manual ? `<button type="button" onclick="oqResetLine(${i})" class="px-2 h-9 rounded-lg bg-amber-600/30 text-amber-200 text-[11px] whitespace-nowrap">↺ 自动</button>` : ''}<button type="button" onclick="oqEditLine(${i})" class="w-10 h-9 rounded-lg bg-slate-700 text-slate-200">✎</button></div></div>${low ? `<div class="text-[11px] text-rose-300">⚠️ 这个手动金额比自动计算（${money2(l.auto)}）低了很多，请确认没有填错</div>` : ''}`;
     };
     document.getElementById('oqRooms').innerHTML = optQuote.display === 'total' ? '<p class="text-[11px] text-slate-500">只显示总价模式：报价单上不分项。</p>' : (c.rooms.map(r => r.lines.map(l => lineRow(r, l)).join('')).join('') || '<p class="text-[11px] text-slate-500">先在上方输入玻璃尺寸</p>');
   }
+  { const fh = document.getElementById('oqFilmHint'), hs = [];
+    if (fh) {
+      if (!optQuote.film && optQuote.basis !== 'fixed') hs.push('<span class="text-amber-300">⚠️ 还没选膜：请在上面选一款膜，单价会自动变成这款膜的价格（也可以不选，手动填单价）</span>');
+      if (c.mixedRates) hs.push('<span class="text-sky-300">这张报价用了几种不同单价的膜：每种单价的面积各自取整一次，再乘各自的单价</span>');
+      if (c.mixedIgnored) hs.push('<span class="text-amber-300">⚠️ “膜面积”和“一口价”只用上面的单价，不同区域选的膜不会改价格</span>');
+      if (c.filmMissing && c.filmMissing.length) hs.push(`<span class="text-amber-300">⚠️ ${escapeHtml(c.filmMissing.join('、'))} 在这个类型下还没有价格，用到它的区域暂按上面的单价算，请手动改或到设置里补价格</span>`);
+      fh.innerHTML = hs.join('<br>');
+    } }
   // 总价放在最上面
   document.getElementById('oqTotalBig').textContent = money2(c.total);
   document.getElementById('oqTotalSub').textContent = `不含GST ${money2(c.subtotal)} + GST ${money2(c.gst)}` + (c.stripSum > 0 ? `　（贴膜 ${money2(c.filmSum)} · 除膜 ${money2(c.stripSum)}` + (c.callout ? ` · 上门费 ${money2(c.callout)}` : '') + (c.extra ? ` · 其他 ${money2(c.extra)}` : '') + '）' : (c.callout || c.extra ? `　（含${c.callout ? ' 上门费 ' + money2(c.callout) : ''}${c.extra ? ' 其他 ' + money2(c.extra) : ''}）` : ''));
