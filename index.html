@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.13 Pro - Light & Salt / Bayview Edition</title>
+<title>TintPro Manager v14.14 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +79,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.13<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.14<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -152,7 +152,7 @@
       <div id="dashTargetBox" class="space-y-3"></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📅 本周安排（未来 7 天）</h2></div><div id="dashWeek" class="space-y-2"></div></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">💬 咨询中 <span id="dashInqCount" class="text-slate-400 font-normal"></span></h2></div><div id="dashInquiry" class="space-y-2"></div></div>
-      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📝 已报价 <span id="dashQuoCount" class="text-slate-400 font-normal"></span></h2></div><div id="dashQuotes" class="space-y-2"></div></div>
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📝 已报价 <span id="dashQuoCount" class="text-slate-400 font-normal"></span></h2><button id="dashQuoAllNoResp" onclick="markAllExpiredNoResponse()" class="hidden px-2.5 py-1 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-[11px]"></button></div><div id="dashQuotes" class="space-y-2"></div></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📌 已确认 / 已预约 <span id="dashBookCount" class="text-slate-400 font-normal"></span></h2></div><div id="dashBooked" class="space-y-2"></div></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">💲 待收款</h2><button onclick="switchTab('receivables')" class="text-xs text-sky-400">查看全部 ➔</button></div><div id="dashDue" class="space-y-2"></div></div>
     </section>
@@ -167,8 +167,9 @@
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2 text-xs" id="clientFilterBar">
-        <button type="button" data-f="all" onclick="setClientFilter('all')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">全部</button><button type="button" data-f="Inquiry" onclick="setClientFilter('Inquiry')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">咨询中</button><button type="button" data-f="Quote" onclick="setClientFilter('Quote')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">报价中</button><button type="button" data-f="Confirmed" onclick="setClientFilter('Confirmed')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">已确认</button><button type="button" data-f="Scheduled" onclick="setClientFilter('Scheduled')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">已预约</button><button type="button" data-f="Completed" onclick="setClientFilter('Completed')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">已完工</button><button type="button" data-f="Warranty" onclick="setClientFilter('Warranty')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">售后</button><button type="button" data-f="Unpaid" onclick="setClientFilter('Unpaid')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">💲 有欠款</button>
-        <select id="clientSort" onchange="renderJobsList()" class="ml-auto bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white"><option value="recent">最近修改</option><option value="name">姓名</option><option value="jobdate">工作日期</option></select>
+        <button type="button" data-f="all" onclick="setClientFilter('all')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">全部</button><button type="button" data-f="Inquiry" onclick="setClientFilter('Inquiry')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">咨询中</button><button type="button" data-f="Quote" onclick="setClientFilter('Quote')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">报价中</button><button type="button" data-f="Confirmed" onclick="setClientFilter('Confirmed')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">已确认</button><button type="button" data-f="Scheduled" onclick="setClientFilter('Scheduled')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">已预约</button><button type="button" data-f="Completed" onclick="setClientFilter('Completed')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">已完工</button><button type="button" data-f="Warranty" onclick="setClientFilter('Warranty')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">售后</button><button type="button" data-f="NoResponse" onclick="setClientFilter('NoResponse')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">未回应</button><button type="button" data-f="Unpaid" onclick="setClientFilter('Unpaid')" class="cf-chip px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">💲 有欠款</button>
+        <label class="ml-auto flex items-center gap-1.5 text-slate-300 cursor-pointer select-none"><input type="checkbox" id="showArchivedChk" onchange="renderJobsList()" style="width:18px;height:18px;padding:0"><span id="showArchivedLbl">显示已归档</span></label>
+        <select id="clientSort" onchange="renderJobsList()" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white"><option value="priority">优先级</option><option value="recent">最近修改</option><option value="name">姓名</option><option value="jobdate">工作日期</option></select>
       </div>
       <div id="jobsListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </section>
@@ -846,7 +847,7 @@ function dbSaveClient(client) {
 }
 
 // ---- 客户状态：由工作记录决定（取日期最新的一条工作的状态）----
-const JOB_STATUSES = ['Inquiry 咨询中', 'Quote 报价中', 'Confirmed 客人已确认', 'Scheduled 已预约', 'Completed 已完工', 'Warranty 售后/争议中'];
+const JOB_STATUSES = ['Inquiry 咨询中', 'Quote 报价中', 'Confirmed 客人已确认', 'Scheduled 已预约', 'Completed 已完工', 'Warranty 售后/争议中', 'NoResponse 未回应'];
 function deriveClientStatus(jobs) {
   if (!jobs || jobs.length === 0) return 'Inquiry 咨询中';
   let best = jobs[0];
@@ -855,7 +856,7 @@ function deriveClientStatus(jobs) {
 }
 function statusZh(st) { return String(st || '').replace(/^[A-Za-z]+\s+/, ''); }
 // ---- v14.1：状态只往前走（咨询中 → 已报价 → 已确认 → 已预约 → 已完工；售后/争议中不会被自动改）----
-const STATUS_RANK = ['Inquiry', 'Quote', 'Confirmed', 'Scheduled', 'Completed', 'Warranty'];
+const STATUS_RANK = ['Inquiry', 'Quote', 'Confirmed', 'Scheduled', 'Completed', 'Warranty', 'NoResponse'];   // v14.14：未回应排在最后，自动推进逻辑不会改它
 function statusRank(st) {
   const done = STATUS_RANK.indexOf('Completed');
   if (!st) return done;   // 没有状态的工作，软件一直把它当“已完工”
@@ -910,7 +911,121 @@ function statusBadgeClass(status) {
   if ((status || '').startsWith('Confirmed')) return base + 'bg-teal-500/20 text-teal-300 border-teal-500/30';
   if ((status || '').startsWith('Scheduled')) return base + 'bg-sky-500/20 text-sky-300 border-sky-500/30';
   if ((status || '').startsWith('Warranty')) return base + 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+  if ((status || '').startsWith('NoResponse')) return base + 'bg-slate-500/20 text-slate-300 border-slate-500/40';
   return base + 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+}
+
+// ---- v14.14：报价里选的膜（只读显示）----
+function jobFilmInfo(j) {   // 没有报价 → null；有报价 → { names, missing, byZone, base }
+  const q = j && j.quote; if (!q || typeof q !== 'object') return null;
+  const zf = q.zoneFilm || {}, zs = jobZones(j), nm = (id) => id ? filmName(id) : '', base = nm(q.film), byZone = {}; let list = [];
+  if (zs) {
+    const ps = j.panels || [];
+    zs.forEach(z => {
+      if (z.active === false) return;
+      if (!ps.some(p => panelZoneId(p, zs) === z.id && Number(p.w) > 0 && Number(p.h) > 0)) return;
+      const n = nm(zf[z.id]) || base; byZone[z.id] = n; list.push(n);
+    });
+  }
+  if (!list.length) list = [base];   // 没有分区域，或区域里还没有尺寸：只看默认膜
+  return { names: [...new Set(list.filter(Boolean))], missing: list.some(x => !x), byZone, base };
+}
+function jobFilmText(j, forList) {   // 列表里只在选了膜时显示；档案里没选膜会写“未选膜”
+  const f = jobFilmInfo(j); if (!f) return '';
+  if (!f.names.length) return forList ? '' : '未选膜';
+  return f.names.join(' + ') + (f.missing ? '（部分区域未选膜）' : '');
+}
+function zoneFilmTagHtml(job, z) {
+  const fi = jobFilmInfo(job); if (!fi || !(z.id in fi.byZone)) return '';
+  const n = fi.byZone[z.id];
+  return n ? `<span class="text-[11px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">🎞 ${escapeHtml(n)}</span>` : `<span class="text-[11px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-400">未选膜</span>`;
+}
+
+// ---- v14.14：归档、客户列表排序、未回应 ----
+const ARCHIVE_PAID_DAYS = 7, INQUIRY_STALE_DAYS = 7;
+function jobLastPayDate(j) { let d = ''; (j.payments || []).forEach(p => { if (p && p.date && String(p.date) > d) d = String(p.date); }); return d; }
+function jobArchiveState(j, today) {   // 'noresp' = 未回应（马上归档）；'paid' = 已完工、付清满 7 天；'' = 不归档
+  const st = j.status || '';
+  if (st.startsWith('NoResponse')) return j.invoice ? '' : 'noresp';
+  if (st.startsWith('Warranty') || !isJobDone(j)) return '';
+  const p = payInfo(j); if (!p || !(p.total > 0) || p.out > 0.005) return '';
+  const lp = jobLastPayDate(j); if (!lp) return '';
+  return daysBetweenISO(lp, today) >= ARCHIVE_PAID_DAYS ? 'paid' : '';
+}
+function clientIsArchived(c, today) {   // 手动归档，或者所有工作都已“了结”（未回应 / 已完工并付清满 7 天）
+  today = today || todayISO();
+  if (c.archived === true) return true;
+  const jobs = c.jobs || []; if (!jobs.length) return false;
+  const states = jobs.map(j => jobArchiveState(j, today));
+  if (states.some(x => !x)) return false;
+  if (c.archived === false) {   // 手动取消过归档：要等取消之后又有新的付款，才会再自动归档
+    const un = c.unarchivedAt ? isoOf(new Date(Number(c.unarchivedAt))) : '0000-00-00';
+    const lp = jobs.reduce((a, j) => { const d = jobLastPayDate(j); return d > a ? d : a; }, '');
+    if (!(lp > un)) return false;
+  }
+  return true;
+}
+function jobQuoteExpired(j, today, fallbackMs) {
+  const qt = j.quote; let qd = j.quoteDate || (qt && qt.date) || '';
+  if (!qd && fallbackMs > 0) qd = isoOf(new Date(fallbackMs));
+  return !!qd && today > quoteExpiryISO(qd, qt || {});
+}
+function clientPriority(c, today) {   // [档次, 次序]，越小越靠前；多个工作取最靠前的
+  let best = [99, 0];
+  const take = (r, k) => { if (r < best[0] || (r === best[0] && k < best[1])) best = [r, k]; };
+  (c.jobs || []).forEach(j => {
+    const st = j.status || '', p = payInfo(j), warranty = st.startsWith('Warranty'), done = isJobDone(j) && !warranty;
+    if (warranty) take(2, 0);
+    else if (done && p && p.out > 0.005) { if (p.overdue > 0) take(1, -p.overdue); else take(3, 0); }
+    else if (st.startsWith('Confirmed') || st.startsWith('Scheduled')) { if (j.date) take(4, Number(String(j.date).replace(/-/g, '')) || 0); else take(5, 0); }
+    else if (st.startsWith('Quote') && !j.invoice) take(6, jobQuoteExpired(j, today, Number(j.createdAt || c.updatedAt || 0)) ? 1 : 0);
+    else if (st.startsWith('Inquiry')) take(7, 0);
+    else take(8, 0);
+  });
+  return best;
+}
+async function toggleArchive(id) {
+  const c = (await dbGetAllClients()).find(x => String(x.id) === String(id)); if (!c) return;
+  const was = clientIsArchived(c, todayISO());
+  if (was) { c.archived = false; c.unarchivedAt = Date.now(); } else { c.archived = true; }
+  c.updatedAt = Date.now();
+  if (await dbSaveClient(c)) { refreshAllLists(); showToast(was ? '✅ 已取消归档' : '📦 已归档（要找回：打开“显示已归档”，或直接搜索）'); if (accessToken) syncToCloud(false); }
+}
+async function applyClientExtras(cd) {   // 客户档案弹窗保存时：带上弹窗里没有的字段（归档、取消归档时间）；归档的客户新增了工作或有工作改成“售后/争议中”，自动回到正常列表
+  try {
+    const old = (await dbGetAllClients()).find(x => String(x.id) === String(cd.id)); if (!old) return;
+    ['archived', 'unarchivedAt'].forEach(k => { if (old[k] !== undefined) cd[k] = old[k]; });
+    if (cd.archived === true) {
+      const oldIds = new Set((old.jobs || []).map(j => j.id)), oldWar = new Set((old.jobs || []).filter(j => String(j.status || '').startsWith('Warranty')).map(j => j.id));
+      if ((cd.jobs || []).some(j => !oldIds.has(j.id) || (String(j.status || '').startsWith('Warranty') && !oldWar.has(j.id)))) { cd.archived = false; cd.unarchivedAt = Date.now(); }
+    }
+  } catch (e) { console.error('applyClientExtras', e); }
+}
+async function markNoResponse(cid, jid, silent) {   // 报价没回应：状态改成“未回应”；这个客户所有工作都了结的话，马上归档。不记录原因
+  try {
+    const c = (await dbGetAllClients()).find(x => String(x.id) === String(cid)), j = c && (c.jobs || []).find(x => x.id === jid);
+    if (!j) return false;
+    const prev = j.status || '';
+    j.status = statusFull('NoResponse'); c.status = deriveClientStatus(c.jobs); c.updatedAt = Date.now();
+    if (!(await dbSaveClient(c))) return false;
+    if (!silent) { refreshAfterStatus(); if (accessToken) syncToCloud(false); showUndoToast(clientIsArchived(c, todayISO()) ? '已标记为未回应，客户已归档' : '已标记为未回应', () => undoStatus(cid, jid, prev)); }
+    return true;
+  } catch (e) { console.error('markNoResponse', e); return false; }
+}
+async function markAllExpiredNoResponse() {
+  const today = todayISO(), hits = [];
+  (await dbGetActiveClients()).forEach(c => { if (clientIsArchived(c, today)) return; (c.jobs || []).forEach(j => { if (!j.invoice && String(j.status || '').startsWith('Quote') && jobQuoteExpired(j, today, Number(j.createdAt || c.updatedAt || 0))) hits.push({ c, j }); }); });
+  if (!hits.length) { showToast('没有已过期的报价'); return; }
+  if (!confirm(`把这 ${hits.length} 个已过期的报价全部标为“未回应”？\n没有别的进行中工作的客户会马上归档。客人以后回复了，把状态改回“报价中”就行。`)) return;
+  let n = 0; for (const h of hits) { if (await markNoResponse(h.c.id, h.j.id, true)) n++; }
+  refreshAfterStatus(); if (accessToken) syncToCloud(false); showToast(`已标记 ${n} 个为未回应`);
+}
+async function snoozeInquiry(cid, jid) {   // 再留 7 天：7 天内不再提示
+  try {
+    const c = (await dbGetAllClients()).find(x => String(x.id) === String(cid)), j = c && (c.jobs || []).find(x => x.id === jid); if (!j) return;
+    j.inqSnooze = isoAddDays(todayISO(), INQUIRY_STALE_DAYS); c.updatedAt = Date.now();
+    if (await dbSaveClient(c)) { refreshAfterStatus(); showToast('好，再留 7 天'); if (accessToken) syncToCloud(false); }
+  } catch (e) { console.error('snoozeInquiry', e); }
 }
 
 function dbDeleteClient(id) {
@@ -1096,7 +1211,7 @@ async function syncToCloud(showAlert = false) {
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.13', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.14', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1647,6 +1762,7 @@ function fmtBytes(n) { n = Number(n) || 0; return n < 1024 ? n + ' B' : n < 1048
 function photoBytes(c) { return (c.photos || []).reduce((a, p) => a + (typeof p === 'string' ? p.length : 0), 0); }
 function jobPhotoKind(j, today) {   // 'quote' = 没成交且报价有效期已过；'done' = 已完工满 90 天；'' = 不清理
   const st = j.status || '';
+  if (!j.invoice && st.startsWith('NoResponse')) return 'quote';   // v14.14：未回应也算没成交
   if (!j.invoice && (st.startsWith('Inquiry') || st.startsWith('Quote'))) {
     const qd = j.quoteDate || (j.quote && j.quote.date) || '';
     let expire = '';
@@ -1687,7 +1803,7 @@ async function openStorage() {
   <div class="pt-2 border-t border-slate-700"><div class="text-xs text-slate-400 mb-1">存储</div>
     ${line('这台设备上的客户数据', '约 ' + fmtBytes(dataSize))}${line('这台设备的浏览器空间', browser)}<div id="storageDrive">${line('Google Drive', drive)}</div></div>
   <div class="pt-2 border-t border-slate-700 space-y-2"><div class="text-xs text-slate-400">照片清理（删除后无法恢复，同步后 Drive 上的备份也会少掉这些照片。客户资料、尺寸、报价、发票不会删。第一次清理前，先 Export 备份一次）</div>
-    ${grp('A', '① 没成交，报价有效期已过', `状态仍是咨询中或已报价，报价日期加有效天数（默认 ${PHOTO_DAYS_QUOTE} 天）已过；没出过报价的，从建档日起算 ${PHOTO_DAYS_QUOTE} 天`, g.A)}
+    ${grp('A', '① 没成交，报价有效期已过', `状态是咨询中、已报价或未回应，报价日期加有效天数（默认 ${PHOTO_DAYS_QUOTE} 天）已过；没出过报价的，从建档日起算 ${PHOTO_DAYS_QUOTE} 天`, g.A)}
     ${grp('B', `② 已完工 ${PHOTO_DAYS_DONE} 天以上`, `开发票满 ${PHOTO_DAYS_DONE} 天，状态不是“售后/争议中”`, g.B)}
     <div class="text-[11px] text-slate-500">一个客户有多个工作时，所有工作都满足条件才会列出。已确认、已预约、售后/争议中的客户不会出现。</div></div>`;
   if (accessToken) loadDriveUsage();
@@ -1778,7 +1894,11 @@ function jobGlassText(j, withTitle) {
 }
 function isJobDone(j) { const st = j.status || ''; return !st || st.startsWith('Completed') || st.startsWith('Warranty'); }   // 没有状态的旧工作当作已完工
 function clientDoneArea(c) { let area = 0, n = 0; (c.jobs || []).forEach(j => { if (!isJobDone(j)) return; const g = jobGlassInfo(j); if (g.area > 0) { area += g.area; n++; } }); return { area: r2(area), n }; }
-function jobGlassLineHtml(j) { const t = jobGlassText(j, false); return t ? `<div class="text-[11px] text-emerald-300 font-mono bg-slate-800/70 rounded-lg px-2 py-1">玻璃面积 · 单价 · 总价（不含 GST）：${escapeHtml(t)}</div>` : ''; }
+function jobGlassLineHtml(j) {
+  const t = jobGlassText(j, false), f = jobFilmText(j, false); if (!t && !f) return '';
+  const fl = f ? `<div class="text-[11px] font-mono ${f === '未选膜' ? 'text-slate-400' : 'text-sky-300'}">🎞 膜：${escapeHtml(f)}</div>` : '';
+  return `<div class="bg-slate-800/70 rounded-lg px-2 py-1 space-y-0.5">${t ? `<div class="text-[11px] text-emerald-300 font-mono">玻璃面积 · 单价 · 总价（不含 GST）：${escapeHtml(t)}</div>` : ''}${fl}</div>`;
+}
 // ---- v14.12：目标（税后收入 = 不含 GST 的金额），按完工日期统计；多做的、少做的都直接滚入后面的周和月 ----
 const TGT_REST_DEFAULT = { start: '12-25', end: '01-07' };
 let tgtCache = null;
@@ -2025,7 +2145,7 @@ async function renderQuoteList() {
   clients.forEach(c => (c.jobs || []).forEach(j => {
     const qt = j.quote; if (!qt || !qt.number) return;
     const qd = j.quoteDate || qt.date || '', exp = qd ? quoteExpiryISO(qd, qt) : '', st = j.status || '';
-    const state = j.invoice ? 'invoiced' : (st.startsWith('Confirmed') || st.startsWith('Scheduled') || st.startsWith('Completed')) ? 'booked' : (exp && exp < today ? 'expired' : 'active');
+    const state = j.invoice ? 'invoiced' : (st.startsWith('Confirmed') || st.startsWith('Scheduled') || st.startsWith('Completed')) ? 'booked' : st.startsWith('NoResponse') ? 'noresp' : (exp && exp < today ? 'expired' : 'active');
     if (invView.status === 'unpaid' && state !== 'active') return;
     if (invView.status === 'overdue' && state !== 'expired') return;
     if (invView.status === 'paid' && state !== 'invoiced') return;
@@ -2040,15 +2160,15 @@ async function renderQuoteList() {
   const dm = (x) => x.slice(8, 10) + '/' + x.slice(5, 7), groups = {};
   rows.forEach(r => { const d = r.qd || '0000-00-00', key = invView.group === 'week' ? weekStartISO(d) : d.slice(0, 7); (groups[key] = groups[key] || []).push(r); });
   const label = (k) => invView.group === 'week' ? `${dm(k)} – ${formatDateNZ(isoAddDays(k, 6))}` : `${k.slice(0, 4)} 年 ${Number(k.slice(5, 7))} 月`;
-  const chip = { active: 'bg-sky-500/20 text-sky-300 border-sky-500/40', expired: 'bg-slate-500/20 text-slate-300 border-slate-500/40', booked: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', invoiced: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' };
-  const txt = { active: '有效中', expired: '已过期', booked: '已确认/已预约', invoiced: '已开发票' };
+  const chip = { active: 'bg-sky-500/20 text-sky-300 border-sky-500/40', expired: 'bg-slate-500/20 text-slate-300 border-slate-500/40', booked: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', noresp: 'bg-slate-600/30 text-slate-400 border-slate-500/40', invoiced: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' };
+  const txt = { active: '有效中', expired: '已过期', booked: '已确认/已预约', noresp: '未回应', invoiced: '已开发票' };
   body.innerHTML = Object.keys(groups).sort().reverse().map((k, gi) => {
     const arr = groups[k];
     const cards = arr.map(({ c, j, qt, qd, exp, state, total }) => `<div class="bg-slate-900 border border-slate-700 rounded-xl p-3 space-y-1.5">
       <div class="flex justify-between items-start gap-2 cursor-pointer" onclick="viewQuoteFromList('${c.id}','${j.id}')"><div><div class="font-bold text-white text-sm">${escapeHtml(c.name)}</div><div class="text-[11px] text-slate-400 font-mono">${escapeHtml(qt.number)} · 报价 ${qd ? formatDateNZ(qd) : '—'} · 有效至 ${exp ? formatDateNZ(exp) : '—'}</div><div class="text-[11px] text-slate-500 truncate max-w-[16rem]">${escapeHtml(String(j.title || '').split('\n')[0])}</div></div>
       <span class="text-[11px] px-2 py-0.5 rounded-full border whitespace-nowrap ${chip[state]}">${txt[state]}</span></div>
       <div class="text-xs text-slate-300 font-mono">含 GST ${total > 0 ? salesMoney(total) : '—'}</div>
-      <div class="flex flex-wrap gap-2"><button onclick="viewQuoteFromList('${c.id}','${j.id}')" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold">🖨 查看报价单</button></div></div>`).join('');
+      <div class="flex flex-wrap gap-2"><button onclick="viewQuoteFromList('${c.id}','${j.id}')" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold">🖨 查看报价单</button>${state === 'expired' ? `<button onclick="markNoResponse('${c.id}','${j.id}')" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-xs font-bold">标记未回应</button>` : ''}</div></div>`).join('');
     return `<details ${gi < 3 ? 'open' : ''} class="bg-slate-800 border border-slate-700 rounded-2xl p-3"><summary class="cursor-pointer list-none flex justify-between items-baseline gap-2"><span class="font-bold text-white text-sm">${label(k)}</span><span class="text-[11px] text-slate-400">${arr.length} 张 · ${salesMoney(sum(arr))} ▾</span></summary><div class="mt-2 space-y-2">${cards}</div></details>`;
   }).join('') + trashHtml;
 }
@@ -2339,6 +2459,7 @@ async function quickSetStatus(clientId, status) {
   if (!c) return;
   const j = latestJob(c);
   if (j) { j.status = status; c.status = deriveClientStatus(c.jobs); } else c.status = status;
+  if (String(status).startsWith('Warranty') && c.archived === true) { c.archived = false; c.unarchivedAt = Date.now(); }   // v14.14
   c.updatedAt = Date.now();
   if (await dbSaveClient(c)) { refreshAllLists(); showToast('✅ 状态已更新'); if (accessToken) syncToCloud(false); }
 }
@@ -2396,7 +2517,7 @@ function panelsHtml(job) {
         <button type="button" onclick="toggleZoneFold('${job.id}','${z.id}')" class="text-slate-300 text-xs px-1">${fold ? '▸' : '▾'}</button>
         <input type="text" value="${escapeHtml(z.name || '')}" oninput="updateZone('${job.id}','${z.id}','name',this.value)" class="flex-1 min-w-[6rem] bg-slate-800 border border-slate-700 rounded p-1 text-xs text-white font-bold">
         <label class="flex items-center gap-1 text-[11px] ${on ? 'text-emerald-300' : 'text-slate-400'}"><input type="checkbox" ${on ? 'checked' : ''} onchange="updateZone('${job.id}','${z.id}','active',this.checked)"> 施工</label>
-        <span id="zoneArea_${job.id}_${z.id}" class="text-[11px] text-slate-400">${panelAreaText(mine)}</span>
+        <span id="zoneArea_${job.id}_${z.id}" class="text-[11px] text-slate-400">${panelAreaText(mine)}</span>${zoneFilmTagHtml(job, z)}
         <button type="button" onclick="setZoneStrip('${job.id}','${z.id}')" class="px-3 py-1.5 ${allStrip ? 'bg-amber-600' : 'bg-slate-600'} text-white text-xs rounded-lg">${allStrip ? '取消除膜' : '全部除膜'}</button>
         <button type="button" onclick="addPanel('${job.id}','${z.id}')" class="px-3 py-1.5 bg-sky-600 text-white text-xs rounded-lg">+ 玻璃</button>
         ${zs.length > 1 ? `<button type="button" onclick="removeZone('${job.id}','${z.id}')" class="text-rose-400 text-[11px] px-1">删除区域</button>` : ''}
@@ -2559,7 +2680,7 @@ async function renderDashboard() {
   const one = (j) => escapeHtml(String(j.title || '').split('\n')[0] || '(未命名工作)');
   const mapLink = (c) => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([c.address && !/^address tbd$/i.test(c.address.trim()) ? c.address : '', c.suburb, 'New Zealand'].filter(Boolean).join(', '));
   const wk = [];
-  clients.forEach(c => (c.jobs || []).forEach(j => { if (j.date && j.date >= today && j.date <= end && !(j.status || '').startsWith('Completed')) wk.push({ c, j }); }));
+  clients.forEach(c => (c.jobs || []).forEach(j => { if (j.date && j.date >= today && j.date <= end && !(j.status || '').startsWith('Completed') && !(j.status || '').startsWith('NoResponse')) wk.push({ c, j }); }));
   wk.sort((a, b) => a.j.date.localeCompare(b.j.date) || (a.j.time || '99:99').localeCompare(b.j.time || '99:99'));
   document.getElementById('dashWeek').innerHTML = wk.map(({ c, j }) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0"><div class="text-sm text-white truncate">${j.date.slice(8)}/${j.date.slice(5, 7)}${j.time ? ' ' + escapeHtml(j.time) : ''} · ${escapeHtml(c.name)}</div><div class="text-[11px] text-slate-400 truncate">${one(j)} · ${escapeHtml(c.suburb || '')}</div></div><div class="flex gap-1 shrink-0">${c.phone ? `<a href="tel:${escapeHtml(String(c.phone).replace(/[^\d+]/g, ''))}" class="px-2 py-1 bg-emerald-600 text-white rounded-lg text-xs">📞</a>` : ''}<a href="${mapLink(c)}" target="_blank" rel="noopener" class="px-2 py-1 bg-sky-600 text-white rounded-lg text-xs">🗺️</a></div></div>`).join('') || '<p class="text-xs text-slate-500">未来 7 天没有安排</p>';
   const due = [];
@@ -2572,25 +2693,41 @@ async function renderDashboard() {
   renderDashTargets(clients, today);
 }
 function renderDashGroups(clients, today, one) {
-  const row = (c, j, follow) => `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0 text-sm text-white truncate">${escapeHtml(c.name)} · ${one(j)}</div><div class="flex gap-1 shrink-0">${follow ? `<button onclick="dashFollowUp('${c.id}','${j.id}')" class="px-2.5 py-1 bg-amber-600 text-white rounded-lg text-xs">📧 跟进</button>` : ''}<button onclick="openClientModal('${c.id}')" class="px-2.5 py-1 bg-slate-600 text-white rounded-lg text-xs">打开</button></div></div>`;
+  clients = clients.filter(c => !clientIsArchived(c, today));   // v14.14：已归档的客户不出现在首页分组，也不计数
+  const row = (c, j, follow, o) => { o = o || {}; return `<div class="flex justify-between items-center gap-2 bg-slate-900 rounded-xl px-3 py-2"><div class="min-w-0"><div class="text-sm text-white truncate">${escapeHtml(c.name)} · ${one(j)}</div>${o.note ? `<div class="text-[11px] ${o.noteCls || 'text-amber-300'}">${o.note}</div>` : ''}</div><div class="flex flex-wrap justify-end gap-1 shrink-0">${follow ? `<button onclick="dashFollowUp('${c.id}','${j.id}')" class="px-2.5 py-1 bg-amber-600 text-white rounded-lg text-xs">📧 跟进</button>` : ''}${o.btns || ''}<button onclick="openClientModal('${c.id}')" class="px-2.5 py-1 bg-slate-600 text-white rounded-lg text-xs">打开</button></div></div>`; };
   const created = (c, j) => Number(j.createdAt || c.updatedAt || 0);
   const inq = [], quo = [], book = [];
   clients.forEach(c => (c.jobs || []).forEach(j => {
     const st = j.status || '';
-    if (!j.invoice && st.startsWith('Inquiry')) inq.push({ c, j });
-    else if (!j.invoice && st.startsWith('Quote')) quo.push({ c, j, follow: daysBetweenISO(j.quoteDate || isoOf(new Date(created(c, j) || Date.now())), today) >= 3 });   // 报价满 3 天：提醒跟进
+    if (!j.invoice && st.startsWith('Inquiry')) {
+      const cr = created(c, j), stale = !j.quote && cr > 0 && today >= isoAddDays(isoOf(new Date(cr)), INQUIRY_STALE_DAYS) && (!j.inqSnooze || today >= j.inqSnooze);
+      inq.push({ c, j, stale, days: cr > 0 ? daysBetweenISO(isoOf(new Date(cr)), today) : 0 });
+    }
+    else if (!j.invoice && st.startsWith('Quote')) quo.push({ c, j, follow: daysBetweenISO(j.quoteDate || isoOf(new Date(created(c, j) || Date.now())), today) >= 3, expired: jobQuoteExpired(j, today, created(c, j)) });   // 报价满 3 天：提醒跟进
     else if (st.startsWith('Confirmed') || st.startsWith('Scheduled')) book.push({ c, j });
   }));
   inq.sort((a, b) => created(a.c, a.j) - created(b.c, b.j));            // 等得最久的在前
   quo.sort((a, b) => (a.j.quoteDate || '9999').localeCompare(b.j.quoteDate || '9999') || created(a.c, a.j) - created(b.c, b.j));
   book.sort((a, b) => (a.j.date ? 1 : 0) - (b.j.date ? 1 : 0) || (a.j.date || '').localeCompare(b.j.date || '') || created(a.c, a.j) - created(b.c, b.j));   // 没排日期的在前，其余按施工日期从近到远
+  const btn = (cls, onclick, text) => `<button onclick="${onclick}" class="px-2.5 py-1 ${cls} text-white rounded-lg text-xs">${text}</button>`;
+  const html = {
+    dashInquiry: inq.map(({ c, j, stale, days }) => {
+      if (!stale) return row(c, j, false);
+      const only = (c.jobs || []).length === 1;   // 客户只有这一个咨询才提示删除；还有别的工作就提示标记未回应（单个工作删了没法恢复）
+      return row(c, j, false, { note: `已 ${days} 天没下文`, btns: (only ? btn('bg-rose-600', `deleteClient('${c.id}')`, '删除') : btn('bg-slate-500', `markNoResponse('${c.id}','${j.id}')`, '标记未回应')) + btn('bg-sky-700', `snoozeInquiry('${c.id}','${j.id}')`, '再留 7 天') });
+    }),
+    dashQuotes: quo.map(({ c, j, follow, expired }) => row(c, j, follow, expired ? { note: '⏰ 报价已过期', noteCls: 'text-slate-400', btns: btn('bg-slate-500', `markNoResponse('${c.id}','${j.id}')`, '标记未回应') } : {})),
+    dashBooked: book.map(({ c, j }) => row(c, j, false)),
+  };
   const fill = (id, cid, list, empty) => {
-    document.getElementById(id).innerHTML = list.map(({ c, j, follow }) => row(c, j, follow)).join('') || `<p class="text-xs text-slate-500">${empty}</p>`;
+    document.getElementById(id).innerHTML = html[id].join('') || `<p class="text-xs text-slate-500">${empty}</p>`;
     const n = document.getElementById(cid); if (n) n.textContent = list.length ? `（${list.length}）` : '';
   };
   fill('dashInquiry', 'dashInqCount', inq, '没有咨询中的工作');
   fill('dashQuotes', 'dashQuoCount', quo, '没有已报价的工作');
   fill('dashBooked', 'dashBookCount', book, '没有已确认或已预约的工作');
+  const nExp = quo.filter(x => x.expired).length, allBtn = document.getElementById('dashQuoAllNoResp');
+  if (allBtn) { allBtn.classList.toggle('hidden', !nExp); allBtn.textContent = `全部过期的标为未回应（${nExp}）`; }
 }
 // ---- v14.1：销售汇总（按开发票日期；周一起算；财年 4 月 1 日起）----
 function salesMoney(n) { return '$' + Number(n || 0).toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -3349,14 +3486,19 @@ async function renderJobsList() {
     const searchInput = document.getElementById('jobSearchInput');
     const search = searchInput ? searchInput.value.toLowerCase() : '';
     let clients = await dbGetActiveClients();
-    const filtered = clients.filter(c => (c.name + (c.suburb||'') + (c.address||'') + (c.phone||'')).toLowerCase().includes(search));
+    const today = todayISO(), archSet = new Set(clients.filter(c => clientIsArchived(c, today)).map(c => String(c.id)));
+    const showArch = !!(document.getElementById('showArchivedChk') || {}).checked, incArch = showArch || search.trim() !== '' || clientFilter === 'NoResponse';   // v14.14：已归档的默认不显示；搜索或打开开关时才出现
+    { const lb = document.getElementById('showArchivedLbl'); if (lb) lb.textContent = archSet.size ? `显示已归档（${archSet.size}）` : '显示已归档'; }
+    const filtered = clients.filter(c => (c.name + (c.suburb||'') + (c.address||'') + (c.phone||'')).toLowerCase().includes(search) && (incArch || !archSet.has(String(c.id))));
     const visible = filtered.filter(c => {
       if (clientFilter === 'all') return true;
       if (clientFilter === 'Unpaid') return (c.jobs || []).some(j => { const p = payInfo(j); return p && p.out > 0.005; });
       return (c.status || '').startsWith(clientFilter);
     });
-    const sortMode = (document.getElementById('clientSort') || {}).value || 'recent';
-    visible.sort((a, b) => sortMode === 'name' ? String(a.name).localeCompare(String(b.name))
+    const sortMode = (document.getElementById('clientSort') || {}).value || 'priority';
+    const prio = new Map(); if (sortMode === 'priority') visible.forEach(c => prio.set(String(c.id), clientPriority(c, today)));
+    visible.sort((a, b) => sortMode === 'priority' ? ((archSet.has(String(a.id)) ? 1 : 0) - (archSet.has(String(b.id)) ? 1 : 0)) || (prio.get(String(a.id))[0] - prio.get(String(b.id))[0]) || (prio.get(String(a.id))[1] - prio.get(String(b.id))[1]) || (b.updatedAt || 0) - (a.updatedAt || 0)
+      : sortMode === 'name' ? String(a.name).localeCompare(String(b.name))
       : sortMode === 'jobdate' ? String((latestJob(b) || {}).date || '').localeCompare(String((latestJob(a) || {}).date || ''))
       : (b.updatedAt || 0) - (a.updatedAt || 0));
     
@@ -3370,7 +3512,8 @@ async function renderJobsList() {
     visible.forEach(c => {
       const jobsCount = (c.jobs || []).length || (c.price ? 1 : 0);
       const photoCount = (c.photos || []).length;
-      const card = createSafeElement('div', 'bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-lg hover:border-sky-500/50 transition cursor-pointer flex flex-col justify-between space-y-3');
+      const isArch = archSet.has(String(c.id));
+      const card = createSafeElement('div', 'bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-lg hover:border-sky-500/50 transition cursor-pointer flex flex-col justify-between space-y-3' + (isArch ? ' opacity-70' : ''));
       card.onclick = () => openClientModal(c.id);
 
       const top = createSafeElement('div', 'flex justify-between items-start');
@@ -3384,19 +3527,22 @@ async function renderJobsList() {
         left.appendChild(createSafeElement('p', 'text-[11px] font-semibold mt-1 ' + (od ? 'text-rose-400' : 'text-amber-300'), od ? `⚠️ 逾期 ${od} 天 · 欠 $${owed.toFixed(2)}` : `💲 欠款 $${owed.toFixed(2)}`));
       }
       top.appendChild(left);
-      top.appendChild(createSafeElement('span', statusBadgeClass(c.status), statusZh(c.status) || '正常'));
+      { const rt = createSafeElement('div', 'flex flex-col items-end gap-1'); rt.appendChild(createSafeElement('span', statusBadgeClass(c.status), statusZh(c.status) || '正常')); if (isArch) rt.appendChild(createSafeElement('span', 'text-[11px] px-2 py-0.5 rounded-full bg-slate-600 text-slate-200', '📦 已归档')); top.appendChild(rt); }
 
       const mid = createSafeElement('div', 'flex justify-between text-xs pt-2 border-t border-slate-700/60 text-slate-300');
       mid.appendChild(createSafeElement('span', '', `📞 ${c.phone || '未填电话'}`));
       mid.appendChild(createSafeElement('span', '', `📁 工作 ${jobsCount} | 🖼️ 照片 ${photoCount}`));
 
       const gl = createSafeElement('div', 'text-[11px] text-slate-300 space-y-0.5 pt-2 border-t border-slate-700/60 hidden');
-      { const gj = (c.jobs || []).filter(j => jobGlassText(j, true)); if (gj.length) { gl.classList.remove('hidden'); gj.slice(0, 3).forEach(j => gl.appendChild(createSafeElement('div', 'font-mono truncate', jobGlassText(j, true)))); if (gj.length > 3) gl.appendChild(createSafeElement('div', 'text-slate-500', `…另有 ${gj.length - 3} 个工作`)); const da = clientDoneArea(c); if (da.n) gl.appendChild(createSafeElement('div', 'text-emerald-300 font-semibold', `已完工累计 ${da.area.toFixed(2)} m²（${da.n} 个工作）`)); } }
+      { const gj = (c.jobs || []).filter(j => jobGlassText(j, true) || jobFilmText(j, true)); if (gj.length) { gl.classList.remove('hidden'); gj.slice(0, 3).forEach(j => { const gt = jobGlassText(j, true), ft = jobFilmText(j, true); if (gt) gl.appendChild(createSafeElement('div', 'font-mono truncate', gt)); if (ft) gl.appendChild(createSafeElement('div', 'text-sky-300 truncate', '🎞 ' + (gt ? '' : String(j.title || '').split('\n')[0].trim().slice(0, 22) + ' · ') + ft)); }); if (gj.length > 3) gl.appendChild(createSafeElement('div', 'text-slate-500', `…另有 ${gj.length - 3} 个工作`)); const da = clientDoneArea(c); if (da.n) gl.appendChild(createSafeElement('div', 'text-emerald-300 font-semibold', `已完工累计 ${da.area.toFixed(2)} m²（${da.n} 个工作）`)); } }
       const btm = createSafeElement('div', 'flex justify-between items-center pt-1');
       btm.appendChild(createSafeElement('span', 'text-sky-400 text-xs font-medium hover:underline', '编辑档案 ➔'));
       const delBtn = createSafeElement('button', 'px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-lg transition', '删除');
       delBtn.onclick = (e) => { e.stopPropagation(); deleteClient(c.id); };
-      btm.appendChild(delBtn);
+      const archBtn = createSafeElement('button', 'px-2.5 py-1 bg-slate-600/60 hover:bg-slate-600 text-slate-200 text-xs rounded-lg transition', isArch ? '取消归档' : '归档');
+      archBtn.onclick = (e) => { e.stopPropagation(); toggleArchive(c.id); };
+      const bRight = createSafeElement('div', 'flex items-center gap-1.5'); bRight.appendChild(archBtn); bRight.appendChild(delBtn);
+      btm.appendChild(bRight);
 
       const act = createSafeElement('div', 'flex flex-wrap items-center gap-1.5 pt-1');
       const stop = (e) => e.stopPropagation();
@@ -3771,6 +3917,7 @@ async function saveClientModal() {
       jobs: currentClientJobs
     };
     if (Object.keys(deletedJobs).length) clientData.deletedJobs = deletedJobs;
+    await applyClientExtras(clientData);
     const saved = await dbSaveClient(clientData);
     if (!saved) {
       alert('保存失败！数据没有写入浏览器（可能是存储空间已满）。请先点 Export 备份数据，并减少照片后再试。');
@@ -4455,7 +4602,7 @@ async function saveInvoiceToSystem(opts = {}) {
       if (dupOwner && !confirm(`发票号 ${invNumber} 已经用在客户 [${dupOwner}] 的发票上了。\n同一个发票号不能重复使用，确定仍要保存吗？`)) return false;
       const wasNewInvoice = !targetJob.invoice, prevJobStatus = targetJob.status || '';
       let advanced = false;
-      if (wasNewInvoice && statusRank(targetJob.status) < STATUS_RANK.indexOf('Completed')) { targetJob.status = statusFull('Completed'); client.status = deriveClientStatus(client.jobs); advanced = true; }
+      if (wasNewInvoice && (statusRank(targetJob.status) < STATUS_RANK.indexOf('Completed') || String(targetJob.status || '').startsWith('NoResponse'))) { targetJob.status = statusFull('Completed'); client.status = deriveClientStatus(client.jobs); advanced = true; }
       targetJob.invoice = newInvoice;
       client.updatedAt = Date.now();
       const savedOk = await dbSaveClient(client);
@@ -4628,6 +4775,7 @@ async function autoSaveClientModal() {
       jobs: currentClientJobs
     };
     if (Object.keys(deletedJobs).length) clientData.deletedJobs = deletedJobs;
+    await applyClientExtras(clientData);
     clientModalDirty = false;   // 先清掉；保存过程中如果又有改动，会重新变成 true，下一轮再存
     const ok = await dbSaveClient(clientData);
     if (!ok) { clientModalDirty = true; setAutoSaveState('⚠️ 自动保存失败（存储空间可能已满），请先 Export 备份', true); return; }
