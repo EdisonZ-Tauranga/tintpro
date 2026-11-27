@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>TintPro Manager v14.14 Pro - Light & Salt / Bayview Edition</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TintPro">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>TintPro Manager v14.15 Pro - Light & Salt / Bayview Edition</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://unpkg.com/lucide@1.61.0"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -79,7 +85,7 @@
       </div>
       <div class="min-w-0">
         <h1 class="text-sm md:text-base font-bold text-white flex items-center gap-1.5 md:gap-2 whitespace-nowrap">
-          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.14<span class="hidden md:inline"> Pro</span></span>
+          TintPro<span class="hidden md:inline"> Manager</span> <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">v14.15<span class="hidden md:inline"> Pro</span></span>
         </h1>
         <p class="hidden md:block text-[11px] text-slate-400">Light and Salt Ltd t/a Bayview Window Tinting</p>
       </div>
@@ -150,6 +156,7 @@
     <section id="tab-dashboard" class="space-y-4">
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">💰 本周营业额 <span id="dashSalesRange" class="text-slate-400 font-normal text-xs"></span></h2><button onclick="switchTab('sales')" class="text-xs text-sky-400">汇总 ➔</button></div><div id="dashSales" class="grid grid-cols-3 gap-2"></div></div>
       <div id="dashTargetBox" class="space-y-3"></div>
+      <div id="dashQuoteStats"></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📅 本周安排（未来 7 天）</h2></div><div id="dashWeek" class="space-y-2"></div></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">💬 咨询中 <span id="dashInqCount" class="text-slate-400 font-normal"></span></h2></div><div id="dashInquiry" class="space-y-2"></div></div>
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-center mb-2"><h2 class="font-bold text-white text-sm">📝 已报价 <span id="dashQuoCount" class="text-slate-400 font-normal"></span></h2><button id="dashQuoAllNoResp" onclick="markAllExpiredNoResponse()" class="hidden px-2.5 py-1 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-[11px]"></button></div><div id="dashQuotes" class="space-y-2"></div></div>
@@ -1205,13 +1212,13 @@ async function syncToCloud(showAlert = false) {
       if (ap.skipped) syncAgain = true;   // 同步期间你改过的客户，下一轮再合并
     }
     saveTombstones(m.del);
-    let settingsOut = loadSettings(), settingsCloudChanged = false;
+    let settingsOut = loadSettings(), settingsCloudChanged = false, settingsApplied = false;
     const csUp = (cloudSettings && cloudSettings.updatedAt) || 0;
-    if (cloudSettings && csUp > (settingsOut.updatedAt || 0)) { settingsOut = cloudSettings; saveSettings(cloudSettings); refreshTemplateSelect(); }
+    if (cloudSettings && csUp > (settingsOut.updatedAt || 0)) { settingsOut = cloudSettings; saveSettings(cloudSettings); refreshTemplateSelect(); settingsApplied = true; }
     else if ((settingsOut.updatedAt || 0) > csUp) settingsCloudChanged = true;
 
     if (!fileId || m.cloudChanged || settingsCloudChanged) {
-      const fileContent = JSON.stringify({ version: 'v14.14', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
+      const fileContent = JSON.stringify({ version: 'v14.15', updatedAt: new Date().toISOString(), clients: m.merged, deleted: m.del, settings: settingsOut });
       let up;
       if (fileId) {
         up = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
@@ -1229,11 +1236,7 @@ async function syncToCloud(showAlert = false) {
     }
 
     markSynced();
-    if (m.localChanged) {
-      renderJobsList(); renderCalendar();
-      const invTab = document.getElementById('tab-invoices');
-      if (invTab && invTab.classList.contains('hidden')) populateInvoiceClientSelect();
-    }
+    if (m.localChanged || settingsApplied) refreshAllLists();   // v14.15：设置变了也要刷新（首页目标卡片）
     if (m.toLocal || m.toCloud || m.removedLocal) addSyncLog({ toLocal: m.toLocal, toCloud: m.toCloud, removed: m.removedLocal, merges: m.merges });
     if (showAlert || m.localChanged) {
       showToast(`☁️ 同步完成：从云端更新 ${m.toLocal} 位客户，上传 ${m.toCloud} 位客户` + (m.removedLocal ? `，移除 ${m.removedLocal} 位已删除客户` : ''));
@@ -1286,6 +1289,7 @@ async function cleanDuplicateClients() {
   }
 }
 
+if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(e => console.warn('sw', e)); });   // v14.15：离线缓存
 window.addEventListener('DOMContentLoaded', async () => {
   try {
     await initDB();
@@ -1970,6 +1974,20 @@ function renderDashTargets(clients, today) {
   box.innerHTML = mk('本周', `${dm(ws)} – ${dm(we)}`, ws, we, '本周') + mk('本月', `${Number(today.slice(5, 7))} 月`, ms, me, '本月') + yearCard
     + `<details class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><summary class="cursor-pointer font-bold text-white text-sm list-none">📅 排期参考：接到新活，放哪一周 ▾</summary><div class="mt-2 space-y-2"><label class="block text-xs text-slate-400">新活金额 $（不含 GST，可以不填）<input id="dashNewJob" type="number" step="1" inputmode="numeric" oninput="renderPlannerBody()" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-mono"></label><div id="dashPlannerBody"></div></div></details>`;
   renderPlannerBody();
+}
+function renderQuoteStats(clients, today) {   // v14.15：近 90 天报价的成交情况
+  const el = document.getElementById('dashQuoteStats'); if (!el) return;
+  const from = isoAddDays(today, -90); let won = 0, lost = 0, wait = 0, amt = 0;
+  clients.forEach(c => (c.jobs || []).forEach(j => {
+    const qd = j.quoteDate || (j.quote && j.quote.date) || ''; if (!qd || qd < from) return;
+    const st = j.status || '';
+    if (j.invoice || !st || /^(Confirmed|Scheduled|Completed|Warranty)/.test(st)) { won++; amt += jobIncome(j); }
+    else if (st.startsWith('NoResponse')) lost++;
+    else if (st.startsWith('Quote') || st.startsWith('Inquiry')) { if (jobQuoteExpired(j, today, 0)) lost++; else wait++; }
+  }));
+  if (!(won + lost + wait)) { el.innerHTML = ''; return; }
+  const dec = won + lost, rate = dec ? Math.round(won / dec * 100) + '%' : '—';
+  el.innerHTML = `<div class="bg-slate-800 border border-slate-700 rounded-2xl p-4"><div class="flex justify-between items-baseline gap-2"><span class="font-bold text-white text-sm">📈 报价成交率 <span class="text-[11px] text-slate-500 font-normal">近 90 天</span></span><span class="text-xl font-bold text-white font-mono">${rate}</span></div><div class="text-[11px] text-slate-400 mt-1">报价 ${won + lost + wait} 个：成交 ${won}（${salesMoney(amt)}，不含 GST）· 没成交 ${lost}（含未回应、已过期）· 还在等 ${wait}</div>${dec < 5 ? '<div class="text-[11px] text-slate-500">已有结果的报价还不到 5 个，数字仅供参考</div>' : ''}</div>`;
 }
 function renderPlannerBody() {
   const el = document.getElementById('dashPlannerBody'); if (!el || !tgtCache) return;
@@ -2691,6 +2709,7 @@ async function renderDashboard() {
   renderDashGroups(clients, today, one);
   renderDashSales(clients, today);
   renderDashTargets(clients, today);
+  renderQuoteStats(clients, today);
 }
 function renderDashGroups(clients, today, one) {
   clients = clients.filter(c => !clientIsArchived(c, today));   // v14.14：已归档的客户不出现在首页分组，也不计数
@@ -3534,7 +3553,7 @@ async function renderJobsList() {
       mid.appendChild(createSafeElement('span', '', `📁 工作 ${jobsCount} | 🖼️ 照片 ${photoCount}`));
 
       const gl = createSafeElement('div', 'text-[11px] text-slate-300 space-y-0.5 pt-2 border-t border-slate-700/60 hidden');
-      { const gj = (c.jobs || []).filter(j => jobGlassText(j, true) || jobFilmText(j, true)); if (gj.length) { gl.classList.remove('hidden'); gj.slice(0, 3).forEach(j => { const gt = jobGlassText(j, true), ft = jobFilmText(j, true); if (gt) gl.appendChild(createSafeElement('div', 'font-mono truncate', gt)); if (ft) gl.appendChild(createSafeElement('div', 'text-sky-300 truncate', '🎞 ' + (gt ? '' : String(j.title || '').split('\n')[0].trim().slice(0, 22) + ' · ') + ft)); }); if (gj.length > 3) gl.appendChild(createSafeElement('div', 'text-slate-500', `…另有 ${gj.length - 3} 个工作`)); const da = clientDoneArea(c); if (da.n) gl.appendChild(createSafeElement('div', 'text-emerald-300 font-semibold', `已完工累计 ${da.area.toFixed(2)} m²（${da.n} 个工作）`)); } }
+      { const gj = (c.jobs || []).filter(j => jobGlassText(j, false) || jobFilmText(j, true)); if (gj.length) { gl.classList.remove('hidden'); gj.slice(0, 3).forEach(j => { const gt = jobGlassText(j, false), ft = jobFilmText(j, true); if (gt) gl.appendChild(createSafeElement('div', 'font-mono truncate', gt)); if (ft) gl.appendChild(createSafeElement('div', 'text-sky-300 truncate', '🎞 ' + ft)); }); if (gj.length > 3) gl.appendChild(createSafeElement('div', 'text-slate-500', `…另有 ${gj.length - 3} 个工作`)); const da = clientDoneArea(c); if (da.n) gl.appendChild(createSafeElement('div', 'text-emerald-300 font-semibold', `已完工累计 ${da.area.toFixed(2)} m²（${da.n} 个工作）`)); } }
       const btm = createSafeElement('div', 'flex justify-between items-center pt-1');
       btm.appendChild(createSafeElement('span', 'text-sky-400 text-xs font-medium hover:underline', '编辑档案 ➔'));
       const delBtn = createSafeElement('button', 'px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-lg transition', '删除');
