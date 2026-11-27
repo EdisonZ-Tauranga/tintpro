@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>语音录尺寸测试</title>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--line:#334155;--tx:#e2e8f0;--mu:#94a3b8;--sky:#0ea5e9;--ok:#34d399;--bad:#f87171;--warn:#fbbf24}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:14px;max-width:640px;margin:0 auto}
+h1{font-size:18px;margin:0 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
+.mu{color:var(--mu);font-size:13px}
+button,select,input{font:inherit;border-radius:12px;border:1px solid var(--line);background:#0b1222;color:var(--tx);padding:10px 12px}
+button{cursor:pointer}
+#mic{width:100%;font-size:20px;font-weight:700;padding:18px;background:var(--sky);border-color:var(--sky);color:#fff}
+#mic.on{background:#dc2626;border-color:#dc2626}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row>*{flex:1}
+#live{min-height:2.6em;color:var(--warn);font-size:18px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.warn{color:var(--warn)}.bad{color:var(--bad)}.ok{color:var(--ok)}
+.log{border-bottom:1px solid var(--line);padding:8px 0;font-size:14px}
+.log.wrong{background:rgba(248,113,113,.12)}
+.small{padding:4px 10px;font-size:13px;flex:none}
+</style>
+</head>
+<body>
+<h1>🎙 语音录尺寸测试</h1>
+<div class="mu">只是测试，不连 TintPro，也不保存数据。目的：看你的手机在现场能不能听准。</div>
+
+<div class="card">
+  <button id="mic" onclick="toggle()">🎙 开始听</button>
+  <div class="row" style="margin-top:10px">
+    <select id="lang"><option value="zh-CN">中文</option><option value="en-NZ">English (NZ)</option><option value="en-US">English (US)</option></select>
+    <label class="mu" style="flex:none"><input type="checkbox" id="readback" checked style="width:auto"> 读回确认</label>
+  </div>
+  <div id="status" class="mu" style="margin-top:8px">点“开始听”，允许麦克风。</div>
+  <div id="live"></div>
+</div>
+
+<div class="card">
+  <b>说法示例</b>
+  <div class="mu">“左边固定窗 八百五十 乘 一千六百二十 两块”<br>“Boardroom 850 by 1620 2 panels”<br>“eight fifty by sixteen twenty two panels”<br>“窗户 1.62米 乘 0.85米”<br>名字、块数可以省略（块数默认 1）。说“撤销”或 “undo” 去掉上一块。</div>
+  <div class="row" style="margin-top:8px"><input id="manual" placeholder="不想开麦克风？手动输一句试解析"><button class="small" onclick="manualGo()">解析</button></div>
+</div>
+
+<div class="card">
+  <b>已录入的玻璃</b> <span id="sum" class="mu"></span>
+  <table><thead><tr><th>名称</th><th class="n">宽</th><th class="n">高</th><th class="n">块</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+  <div class="row" style="margin-top:8px"><button class="small" onclick="undo()">撤销上一块</button><button class="small" onclick="clearAll()">清空</button></div>
+</div>
+
+<div class="card">
+  <b>识别记录</b> <span id="stat" class="mu"></span>
+  <div class="mu">听错了的，点“✖ 错了”。试完点“复制记录”，发给我看。</div>
+  <div id="log"></div>
+  <button class="small" style="margin-top:8px" onclick="copyLog()">复制记录</button>
+</div>
+
+<script>
+/* ===== 解析：一句话 → {name, w, h, qty} ===== */
+const CN={零:0,〇:0,一:1,二:2,两:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9},CU={十:10,百:100,千:1000};
+function cn2num(s){
+  if(![...s].some(c=>CU[c]))return Number([...s].map(c=>CN[c]).join(''));
+  let total=0,cur=0,lastU=0,pend=false;
+  for(const c of s){if(c in CN){cur=CN[c];pend=true}else{const u=CU[c];if(!pend&&u===10)cur=1;total+=cur*u;lastU=u;cur=0;pend=false}}
+  if(pend&&cur)total+=lastU>=100?cur*lastU/10:cur;
+  return total;
+}
+const EW={zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};
+function enGroupVal(ts){let total=0,cur=0;for(const t of ts){if(t==='and')continue;if(t==='hundred')cur=(cur||1)*100;else if(t==='thousand'){total+=(cur||1)*1000;cur=0}else cur+=EW[t]}return total+cur}
+const isMul=t=>t==='hundred'||t==='thousand';
+function enRun(words,peel){   // 一串英文数字词 → [{v,a,b}]，a/b 是词的序号范围
+  let n=words.length,tail=null;
+  if(peel&&n>1&&EW[words[n-1]]>=1&&EW[words[n-1]]<=9){tail={v:EW[words[n-1]],a:n-1,b:n-1};n--}
+  const groups=[];let g=null;
+  for(let i=0;i<n;i++){
+    const t=words[i];
+    if(!g){g={a:i,b:i,ts:[t]};continue}
+    const last=g.ts[g.ts.length-1];
+    if(isMul(t)||t==='and'||isMul(last)||last==='and'||(EW[last]>=20&&EW[t]>=1&&EW[t]<=9)){g.ts.push(t);g.b=i}
+    else{groups.push(g);g={a:i,b:i,ts:[t]}}
+  }
+  if(g)groups.push(g);
+  const vals=groups.map(x=>({v:enGroupVal(x.ts),a:x.a,b:x.b,simple:!x.ts.some(isMul)}));
+  const out=[];
+  for(let i=0;i<vals.length;i++){
+    const x=vals[i],y=vals[i+1];
+    if(x.simple&&y&&y.simple&&x.v>=1&&x.v<=99&&y.v>=10&&y.v<=99&&!(x.v<10&&y.v<10)){out.push({v:x.v*100+y.v,a:x.a,b:y.b});i++}else out.push({v:x.v,a:x.a,b:x.b});
+  }
+  if(tail)out.push(tail);
+  return out;
+}
+const QW='(?:块|片|个|個|pcs?|pieces?|panels?|sheets?|windows?)';
+const UNIT=/^\s*(mm|毫米|cm|厘米|公分|米|meters?|metres?|m)(?![a-z])/i;
+function tokenize(text){
+  const T=[];let m;
+  const re1=/\d+(?:\.\d+)?/g;while((m=re1.exec(text)))T.push({s:m.index,e:m.index+m[0].length,v:parseFloat(m[0])});
+  const re2=/[零〇一二两三四五六七八九十百千]+/g;
+  while((m=re2.exec(text))){
+    let str=m[0],end=m.index+str.length;
+    if(str.length>1&&str.endsWith('两')&&new RegExp('^\\s*'+QW).test(text.slice(end))){T.push({s:m.index,e:end-1,v:cn2num(str.slice(0,-1))});T.push({s:end-1,e:end,v:2});continue}
+    T.push({s:m.index,e:end,v:cn2num(str)});
+  }
+  const re3=/\b(?:(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|and)\b[\s-]*)+/gi;
+  while((m=re3.exec(text))){
+    const ws=[];const rw=/[a-z]+/gi;let x;
+    while((x=rw.exec(m[0])))ws.push({w:x[0].toLowerCase(),s:m.index+x.index,e:m.index+x.index+x[0].length});
+    while(ws.length&&ws[ws.length-1].w==='and')ws.pop();
+    while(ws.length&&ws[0].w==='and')ws.shift();
+    if(!ws.length)continue;
+    const peel=new RegExp('^\\s*'+QW,'i').test(text.slice(ws[ws.length-1].e));
+    enRun(ws.map(q=>q.w),peel).forEach(r=>T.push({s:ws[r.a].s,e:ws[r.b].e,v:r.v}));
+  }
+  T.sort((a,b)=>a.s-b.s);
+  // 单位：米/厘米/毫米
+  for(const t of T){const u=text.slice(t.e).match(UNIT);if(u){const k=u[1].toLowerCase();if(k==='米'||k.startsWith('met')||k==='m')t.v=t.v*1000;else if(k==='cm'||k==='厘米'||k==='公分')t.v*=10;t.e+=u[0].length;t.unit=true}}
+  return T;
+}
+function parseUtterance(raw){
+  const text=raw.trim();
+  if(/^(撤销|撤回|删除上一|删掉上一|undo|delete last|remove last)/i.test(text))return{cmd:'undo'};
+  const T=tokenize(text);
+  const qtyRe=new RegExp('^\\s*'+QW,'i');
+  let qi=T.findIndex(t=>t.v>=1&&t.v<=99&&Number.isInteger(t.v)&&qtyRe.test(text.slice(t.e)));
+  if(qi<0)qi=T.findIndex(t=>t.v>=1&&t.v<=99&&Number.isInteger(t.v)&&/(?:x|×|数量|qty|quantity|times)\s*$/i.test(text.slice(0,t.s)));
+  const dims=T.filter((t,i)=>i!==qi&&t.v>=50).slice(0,2);
+  if(dims.length<2)return{error:'没听出两个尺寸'};
+  if(qi<0){const after=T.find(t=>t.s>=dims[1].e&&t.v>=1&&t.v<=99&&Number.isInteger(t.v)&&!t.unit);if(after)qi=T.indexOf(after)}
+  const used=[...dims,...(qi>=0?[T[qi]]:[])].sort((a,b)=>a.s-b.s);
+  let out='',pos=0;
+  for(const t of used){out+=text.slice(pos,t.s)+'\u0000';pos=Math.max(pos,t.e)}
+  out+=text.slice(pos);
+  const conn='(?:乘以|乘|×|\\bby\\b|\\btimes\\b|\\bx\\b|宽|高|\\bwidth\\b|\\bheight\\b|\\band\\b|和)';
+  out=out.replace(new RegExp(conn+'\\s*\\u0000','gi'),'\u0000').replace(new RegExp('\\u0000\\s*(?:'+conn.slice(3,-1)+'|毫米|\\bmm\\b|'+QW+')','gi'),'\u0000');
+  const name=out.replace(/\u0000/g,' ').replace(/[,，。.、;；]+/g,' ').replace(/\s+/g,' ').trim();
+  return{name,w:Math.round(dims[0].v),h:Math.round(dims[1].v),qty:qi>=0?Math.round(T[qi].v):1};
+}
+
+/* ===== 界面 ===== */
+const $=id=>document.getElementById(id);
+let rows=[],logs=[],rec=null,listening=false,speaking=false,wake=null,restartT=null;
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function bad(r){return r.w<100||r.w>6000||r.h<100||r.h>6000}
+function render(){
+  $('rows').innerHTML=rows.map((r,i)=>`<tr><td>${esc(r.name||'—')}</td><td class="n ${bad(r)?'bad':''}">${r.w}</td><td class="n ${bad(r)?'bad':''}">${r.h}</td><td class="n">${r.qty}</td><td><button class="small" onclick="rows.splice(${i},1);render()">✖</button></td></tr>`).join('')||'<tr><td colspan="5" class="mu">还没有</td></tr>';
+  const n=rows.reduce((a,r)=>a+r.qty,0),area=rows.reduce((a,r)=>a+r.w*r.h*r.qty,0)/1e6;
+  $('sum').textContent=rows.length?`共 ${n} 块 · ${area.toFixed(2)} m²`:'';
+  const t=logs.length,w=logs.filter(l=>l.wrong).length;
+  $('stat').textContent=t?`共 ${t} 条，标错 ${w} 条，准确率 ${Math.round((t-w)/t*100)}%`:'';
+  $('log').innerHTML=logs.map((l,i)=>`<div class="log ${l.wrong?'wrong':''}"><div>听到：${esc(l.heard)} <span class="mu">${l.conf==null?'':'（把握 '+Math.round(l.conf*100)+'%）'}</span></div><div class="${l.res.error?'bad':'ok'}">→ ${l.res.cmd?'撤销':l.res.error?esc(l.res.error):esc((l.res.name||'—')+'  '+l.res.w+' × '+l.res.h+'  × '+l.res.qty)}</div><button class="small" onclick="logs[${i}].wrong=!logs[${i}].wrong;render()">${l.wrong?'已标错（点取消）':'✖ 错了'}</button></div>`).reverse().join('');
+}
+function handle(heard,conf){
+  if(!heard)return;
+  const res=parseUtterance(heard);
+  logs.push({t:new Date().toLocaleTimeString(),lang:$('lang').value,heard,conf,res,wrong:false});
+  let say='';
+  if(res.cmd==='undo'){const r=rows.pop();say=r?'已撤销':'没有可撤销的'}
+  else if(res.error){say='没听清，请再说一次'}
+  else{rows.push({name:res.name,w:res.w,h:res.h,qty:res.qty});say=(res.name?res.name+'，':'')+(zh()?`${res.w} 乘 ${res.h}，${res.qty} 块`:`${res.w} by ${res.h}, ${res.qty}`)}
+  render();
+  if($('readback').checked)speak(say);
+}
+const zh=()=>$('lang').value.startsWith('zh');
+function speak(t){
+  if(!('speechSynthesis' in window))return;
+  speaking=true;try{rec&&rec.stop()}catch(e){}
+  const u=new SpeechSynthesisUtterance(t);u.lang=zh()?'zh-CN':$('lang').value;
+  let done=false;const fin=()=>{if(done)return;done=true;speaking=false;if(listening)restart(200)};
+  u.onend=fin;u.onerror=fin;setTimeout(fin,6000);
+  speechSynthesis.cancel();speechSynthesis.speak(u);
+}
+function restart(ms){clearTimeout(restartT);restartT=setTimeout(()=>{if(listening&&!speaking)begin()},ms||300)}
+function begin(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){$('status').textContent='这个浏览器不支持语音识别（安卓用 Chrome 试试）。';listening=false;ui();return}
+  rec=new SR();rec.lang=$('lang').value;rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
+  rec.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal){if(!speaking){$('live').textContent='';handle(r[0].transcript.trim(),r[0].confidence)}}else interim+=r[0].transcript}if(interim)$('live').textContent=interim};
+  rec.onstart=()=>{$('status').textContent='正在听…说一块玻璃'};
+  rec.onerror=e=>{$('status').textContent='出错：'+e.error+(e.error==='not-allowed'?'（没有麦克风权限）':e.error==='network'?'（语音识别要联网）':'');if(e.error==='not-allowed'||e.error==='service-not-allowed'){listening=false;ui()}};
+  rec.onend=()=>{if(listening&&!speaking)restart(300)};
+  try{rec.start()}catch(e){restart(500)}
+}
+async function keepAwake(){try{if('wakeLock' in navigator)wake=await navigator.wakeLock.request('screen')}catch(e){}}
+function toggle(){
+  listening=!listening;
+  if(listening){keepAwake();begin()}else{try{rec&&rec.stop()}catch(e){}try{wake&&wake.release()}catch(e){}$('status').textContent='已停止';$('live').textContent=''}
+  ui();
+}
+function ui(){$('mic').textContent=listening?'⏹ 停止':'🎙 开始听';$('mic').classList.toggle('on',listening)}
+$('lang').onchange=()=>{if(listening){try{rec.stop()}catch(e){}restart(300)}};
+function manualGo(){const v=$('manual').value.trim();if(v){handle(v,null);$('manual').value=''}}
+function undo(){rows.pop();render()}
+function clearAll(){if(confirm('清空已录入的玻璃？')){rows=[];render()}}
+function copyLog(){
+  const txt=logs.map(l=>`${l.t} [${l.lang}] 听到：${l.heard} | 把握：${l.conf==null?'-':Math.round(l.conf*100)+'%'} | 解析：${l.res.cmd?'撤销':l.res.error||(l.res.name+' '+l.res.w+'x'+l.res.h+' x'+l.res.qty)} | ${l.wrong?'标错':'对'}`).join('\n');
+  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>alert('已复制，可以粘贴给我'),()=>{prompt('复制下面的内容：',txt)});
+}
+render();
+</script>
+</body>
+</html>
