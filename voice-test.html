@@ -37,6 +37,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}
   <div class="row" style="margin-top:10px">
     <select id="lang"><option value="zh-CN">中文</option><option value="en-NZ">English (NZ)</option><option value="en-US">English (US)</option></select>
     <label class="mu" style="flex:none"><input type="checkbox" id="readback" checked style="width:auto"> 读回确认</label>
+    <label class="mu" style="flex:none"><input type="checkbox" id="single" style="width:auto"> 单句模式</label>
   </div>
   <div id="status" class="mu" style="margin-top:8px">点“开始听”，允许麦克风。</div>
   <div id="live"></div>
@@ -46,7 +47,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}
 <div class="card">
   <b>说法示例</b>
   <div class="mu">“左边固定窗 八百五十 乘 一千六百二十 两块”<br>“Boardroom 850 by 1620 2 panels”<br>“eight fifty by sixteen twenty two panels”<br>“窗户 1.62米 乘 0.85米”<br>名字、块数可以省略（块数默认 1）。说“撤销”或 “undo” 去掉上一块。</div>
-  <div class="row" style="margin-top:8px"><input id="manual" placeholder="不想开麦克风？手动输一句试解析"><button class="small" onclick="manualGo()">解析</button></div>
+  <div class="row" style="margin-top:8px"><input id="manual" placeholder="手动输一句，或点键盘上的🎙说话，按回车解析" onkeydown="if(event.key==='Enter')manualGo()" enterkeyhint="done"><button class="small" onclick="manualGo()">解析</button></div>
 </div>
 
 <div class="card">
@@ -144,7 +145,7 @@ function parseUtterance(raw){
 
 /* ===== 界面 ===== */
 const $=id=>document.getElementById(id);
-let evs=[],failCount=0,gotAudio=false;
+let evs=[],failCount=0,gotAudio=false,primed=false;
 function trace(t){evs.push(t);evs=evs.slice(-10);$('trace').textContent='过程：'+evs.join(' → ')}
 let rows=[],logs=[],rec=null,listening=false,speaking=false,wake=null,restartT=null;
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
@@ -182,7 +183,7 @@ function begin(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){$('status').textContent='这个浏览器不支持语音识别（安卓用 Chrome 试试）。';listening=false;ui();return}
   gotAudio=false;
-  rec=new SR();rec.lang=$('lang').value;rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
+  rec=new SR();rec.lang=$('lang').value;rec.continuous=!$('single').checked;rec.interimResults=true;rec.maxAlternatives=1;
   rec.onstart=()=>{trace('开始');$('status').textContent='正在听…说一块玻璃'};
   rec.onaudiostart=()=>{gotAudio=true;failCount=0;trace('麦克风开了')};
   rec.onspeechstart=()=>trace('听到声音');
@@ -197,6 +198,7 @@ function begin(){
   rec.onend=()=>{
     trace('结束');
     if(!listening||speaking)return;
+    if(!gotAudio&&failCount===1&&!$('single').checked){$('single').checked=true;trace('自动改用单句模式')}
     if(!gotAudio&&++failCount>=5){listening=false;ui();$('status').textContent='反复被中断，没能打开麦克风。看下面“过程”那行，把它发给我。可能是别的应用占着麦克风，或这个手机的语音识别被限制。';return}
     restart(300);
   };
@@ -209,7 +211,7 @@ async function primeMic(){   // 先单独确认麦克风能用，再启动语音
 async function keepAwake(){try{if('wakeLock' in navigator)wake=await navigator.wakeLock.request('screen')}catch(e){}}
 async function toggle(){
   listening=!listening;failCount=0;
-  if(listening){ui();if(!(await primeMic())){listening=false;ui();return}keepAwake();begin()}else{try{rec&&rec.stop()}catch(e){}try{wake&&wake.release()}catch(e){}$('status').textContent='已停止';$('live').textContent=''}
+  if(listening){ui();if(!primed){if(!(await primeMic())){listening=false;ui();return}primed=true;await new Promise(r=>setTimeout(r,800))}keepAwake();begin()}else{try{rec&&rec.stop()}catch(e){}try{wake&&wake.release()}catch(e){}$('status').textContent='已停止';$('live').textContent=''}
   ui();
 }
 function ui(){$('mic').textContent=listening?'⏹ 停止':'🎙 开始听';$('mic').classList.toggle('on',listening)}
